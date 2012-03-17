@@ -31,25 +31,19 @@ class L2Jets(supy.wrappedChain.calculable) :
 class Tdt(supy.wrappedChain.calculable) :
     ""
     def __init__(self, treeName = "TrigConfTree", dirName = "triggerMeta") :
-        ""
         self.treeNumber = None
         self.treeName = treeName
         self.dirName = dirName
-
     def update(self, _) :
         chain = self.source['chain'] # see supy.calculables.other
         self.cacheTdt(chain)
         self.value.GetEntry(self.source['entry'])
-        
-
     def cacheTdt(self, chain) :
         treeNumber = chain.GetTreeNumber()
         if treeNumber != self.treeNumber :
             self.treeNumber = treeNumber
             confTree = chain.GetFile().Get("%s/%s"%(self.dirName, self.treeName))
-            print "aa"
             self.value = r.D3PD.PyTrigDecisionToolD3PD(chain, confTree)
-            print "bb"
 
 class TriggerBit(supy.wrappedChain.calculable) :
     def __init__(self, trigName = "") :
