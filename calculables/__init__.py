@@ -1,1 +1,1 @@
-import Davide, TrigD3PD
+import TrigD3PD
