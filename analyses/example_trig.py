@@ -17,6 +17,7 @@ class example_trig(supy.analysis) :
         
         outList=[
             supy.steps.printer.progressPrinter(),
+            steps.filters.triggers(["EF_mu18_medium",]),
             supy.steps.printer.printstuff(["EF_mu18_medium",])
             #supy.steps.histos.multiplicity(var = "jet_pt", max = 20), 
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20), 
