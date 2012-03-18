@@ -23,7 +23,7 @@ class example_trig(supy.analysis) :
             supy.steps.filters.multiplicity("vx_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            steps.filters.goodRun(),
+            #steps.filters.goodRun(),
             supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
