@@ -5,29 +5,6 @@ import ROOT as r
 
 r.load_packages()
 
-class L2Jets(supy.wrappedChain.calculable) :
-    """
-    List of L2 jets
-    """
-    def __init__(self, collection = ("trig_L2_jet_", ""), ptMin = None, etaMax = None):
-        self.fixes = collection
-        self.stash(["n",
-                    "E",
-                    "eta",
-                    "phi",
-                    "RoIWord",
-                    "ehad0",
-                    "eem0",
-                    "nLeadingCells",
-                    "hecf",
-                    "jetQuality",
-                    "emf",
-                    "jetTimeCells",
-                    ])
-    @property
-    def name(self):
-        return 'L2jets'
-
 class Tdt(supy.wrappedChain.calculable) :
     ""
     def __init__(self, treeName = "TrigConfTree", dirName = "triggerMeta") :

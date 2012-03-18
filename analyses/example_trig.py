@@ -20,7 +20,10 @@ class example_trig(supy.analysis) :
             steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
             supy.steps.filters.multiplicity("vx_Indices",min=1),
+            supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
+            supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
+            supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
             #supy.steps.histos.eta(var = "jet_P4", N = 20, low = -2., up = +2., indices = "jet_Indices"),
@@ -36,6 +39,12 @@ class example_trig(supy.analysis) :
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),]
         listOfCalculables += [calculables.vertex.Indices(collection=('vx_',''),
                                                          zPosMax=100, nTracksMin=4),]
+        listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
+                              calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
+                              calculables.jet.IndicesEf(collection=("trig_EF_jet_emscale_", ""), minEt=10.*GeV),
+                              calculables.jet.IndicesOffline(collection=("jet_AntiKt4TopoEMJets_", "")),
+                              calculables.jet.IndicesOfflineBad(),
+                              ]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
