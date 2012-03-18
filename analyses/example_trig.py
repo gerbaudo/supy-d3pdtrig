@@ -18,9 +18,9 @@ class example_trig(supy.analysis) :
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.filters.triggers(["EF_mu18_medium",]),
-            supy.steps.printer.printstuff(["EF_mu18_medium",])
-            #supy.steps.histos.multiplicity(var = "jet_pt", max = 20), 
-            #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20), 
+            #supy.steps.printer.printstuff(["EF_mu18_medium",]),
+            supy.steps.filters.multiplicity("vx_Indices",min=1),
+            supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
             #supy.steps.histos.eta(var = "jet_P4", N = 20, low = -2., up = +2., indices = "jet_Indices"),
@@ -34,6 +34,8 @@ class example_trig(supy.analysis) :
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += [calculables.TrigD3PD.Tdt(),]
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),]
+        listOfCalculables += [calculables.vertex.Indices(collection=('vx_',''),
+                                                         zPosMax=100, nTracksMin=4),]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
