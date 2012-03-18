@@ -10,7 +10,8 @@ class example_trig(supy.analysis) :
     def mainTree(self) : return ("/","trigger")
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        return {"minJetPt" : 10.0,
+        return {'minJetPt' : 10.0,
+                'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml"
                 }
 
     def listOfSteps(self,config) :
@@ -22,6 +23,7 @@ class example_trig(supy.analysis) :
             supy.steps.filters.multiplicity("vx_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
+            steps.filters.goodRun(),
             supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
@@ -34,9 +36,13 @@ class example_trig(supy.analysis) :
         return outList
     
     def listOfCalculables(self,config) :
+        pars = self.parameters()
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += [calculables.TrigD3PD.Tdt(),]
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),]
+        listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
+                              calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
+                              ]
         listOfCalculables += [calculables.vertex.Indices(collection=('vx_',''),
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),

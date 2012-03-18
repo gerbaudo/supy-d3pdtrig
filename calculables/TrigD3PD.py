@@ -30,7 +30,26 @@ class TriggerBit(supy.wrappedChain.calculable) :
     @property
     def name(self):
         return self.trigName
-        
+
+class Grlt(supy.wrappedChain.calculable) :
+    def __init__(self, file='') :
+        self.grlReader = r.Root.TGoodRunsListReader(file)
+        self.grlReader.Interpret()
+        self.grlIn = r.Root.TGoodRunsList(self.grlReader.GetMergedGoodRunsList())
+        self.grlOut = r.Root.TGoodRunsList('outputGRL')
+        self.value = self
+    def update(self, _) :
+        pass
+class isGoodRun(supy.wrappedChain.calculable) :
+    def __init__(self, runN='', lbn='' ) :
+        self.runN = runN
+        self.lbn = lbn
+    def update(self, _) :
+        run = self.source[self.runN]
+        lbn = self.source[self.lbn]
+        self.value = self.source['Grlt'].grlIn.HasRunLumiBlock(run, lbn)
+        #print 'r %s l %s g %s' % (run, lbn, self.value)
+
 class Indices(supy.wrappedChain.calculable) :
     """
     This is a calculable to build the collection of jets that have
