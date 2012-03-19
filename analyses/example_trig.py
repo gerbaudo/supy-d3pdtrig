@@ -11,11 +11,13 @@ class example_trig(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetPt' : 10.0,
-                'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml"
+                'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml",
+                'L2jetChain' : 'L2_[0-9]*j.*',
+                'L2multiJetChain' : 'L2_[5-9]+j.*(em|had)$',
                 }
 
     def listOfSteps(self,config) :
-        
+        pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.filters.triggers(["EF_mu18_medium",]),
@@ -23,9 +25,11 @@ class example_trig(supy.analysis) :
             supy.steps.filters.multiplicity("vx_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            #steps.filters.goodRun(),
+            steps.filters.goodRun().onlySim(), # should be onlyData(),
             supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
+            #supy.steps.printer.printstuff(['PassedTriggers',]),
+            steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
             #supy.steps.histos.eta(var = "jet_P4", N = 20, low = -2., up = +2., indices = "jet_Indices"),
@@ -42,6 +46,7 @@ class example_trig(supy.analysis) :
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),]
         listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
                               calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
+                              calculables.TrigD3PD.PassedTriggers(),
                               ]
         listOfCalculables += [calculables.vertex.Indices(collection=('vx_',''),
                                                          zPosMax=100, nTracksMin=4),]
@@ -57,14 +62,17 @@ class example_trig(supy.analysis) :
         protocol="root://xrootd-disk.pic.es/"
         basedir="/pnfs-disk/pic.es/at3/projects/TOPD3PD/2011/Skimming/DPD_prod01_02_October11"
         exampleDict = supy.samples.SampleHolder()
-        exampleDict.add("Data_skimMu",
+#        exampleDict.add("Pythia_ttbar_bWincbHminus",
+#                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
+#                        xs = 1.0e+3 ) #/pb
+        exampleDict.add("Pythia_ttbar_bWincbHminus",
                         '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
                         lumi = 1.0e+3 ) #/pb
-#        print "Fix cross sections"
+        print "Fix cross sections"
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        return (supy.samples.specify(names = "Data_skimMu", color = r.kBlack, markerStyle = 20)
+        return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20)
                 #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
                 #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
                 )
