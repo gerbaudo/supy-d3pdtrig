@@ -1,6 +1,6 @@
 
 import supy
-import math,collections,bisect,itertools
+import math,collections,bisect,itertools,re
 import ROOT as r
 
 r.load_packages()
@@ -30,6 +30,11 @@ class TriggerBit(supy.wrappedChain.calculable) :
     @property
     def name(self):
         return self.trigName
+class PassedTriggers(supy.wrappedChain.calculable) :
+    def __init__(self,) :
+        pass
+    def update(self, _) :
+        self.value = [x for x in self.source['Tdt'].GetPassedTriggers() ]
 
 class Grlt(supy.wrappedChain.calculable) :
     def __init__(self, file='') :
