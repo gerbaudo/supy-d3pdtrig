@@ -3,8 +3,6 @@ import supy
 import math,collections,bisect,itertools,re
 import ROOT as r
 
-r.load_packages()
-
 class Tdt(supy.wrappedChain.calculable) :
     ""
     def __init__(self, treeName = "TrigConfTree", dirName = "triggerMeta") :
