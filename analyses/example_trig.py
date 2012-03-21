@@ -7,7 +7,6 @@ GeV=1.0e+3
 TeV=1.0e+3*GeV
 
 class example_trig(supy.analysis) :
-    def mainTree(self) : return ("/","trigger")
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetPt' : 10.0,
@@ -24,10 +23,11 @@ class example_trig(supy.analysis) :
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
             supy.steps.filters.multiplicity("vx_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
-            supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            steps.filters.goodRun().onlySim(), # should be onlyData(),
+            supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0), # .invert(),
+            steps.filters.goodRun().onlyData(),
             supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
+            steps.trigger.jetPt(collection="RunNumber"),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
@@ -65,14 +65,19 @@ class example_trig(supy.analysis) :
 #        exampleDict.add("Pythia_ttbar_bWincbHminus",
 #                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
 #                        xs = 1.0e+3 ) #/pb
+#        exampleDict.add("Pythia_ttbar_bWincbHminus",
+#                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
+#                        lumi = 1.0e+3 ) #/pb
         exampleDict.add("Pythia_ttbar_bWincbHminus",
-                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
-                        lumi = 1.0e+3 ) #/pb
+                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/data/eos/*.root*", isDirectory = False)',
+                        xs = 1.0e+3 ) #/pb
         print "Fix cross sections"
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20)
+        return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
+                                     nFilesMax = 10,
+                                     nEventsMax=-1,)
                 #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
                 #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
                 )
@@ -80,7 +85,7 @@ class example_trig(supy.analysis) :
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
         org = self.organizer(pars)
-        org.scale()
+        org.scale(lumiToUseInAbsenceOfData=1000.)
         supy.plotter( org,
                       pdfFileName = self.pdfFileName(org.tag),
                       #samplesForRatios = ("Example_Skimmed_900_GeV_Data","Example_Skimmed_900_GeV_MC"),
