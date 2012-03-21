@@ -32,3 +32,12 @@ class triggerCounts(supy.analysisStep) :
             
             
          
+class jetPt(supy.analysisStep) :
+    # to be fixed
+    def __init__(self, collection='') :
+        self.collection = collection
+    def uponAcceptance(self, eventVars) :
+        jets = eventVars[self.collection]
+        self.book.fill(jets,"%sPt"%self.collection, 50,275.0, 2775.0, title = ";H_{T} (GeV); jets/bin")
+#        for jet in jets:
+#            self.book.fill(jet.Et,"%sPt%s"%self.collection, 50,275.0, 2775.0, title = ";H_{T} (GeV); jets/bin")
