@@ -20,16 +20,19 @@ class example_trig(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
-            steps.filters.triggers(["EF_mu18_medium",]),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]).invert(),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]),
+            #--steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
-            supy.steps.filters.multiplicity("vx_Indices",min=1),
-            supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
-            supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            steps.filters.goodRun().onlySim(), # should be onlyData(),
-            supy.steps.histos.multiplicity(var = "vx_Indices", max = 20), 
+            #--supy.steps.filters.multiplicity("vx_Indices",min=1),
+            #--supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
+            #--supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
+            #--steps.filters.goodRun().onlySim(), # should be onlyData(),
+            #--supy.steps.histos.multiplicity(var = "vx_Indices", max = 20),
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
+            steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
             #supy.steps.histos.eta(var = "jet_P4", N = 20, low = -2., up = +2., indices = "jet_Indices"),
@@ -43,7 +46,10 @@ class example_trig(supy.analysis) :
         pars = self.parameters()
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += [calculables.TrigD3PD.Tdt(),]
-        listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),]
+        listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),
+                              calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FSPS"),
+                              calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FS"),
+                              ]
         listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
                               calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
                               calculables.TrigD3PD.PassedTriggers(),
@@ -65,8 +71,18 @@ class example_trig(supy.analysis) :
 #        exampleDict.add("Pythia_ttbar_bWincbHminus",
 #                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
 #                        xs = 1.0e+3 ) #/pb
+#        exampleDict.add("Pythia_ttbar_bWincbHminus",
+#                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
+#                        lumi = 1.0e+3 ) #/pb
+#        exampleDict.add("Pythia_ttbar_bWincbHminus",
+#                '["/tmp/gerbaudo/eos/NTUP_TRIG.742401._000002.root.1"]',
+#                        lumi = 1.0e+3 ) #/pb
+# get these files from
+# eos ls /eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3408_r3410_p661/data11_7TeV.00191628.physics_EnhancedBias.merge.NTUP_TRIG.r3408_r3410_p661_tid742401_00
+# (these are the suspicious eventd from Brian's email)
         exampleDict.add("Pythia_ttbar_bWincbHminus",
-                        '["/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00001.NTUP.root","/tmp/gerbaudo/MyRootCoreDir/user.chapleau.001094.EXT0._00002.NTUP.root"]',
+                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/*.root", isDirectory = False)',
+                        #'[""]',
                         lumi = 1.0e+3 ) #/pb
         print "Fix cross sections"
         return [exampleDict]
