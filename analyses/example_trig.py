@@ -19,8 +19,8 @@ class example_trig(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]).invert(),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
             #--steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
             #--supy.steps.filters.multiplicity("vx_Indices",min=1),
@@ -75,15 +75,16 @@ class example_trig(supy.analysis) :
 # eos ls /eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3408_r3410_p661/data11_7TeV.00191628.physics_EnhancedBias.merge.NTUP_TRIG.r3408_r3410_p661_tid742401_00
 # (these are the suspicious eventd from Brian's email)
         exampleDict.add("Pythia_ttbar_bWincbHminus",
-                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/*.root", isDirectory = False)',
+                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/NTUP*.root*", isDirectory = False)',
                         #'[""]',
                         lumi = 1.0e+3 ) #/pb
         return [exampleDict]
 
     def listOfSamples(self,config) :
         return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
-                                     nFilesMax = 10,
-                                     nEventsMax=-1,)
+                                     #nFilesMax = 100,
+                                     #nEventsMax=-1,
+                                     )
                 #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
                 #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
                 )
