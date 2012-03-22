@@ -20,7 +20,6 @@ class triggerCounts(supy.analysisStep) :
         for dct in products["counts"]:
             for key,value in dct.iteritems():
                 self.counts[key] += value
-        print self.counts
         names = sorted(self.counts.keys())
         hist = r.TH1D('triggerCounts',
                       "Trigger counts;;events",
