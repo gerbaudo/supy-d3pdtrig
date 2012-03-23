@@ -19,6 +19,8 @@ class example_trig(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
+            steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
+            steps.displayer.displayer(doL1Jets=True, doEfJets = True),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
             #--steps.filters.triggers(["EF_mu18_medium",]),
@@ -27,12 +29,11 @@ class example_trig(supy.analysis) :
             #--supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             #--supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             #--supy.steps.histos.multiplicity(var = "vx_Indices", max = 20),
-            steps.filters.goodRun().onlyData(),
+            #--steps.filters.goodRun().onlyData(),
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             steps.trigger.jetPt(collection="RunNumber"),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
-            steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
             #supy.steps.histos.eta(var = "jet_P4", N = 20, low = -2., up = +2., indices = "jet_Indices"),
@@ -50,13 +51,15 @@ class example_trig(supy.analysis) :
                               calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FSPS"),
                               calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FS"),
                               ]
-        listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
-                              calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
+        listOfCalculables += [#calculables.TrigD3PD.Grlt(pars['grlFile']),
+                              #calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
                               calculables.TrigD3PD.PassedTriggers(),
                               ]
         listOfCalculables += [calculables.vertex.Indices(collection=('vx_',''),
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
+                              calculables.jet.L1Jets(),
+                              calculables.jet.EfJets(),
                               calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
                               calculables.jet.IndicesEf(collection=("trig_EF_jet_emscale_", ""), minEt=10.*GeV),
                               calculables.jet.IndicesOffline(collection=("jet_AntiKt4TopoEMJets_", "")),
@@ -83,7 +86,7 @@ class example_trig(supy.analysis) :
     def listOfSamples(self,config) :
         return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
                                      #nFilesMax = 100,
-                                     #nEventsMax=-1,
+                                     nEventsMax=10,
                                      )
                 #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
                 #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
