@@ -1,4 +1,4 @@
-import os,collections,copy,ROOT as r
+import os,re,collections,copy,ROOT as r
 from supy import utils
 import supy
 import configuration
@@ -14,11 +14,11 @@ except ImportError:
 MeV2GeV = 0.001
 class displayer(supy.steps.displayer) :
     
-    def __init__(self, doL1Jets = False, doEfJets = False,
+    def __init__(self, doL1Jets = False, doEfJets = False, doOfflineJets = False,
                  prettyMode = False,
                  printExtraText = True):
         self.moreName = "(see below)"
-        for item in ['doL1Jets','doEfJets',
+        for item in ['doL1Jets','doEfJets', 'doOfflineJets',
                      'prettyMode','printExtraText']:
             setattr(self,item,eval(item))
 
@@ -31,6 +31,7 @@ class displayer(supy.steps.displayer) :
         self.l1Jets = 'L1Jets'
         self.l2Jets = 'L2Jets'
         self.efJets = 'EfJets'
+        self.offlineJets = 'OfflineJets'
 
         self.etaBE = 1.5 # configuration.detectorSpecs()["cms"]["etaBE"]
         self.etaEF = 3.2
@@ -262,7 +263,7 @@ class displayer(supy.steps.displayer) :
     def printEfJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         efJets = eventVars[self.efJets]
-            
+
         self.printText(self.renamedDesc(self.efJets))
         self.printText("pt      eta  phi ")
         self.printText("-----------------")
@@ -272,6 +273,35 @@ class displayer(supy.steps.displayer) :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
             self.printText("%4.1f %4.1f %4.1f"%(jet.pt*MeV2GeV, jet.eta, jet.phi))
+    def printOfflineJets(self, eventVars, params, coords, nMax) :
+        self.prepareText(params, coords)
+        jets = eventVars[self.offlineJets]
+
+        self.printText(self.renamedDesc(self.offlineJets))
+        self.printText("pt      eta  phi Bad Ugly")
+        self.printText("-------------------------")
+        nJets = len(jets)
+        for iJet,jet in enumerate(jets) :
+            if nMax<=iJet :
+                self.printText("[%d more not listed]"%(nJets-nMax))
+                break
+            self.printText("%4.1f   %4.1f %4.1f   %d    %d"%\
+                           (jet.pt*MeV2GeV, jet.eta, jet.phi, jet.isBadLoose, jet.isUgly))
+
+    def printTriggers(self, eventVars, params, coords,
+                      passedTriggers = 'PassedTriggers', pattern = r'.*',
+                      nMax=20) :
+        self.prepareText(params, coords)
+        triggers = eventVars[passedTriggers]
+        triggers = sorted([x for x in triggers if re.match(pattern,x)])
+        self.printText("Triggers (%s)"%pattern)
+        self.printText("-------------------------")
+        nTrig = len(triggers)
+        for trig in triggers :
+            if nMax<=nTrig :
+                self.printText("[%d more not listed]"%(nTrig-nMax))
+                break
+            self.printText(trig)
 
     def printJets(self, eventVars, params, coords, jets, nMax) :
         self.prepareText(params, coords)
@@ -519,6 +549,12 @@ class displayer(supy.steps.displayer) :
         for jet in jets :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius)
 
+    def drawOfflineJets(self, eventVars, color, lineWidth, circleRadius) :
+        self.legendFunc(color, name = "OfflineJet", desc = "Offline jets (%s)"%self.efJets)
+        jets = eventVars[self.offlineJets]
+        for jet in jets :
+            self.drawCircleTrig(jet, color, lineWidth, circleRadius, lineStyle=2)
+
     def drawGenParticles(self, eventVars, coords, color, lineWidth, arrowSize, statusList = None, pdgIdList = None, motherList = None, label = "", circleRadius = None) :
         self.legendFunc(color, name = "genParticle"+label, desc = label)
 
@@ -681,6 +717,7 @@ class displayer(supy.steps.displayer) :
 
         self.drawL1Jets(eventVars, color=r.kMagenta, lineWidth=1, circleRadius=0.2)
         self.drawEfJets(eventVars, color=r.kBlue, lineWidth=1, circleRadius=0.4)
+        self.drawOfflineJets(eventVars, color=r.kBlue+3, lineWidth=1, circleRadius=0.4)
 
         #--def drawEcalBox(fourVector, nBadXtals, maxStatus) :
         #--    value = (0.087/2) * nBadXtals / 25
@@ -932,10 +969,16 @@ class displayer(supy.steps.displayer) :
             #--self.printVertices(eventVars, params = defaults, coords = {"x":x1, "y":yy}, nMax = 3)
             #--self.printJets(    eventVars, params = defaults, coords = {"x":x0, "y":yy-7*s}, jets = self.jets, nMax = 7)
 
+            self.printTriggers(eventVars, params = defaults,
+                               coords = {"x":x0+0.5, "y":yy},
+                               passedTriggers = 'PassedTriggers', pattern = r'.*5j55.*',
+                               nMax=30)
             if self.doL1Jets :
                 self.printL1Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, nMax = 7)
             if self.doEfJets :
-                self.printEfJets(eventVars, params  = defaults, coords = {"x":x0+0.40,  "y":yy-18*s}, nMax = 7)
+                self.printEfJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-32*s}, nMax = 7)
+            if self.doOfflineJets :
+                self.printOfflineJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-46*s}, nMax = 7)
                 #self.printGenParticles(eventVars,params=defaults, coords = {"x":x0+0.40, "y":yy-18*s}, nMax = 7)
             #--if self.jetsOtherAlgo :
             #--    self.printJets(     eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, jets = self.jetsOtherAlgo, nMax = 7)
