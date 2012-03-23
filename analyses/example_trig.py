@@ -20,9 +20,9 @@ class example_trig(supy.analysis) :
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
-            steps.displayer.displayer(doL1Jets=True, doEfJets = True),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+            steps.displayer.displayer(doL1Jets=True, doEfJets = True, doOfflineJets=True),
             #--steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
             #--supy.steps.filters.multiplicity("vx_Indices",min=1),
@@ -60,6 +60,7 @@ class example_trig(supy.analysis) :
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
                               calculables.jet.EfJets(),
+                              calculables.jet.OfflineJets(),
                               calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
                               calculables.jet.IndicesEf(collection=("trig_EF_jet_emscale_", ""), minEt=10.*GeV),
                               calculables.jet.IndicesOffline(collection=("jet_AntiKt4TopoEMJets_", "")),
@@ -86,7 +87,7 @@ class example_trig(supy.analysis) :
     def listOfSamples(self,config) :
         return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
                                      #nFilesMax = 100,
-                                     nEventsMax=10,
+                                     #nEventsMax=10,
                                      )
                 #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
                 #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
