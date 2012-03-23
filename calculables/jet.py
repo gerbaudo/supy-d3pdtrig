@@ -12,11 +12,15 @@ def l2jetAttributes() :
             "nLeadingCells", "hecf", "jetQuality", "emf", "jetTimeCells",]
 def l2jetCollection() :
     return ("trig_L2_jet_", "")
-
 def efJetAttributes() :
     return ["E", "pt", "m", "eta", "phi", ]
 def efJetCollection() :
     return ("trig_EF_jet_emscale_", "")
+def offlineJetAttributes() :
+    return ["n", "E", "pt", "m", "eta", "phi",
+            "isUgly", "isBadLoose"]
+def offlineJetCollection() :
+    return ("jet_AntiKt4TopoEMJets_", "")
 #___________________________________________________________
 class IndicesL1(supy.wrappedChain.calculable) :
     "Build L1 jet indices; filter objects as needed"
@@ -146,11 +150,10 @@ class EfJets(supy.wrappedChain.calculable) :
 
 #___________________________________________________________
 class IndicesOffline(supy.wrappedChain.calculable) :
-    def __init__(self, collection = ("jet_AntiKt4TopoEM_", ""), minEt = None):
+    def __init__(self, collection = offlineJetCollection(), minEt = None):
         self.minEt = minEt
         self.fixes = collection
-        self.stash(["n", "E", "pt", "m", "eta", "phi",
-                    "isUgly", "isBadLoose"])
+        self.stash(offlineJetAttributes())
         self.moreName = ""
         if minEt!=None: self.moreName += "et>%.1f"%minEt
     @property
@@ -165,7 +168,7 @@ class IndicesOffline(supy.wrappedChain.calculable) :
             self.value.append(i)
 #___________________________________________________________
 class IndicesOfflineBad(supy.wrappedChain.calculable) :
-    def __init__(self, collection = ("jet_AntiKt4TopoEMJets_","")) :
+    def __init__(self, collection = offlineJetCollection()) :
         self.fixes = collection
         self.stash(["isBadLoose"])
     def update(self, _) :
@@ -176,4 +179,31 @@ class IndicesOfflineBad(supy.wrappedChain.calculable) :
     @property
     def name(self):
         return "IndicesOfflineBadJets"
+#___________________________________________________________
+class OfflineJet(object) :
+    def __init__(self, E=0., pt=0., m=0., eta=0., phi=0., isUgly=0., isBadLoose=0.) :
+        self.E = E
+        self.pt = pt
+        self.m = m
+        self.eta = eta
+        self.phi = phi
+        self.isUgly = isUgly
+        self.isBadLoose = isBadLoose
+#___________________________________________________________
+class OfflineJets(supy.wrappedChain.calculable) :
+    def __init__(self, collection = offlineJetCollection(), minimumPt=10.*GeV):
+        self.fixes = collection
+        self.stash(offlineJetAttributes())
+        self.minimumPt = minimumPt
+    @property
+    def name(self):
+        return 'OfflineJets'
+    def update(self, _) :
+        self.value = [OfflineJet(E, pt, m, eta, phi, isUgly, isBadLoose)
+                      for E, pt, m, eta, phi, isUgly, isBadLoose in
+                      zip(self.source[self.E], self.source[self.pt],
+                          self.source[self.m],
+                          self.source[self.eta], self.source[self.phi],
+                          self.source[self.isUgly], self.source[self.isBadLoose])
+                      if pt>self.minimumPt]
 
