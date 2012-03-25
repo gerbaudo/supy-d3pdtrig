@@ -43,11 +43,14 @@ class L1Jet(object) :
         self.et4x4 = et4x4
         self.et6x6 = et6x6
         self.et8x8 = et8x8
+    def et(self) :
+        return self.et8x8
 
 class L1Jets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = l1jetCollection()):
+    def __init__(self, collection = l1jetCollection(), minimumEt=10.*GeV):
         self.fixes = collection
         self.stash(l1jetAttributes())
+        self.minimumEt = minimumEt
     @property
     def name(self):
         return 'L1Jets'
@@ -55,7 +58,8 @@ class L1Jets(supy.wrappedChain.calculable) :
         self.value = [L1Jet(eta, phi, et4x4, et6x6, et8x8)
                       for eta, phi, et4x4, et6x6, et8x8 in
                       zip(self.source[self.eta], self.source[self.phi],
-                          self.source[self.et4x4], self.source[self.et6x6], self.source[self.et8x8])]
+                          self.source[self.et4x4], self.source[self.et6x6], self.source[self.et8x8])
+                      if et8x8>self.minimumEt]
 #___________________________________________________________
 # todo: subdivide the L2 jets in categories (cone, L1.5, L2PS)
 class IndicesL2(supy.wrappedChain.calculable) :
@@ -96,9 +100,10 @@ class L2Jet(object) :
 
         
 class L2Jets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = l2jetCollection()):
+    def __init__(self, collection = l2jetCollection(), minimumEt=10.*GeV):
         self.fixes = collection
         self.stash(l2jetAttributes())
+        self.minimumEt = minimumEt
     @property
     def name(self):
         return 'L2Jets'
@@ -118,7 +123,8 @@ class L2Jets(supy.wrappedChain.calculable) :
                           #self.source[self.nLeadingCells],
                           #self.source[self.hecf], self.source[self.jetTimeCells],
                           #self.source[self.emf],
-                          self.source[self.RoIWord])]
+                          self.source[self.RoIWord])
+                      if E/cosh(eta)>self.minimumEt]
 
 #___________________________________________________________
 class IndicesEf(supy.wrappedChain.calculable) :
