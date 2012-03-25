@@ -2,6 +2,7 @@ import os,re,collections,copy,ROOT as r
 from supy import utils
 import supy
 import configuration
+from math import sin, cos
 #####################################
 pdgLookupExists = False
 try:
@@ -17,7 +18,7 @@ class displayer(supy.steps.displayer) :
     def __init__(self,
                  doL1Jets = False, doL2Jets = False,
                  doEfJets = False, doOfflineJets = False,
-                 scale = 200.0, prettyMode = False,
+                 scale = 50.0, prettyMode = False,
                  printExtraText = True):
         self.moreName = "(see below)"
         for item in ['doL1Jets', 'doL2Jets', 'doEfJets', 'doOfflineJets',
@@ -34,6 +35,13 @@ class displayer(supy.steps.displayer) :
         self.l2Jets = 'L2Jets'
         self.efJets = 'EfJets'
         self.offlineJets = 'OfflineJets'
+
+        self.l1JetsColor = r.kRed
+        self.l2JetsColor = r.kOrange
+        self.efJetsColor = r.kBlue
+        self.offlineJetsColor = r.kCyan
+
+
 
         self.etaBE = 1.5 # configuration.detectorSpecs()["cms"]["etaBE"]
         self.etaEF = 3.2
@@ -257,7 +265,7 @@ class displayer(supy.steps.displayer) :
         self.printText(" et8x8  eta  phi")
         self.printText("----------------")
         nJets = len(jets)
-        for iJet,jet in enumerate(reverse(jets)) :
+        for iJet,jet in enumerate(reversed(jets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
@@ -272,12 +280,12 @@ class displayer(supy.steps.displayer) :
         self.printText("Et   eta   phi nLeading   hecf   qual  EmF  Input  Output")
         self.printText("---------------------------------------------------------")
         nJets = len(jets)
-        for iJet,jet in enumerate(reverse(jets)) :
+        for iJet,jet in enumerate(reversed(jets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
             input, output, jCounter = jet.inputOutputJetCounter()
-            self.printText("%4.1f %4.1f %4.1f  %s %s"%\
+            self.printText("%5.1f %4.1f %4.1f  %s %s"%\
                            (jet.et()*MeV2GeV, jet.eta, jet.phi, input, output))
 
     def printEfJets(self, eventVars, params, coords, nMax) :
@@ -289,11 +297,11 @@ class displayer(supy.steps.displayer) :
         self.printText("Et      eta  phi ")
         self.printText("-----------------")
         nJets = len(efJets)
-        for iJet,jet in enumerate(reverse(efJets)) :
+        for iJet,jet in enumerate(reversed(efJets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            self.printText("%4.1f %4.1f %4.1f"%(jet.et()*MeV2GeV, jet.eta, jet.phi))
+            self.printText("%5.1f %4.1f %4.1f"%(jet.et()*MeV2GeV, jet.eta, jet.phi))
     def printOfflineJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         jets = eventVars[self.offlineJets]
@@ -303,11 +311,11 @@ class displayer(supy.steps.displayer) :
         self.printText("Et      eta  phi B|U")
         self.printText("--------------------")
         nJets = len(jets)
-        for iJet,jet in enumerate(reverse(jets)) :
+        for iJet,jet in enumerate(reversed(jets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            self.printText("%4.1f   %4.1f %4.1f   %d"%\
+            self.printText("%5.1f   %4.1f %4.1f   %d"%\
                            (jet.et()*MeV2GeV, jet.eta, jet.phi,
                             jet.isBadLoose or jet.isUgly))
 
@@ -506,7 +514,7 @@ class displayer(supy.steps.displayer) :
     def drawScale(self, color, size, scale, point) :
         self.latex.SetTextSize(size)
         self.latex.SetTextColor(color)
-        self.latex.DrawLatex(point["x"], point["y"],"radius = "+str(scale)+" GeV p_{T}")
+        self.latex.DrawLatex(point["x"], point["y"],"radius = "+str(scale)+" GeV E_{T}")
 
     def drawP4(self, c, p4, color, lineWidth, arrowSize, p4Initial = None) :
         x0 = c["x0"]+p4Initial.px()*c["radius"]/c["scale"] if p4Initial else c["x0"]
@@ -521,6 +529,19 @@ class displayer(supy.steps.displayer) :
         self.arrow.SetLineColor(color)
         self.arrow.SetLineWidth(lineWidth)
         self.arrow.SetArrowSize(arrowSize)
+        self.arrow.SetFillColor(color)
+        self.arrow.DrawArrow(x0,y0,x1,y1)
+
+    def drawEt(self, c, etObj, color, lineWidth, arrowSize) :
+        x0 = c["x0"]
+        y0 = c["y0"]
+        et = etObj.et()*MeV2GeV*c["radius"]/c["scale"]
+        x1 = x0+et*cos(etObj.phi)
+        y1 = y0+et*sin(etObj.phi)
+
+        self.arrow.SetLineColor(color)
+        self.arrow.SetLineWidth(lineWidth)
+        self.arrow.SetArrowSize(arrowSize if et>0.2 else arrowSize*0.5)
         self.arrow.SetFillColor(color)
         self.arrow.DrawArrow(x0,y0,x1,y1)
         
@@ -563,6 +584,12 @@ class displayer(supy.steps.displayer) :
     def drawL1Jets(self, eventVars, color, lineWidth, circleRadius) :
         self.legendFunc(color, name = "L1Jet", desc = "L1 jets (%s)"%self.l1Jets)
         jets = eventVars[self.l1Jets]
+        for jet in jets :
+            self.drawCircleTrig(jet, color, lineWidth, circleRadius)
+
+    def drawL2Jets(self, eventVars, color, lineWidth, circleRadius) :
+        self.legendFunc(color, name = "L2Jet", desc = "L2 jets (%s)"%self.l2Jets)
+        jets = eventVars[self.l2Jets]
         for jet in jets :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius)
 
@@ -722,6 +749,10 @@ class displayer(supy.steps.displayer) :
 
     def drawEtaPhiPlot (self, eventVars, corners) :
         pad=r.TPad("etaPhiPad", "etaPhiPad", corners["x1"], corners["y1"], corners["x2"], corners["y2"])
+        pad.SetTopMargin(0.20*pad.GetTopMargin())
+        pad.SetBottomMargin(0.75*pad.GetBottomMargin())
+        pad.SetLeftMargin(0.75*pad.GetLeftMargin())
+        pad.SetRightMargin(0.20*pad.GetRightMargin())
         pad.cd()
         pad.SetTickx()
         pad.SetTicky()
@@ -738,52 +769,11 @@ class displayer(supy.steps.displayer) :
         suspiciousJetColor = r.kRed
         suspiciousJetStyle = 2
 
-        self.drawL1Jets(eventVars, color=r.kMagenta, lineWidth=1, circleRadius=0.2)
-        self.drawEfJets(eventVars, color=r.kBlue, lineWidth=1, circleRadius=0.4)
-        self.drawOfflineJets(eventVars, color=r.kBlue+3, lineWidth=1, circleRadius=0.4)
+        self.drawL1Jets(eventVars, color=self.l1JetsColor, lineWidth=1, circleRadius=0.2)
+        self.drawL2Jets(eventVars, color=self.l2JetsColor, lineWidth=1, circleRadius=0.4)
+        self.drawEfJets(eventVars, color=self.efJetsColor, lineWidth=1, circleRadius=0.4)
+        self.drawOfflineJets(eventVars, color=self.offlineJetsColor, lineWidth=1, circleRadius=0.4)
 
-        #--def drawEcalBox(fourVector, nBadXtals, maxStatus) :
-        #--    value = (0.087/2) * nBadXtals / 25
-        #--    args = (fourVector.eta()-value, fourVector.phi()-value, fourVector.eta()+value, fourVector.phi()+value)
-        #--    if maxStatus==14 :
-        #--        self.deadBox.DrawBox(*args)
-        #--    else :
-        #--        self.coldBox.DrawBox(*args)
-        #--        
-        #--def drawHcalBox(fourVector) :
-        #--    value = 0.087/2
-        #--    args = (fourVector.eta()-value, fourVector.phi()-value, fourVector.eta()+value, fourVector.phi()+value)
-        #--    self.hcalBox.DrawBox(*args)
-        #--
-        #--
-        #--if self.doGenParticles :
-        #--    self.drawGenParticles(eventVars,r.kMagenta, lineWidth = 1, arrowSize = -1.0, statusList = [1], pdgIdList = [22],
-        #--                          motherList = [1,2,3,4,5,6,-1,-2,-3,-4,-5,-6], label = "status 1 photon w/quark as mother", circleRadius = 0.15)
-        #--    self.drawGenParticles(eventVars,r.kOrange, lineWidth = 1, arrowSize = -1.0, statusList = [1], pdgIdList = [22],
-        #--                          motherList = [22], label = "status 1 photon w/photon as mother", circleRadius = 0.15)
-        #--else :
-        #--    etaPhiPlot.SetTitle("")
-        #--    if self.ra1Mode :
-        #--        suspiciousJetIndices = []
-        #--        for dPhiStar,iJet in eventVars["%sDeltaPhiStar%s%s"%(self.jets[0],self.jets[1],self.deltaPhiStarExtraName)] :
-        #--            if dPhiStar < self.deltaPhiStarCut : suspiciousJetIndices.append(iJet)
-        #--
-        #--    suspiciousJetLegendEntry = False
-        #--    if not eventVars["isRealData"] :
-        #--        genJets = eventVars[self.genJets]
-        #--        for index in range(genJets.size()) :
-        #--            self.drawCircle(genJets.at(index), r.kBlack, lineWidth = 2, circleRadius = self.jetRadius, lineStyle = suspiciousJetStyle)
-        #--    jets = eventVars["%sCorrectedP4%s"%self.jets]
-        #--    for index in range(jets.size()) :
-        #--        jet = jets.at(index)
-        #--        if index in eventVars["%sIndices%s"%self.jets] :
-        #--            self.drawCircle(jet, r.kBlue, lineWidth = 1, circleRadius = self.jetRadius)
-        #--        else :
-        #--            self.drawCircle(jet, r.kCyan, lineWidth = 1, circleRadius = self.jetRadius)
-        #--        if self.ra1Mode and (index in suspiciousJetIndices) :
-        #--            self.drawCircle(jet, suspiciousJetColor, lineWidth = 1, circleRadius = self.deltaPhiStarDR, lineStyle = suspiciousJetStyle)
-        #--            suspiciousJetLegendEntry = True
-        #--
         self.canvas.cd()
         pad.Draw()
         return [pad, etaPhiPlot,]# legend1, legend2]
@@ -905,10 +895,14 @@ class displayer(supy.steps.displayer) :
         self.drawSkeleton(coords, skeletonColor)
         self.drawScale(color = skeletonColor, size = 0.03, scale = coords["scale"], point = {"x":0.0, "y":coords["radius"]+coords["y0"]+0.03})
 
-        defArrowSize=0.5*self.arrow.GetDefaultArrowSize()
+        defArrowSize=0.25*self.arrow.GetDefaultArrowSize()
         defWidth=1
 
-        #--#                                  color      , width   , arrow size
+        for j in eventVars[self.l1Jets] : self.drawEt(coords, j, self.l1JetsColor, defWidth, defArrowSize)
+        for j in eventVars[self.l2Jets] : self.drawEt(coords, j, self.l2JetsColor, defWidth, defArrowSize)
+        for j in eventVars[self.efJets] : self.drawEt(coords, j, self.efJetsColor, defWidth, defArrowSize)
+        for j in eventVars[self.offlineJets] : self.drawEt(coords, j, self.offlineJetsColor, defWidth, defArrowSize)
+
         #--if not eventVars["isRealData"] :
         #--    if self.doGenParticles :
         #--        self.drawGenParticles(eventVars, coords,r.kBlack  , defWidth, defArrowSize,       label = "all GEN particles")
@@ -961,6 +955,7 @@ class displayer(supy.steps.displayer) :
         pad.cd()
         
         legend = r.TLegend(0.0, 0.0, 1.0, 1.0)
+        legend.SetFillColor(0)
         for item in self.legendList :
             self.line.SetLineColor(item[0])
             someLine = self.line.DrawLine(0.0,0.0,0.0,0.0)
@@ -993,7 +988,7 @@ class displayer(supy.steps.displayer) :
             #--self.printJets(    eventVars, params = defaults, coords = {"x":x0, "y":yy-7*s}, jets = self.jets, nMax = 7)
 
             self.printTriggers(eventVars, params = defaults,
-                               coords = {"x":x0+0.3, "y":yy},
+                               coords = {"x":x0+0.35, "y":yy},
                                passedTriggers = 'PassedTriggers', pattern = r'.*5j55.*',
                                nMax=30)
             if self.doL1Jets :
@@ -1028,40 +1023,29 @@ class displayer(supy.steps.displayer) :
         return [pad]
 
     def display(self, eventVars) :
-        rhoPhiPadYSize = 0.50*self.canvas.GetAspectRatio()
-        rhoPhiPadXSize = 0.50
-        radius = 0.4
 
-        gg = self.drawEtaPhiPlot(eventVars, corners = {"x1":rhoPhiPadXSize - 0.18,
-                                                       "y1":rhoPhiPadYSize - 0.08*self.canvas.GetAspectRatio(),
-                                                       "x2":rhoPhiPadXSize + 0.12,
-                                                       "y2":rhoPhiPadYSize + 0.22*self.canvas.GetAspectRatio()})
+        rhoPhiPadYSize = 0.375*self.canvas.GetAspectRatio()
 
+        rhoPhiPadXSize = 0.375
+        etaPhiPadXSize = 0.50
+        
+        radius = 0.3
 
         g1 = self.drawRhoPhiPlot(eventVars,
                                  coords = {"scale":self.scale, "radius":radius, "x0":radius, "y0":radius+0.05},
                                  corners = {"x1":0.0, "y1":0.0, "x2":rhoPhiPadXSize, "y2":rhoPhiPadYSize},
                                  )
-#--        l = self.drawLegend(corners = {"x1":0.0, "y1":rhoPhiPadYSize, "x2":1.0-rhoPhiPadYSize, "y2":1.0})
-#--
-#--        r.gStyle.SetOptStat(110011)        
-#--        if self.doGenParticles or self.doEtaPhiPlot :
-#--            gg = self.drawEtaPhiPlot(eventVars, corners = {"x1":rhoPhiPadXSize - 0.18,
-#--                                                           "y1":rhoPhiPadYSize - 0.08*self.canvas.GetAspectRatio(),
-#--                                                           "x2":rhoPhiPadXSize + 0.12,
-#--                                                           "y2":rhoPhiPadYSize + 0.22*self.canvas.GetAspectRatio()})
-#--            
-#--        if self.doReco :
-#--            if self.ra1Mode :
-#--                g3 = self.drawAlphaPlot(eventVars, r.kBlack, showAlphaTMet = (self.showAlphaTMet and not self.prettyMode),
-#--                                        corners = {"x1":rhoPhiPadXSize - 0.08,
-#--                                                   "y1":0.0,
-#--                                                   "x2":rhoPhiPadXSize + 0.12,
-#--                                                   "y2":0.55})
-#--            #g4 = self.drawMhtLlPlot(eventVars, r.kBlack, corners = {"x1":0.63, "y1":0.63, "x2":0.95, "y2":0.95})
+        gg = self.drawEtaPhiPlot(eventVars, corners = {"x1":0.0,
+                                                       "y1":rhoPhiPadYSize-0.10*self.canvas.GetAspectRatio(),
+                                                       "x2":etaPhiPadXSize,
+                                                       "y2":1.0})
+
+
+        l = self.drawLegend(corners = {"x1":rhoPhiPadXSize-0.10, "y1":0.0, "x2":etaPhiPadXSize-0.01, "y2":rhoPhiPadYSize-0.1*self.canvas.GetAspectRatio()})
+
         
         t = self.printAllText(eventVars,
-                              corners = {"x1":rhoPhiPadXSize + 0.11,
+                              corners = {"x1":etaPhiPadXSize,
                                          "y1":0.0,
                                          "x2":1.0,
                                          "y2":1.0})
