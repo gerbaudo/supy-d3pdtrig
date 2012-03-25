@@ -20,6 +20,7 @@ class example_trig(supy.analysis) :
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
+            steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
             steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
@@ -33,7 +34,6 @@ class example_trig(supy.analysis) :
             supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             steps.trigger.jetPt(collection="RunNumber"),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
-            steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
             #supy.steps.histos.eta(var = "jet_P4", N = 20, low = -2., up = +2., indices = "jet_Indices"),
