@@ -14,12 +14,14 @@ except ImportError:
 MeV2GeV = 0.001
 class displayer(supy.steps.displayer) :
     
-    def __init__(self, doL1Jets = False, doEfJets = False, doOfflineJets = False,
-                 prettyMode = False,
+    def __init__(self,
+                 doL1Jets = False, doL2Jets = False,
+                 doEfJets = False, doOfflineJets = False,
+                 scale = 200.0, prettyMode = False,
                  printExtraText = True):
         self.moreName = "(see below)"
-        for item in ['doL1Jets','doEfJets', 'doOfflineJets',
-                     'prettyMode','printExtraText']:
+        for item in ['doL1Jets', 'doL2Jets', 'doEfJets', 'doOfflineJets',
+                     'scale', 'prettyMode','printExtraText']:
             setattr(self,item,eval(item))
 
         self.prettyReName = {
@@ -248,45 +250,66 @@ class displayer(supy.steps.displayer) :
         
     def printL1Jets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
-        l1Jets = eventVars[self.l1Jets]
-            
+        jets = eventVars[self.l1Jets]
+        jets = sorted([j for j in jets], key = lambda j:j.et8x8)
+
         self.printText(self.renamedDesc(self.l1Jets))
-        self.printText("   eta  phi et8x8")
-        self.printText("-----------------")
-        nJets = len(l1Jets)
-        for iJet,jet in enumerate(l1Jets) :
+        self.printText(" et8x8  eta  phi")
+        self.printText("----------------")
+        nJets = len(jets)
+        for iJet,jet in enumerate(reverse(jets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            self.printText("%4.1f %4.1f %5.0f"%(jet.eta, jet.phi, jet.et8x8))
+            self.printText("%5.1f %4.1f %4.1f"%(jet.et8x8*MeV2GeV, jet.eta, jet.phi))
+
+    def printL2Jets(self, eventVars, params, coords, nMax) :
+        self.prepareText(params, coords)
+        jets = eventVars[self.l2Jets]
+        jets = sorted([j for j in jets], key = lambda j:j.et())
+
+        self.printText(self.renamedDesc(self.l2Jets))
+        self.printText("Et   eta   phi nLeading   hecf   qual  EmF  Input  Output")
+        self.printText("---------------------------------------------------------")
+        nJets = len(jets)
+        for iJet,jet in enumerate(reverse(jets)) :
+            if nMax<=iJet :
+                self.printText("[%d more not listed]"%(nJets-nMax))
+                break
+            input, output, jCounter = jet.inputOutputJetCounter()
+            self.printText("%4.1f %4.1f %4.1f  %s %s"%\
+                           (jet.et()*MeV2GeV, jet.eta, jet.phi, input, output))
 
     def printEfJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         efJets = eventVars[self.efJets]
+        efJets = sorted([j for j in efJets], key = lambda j:j.et())
 
         self.printText(self.renamedDesc(self.efJets))
-        self.printText("pt      eta  phi ")
+        self.printText("Et      eta  phi ")
         self.printText("-----------------")
         nJets = len(efJets)
-        for iJet,jet in enumerate(efJets) :
+        for iJet,jet in enumerate(reverse(efJets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            self.printText("%4.1f %4.1f %4.1f"%(jet.pt*MeV2GeV, jet.eta, jet.phi))
+            self.printText("%4.1f %4.1f %4.1f"%(jet.et()*MeV2GeV, jet.eta, jet.phi))
     def printOfflineJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         jets = eventVars[self.offlineJets]
+        jets = sorted([j for j in jets], key = lambda j:j.et())
 
         self.printText(self.renamedDesc(self.offlineJets))
-        self.printText("pt      eta  phi Bad Ugly")
-        self.printText("-------------------------")
+        self.printText("Et      eta  phi B|U")
+        self.printText("--------------------")
         nJets = len(jets)
-        for iJet,jet in enumerate(jets) :
+        for iJet,jet in enumerate(reverse(jets)) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            self.printText("%4.1f   %4.1f %4.1f   %d    %d"%\
-                           (jet.pt*MeV2GeV, jet.eta, jet.phi, jet.isBadLoose, jet.isUgly))
+            self.printText("%4.1f   %4.1f %4.1f   %d"%\
+                           (jet.et()*MeV2GeV, jet.eta, jet.phi,
+                            jet.isBadLoose or jet.isUgly))
 
     def printTriggers(self, eventVars, params, coords,
                       passedTriggers = 'PassedTriggers', pattern = r'.*',
@@ -970,15 +993,17 @@ class displayer(supy.steps.displayer) :
             #--self.printJets(    eventVars, params = defaults, coords = {"x":x0, "y":yy-7*s}, jets = self.jets, nMax = 7)
 
             self.printTriggers(eventVars, params = defaults,
-                               coords = {"x":x0+0.5, "y":yy},
+                               coords = {"x":x0+0.3, "y":yy},
                                passedTriggers = 'PassedTriggers', pattern = r'.*5j55.*',
                                nMax=30)
             if self.doL1Jets :
-                self.printL1Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, nMax = 7)
+                self.printL1Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-8*s}, nMax = 6)
+            if self.doL2Jets :
+                self.printL2Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, nMax = 20)
             if self.doEfJets :
-                self.printEfJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-32*s}, nMax = 7)
+                self.printEfJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-46*s}, nMax = 7)
             if self.doOfflineJets :
-                self.printOfflineJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-46*s}, nMax = 7)
+                self.printOfflineJets(eventVars, params  = defaults, coords = {"x":x0+0.44,  "y":yy-46*s}, nMax = 7)
                 #self.printGenParticles(eventVars,params=defaults, coords = {"x":x0+0.40, "y":yy-18*s}, nMax = 7)
             #--if self.jetsOtherAlgo :
             #--    self.printJets(     eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, jets = self.jetsOtherAlgo, nMax = 7)
@@ -1013,10 +1038,10 @@ class displayer(supy.steps.displayer) :
                                                        "y2":rhoPhiPadYSize + 0.22*self.canvas.GetAspectRatio()})
 
 
-#--        g1 = self.drawRhoPhiPlot(eventVars,
-#--                                 coords = {"scale":self.scale, "radius":radius, "x0":radius, "y0":radius+0.05},
-#--                                 corners = {"x1":0.0, "y1":0.0, "x2":rhoPhiPadXSize, "y2":rhoPhiPadYSize},
-#--                                 )
+        g1 = self.drawRhoPhiPlot(eventVars,
+                                 coords = {"scale":self.scale, "radius":radius, "x0":radius, "y0":radius+0.05},
+                                 corners = {"x1":0.0, "y1":0.0, "x2":rhoPhiPadXSize, "y2":rhoPhiPadYSize},
+                                 )
 #--        l = self.drawLegend(corners = {"x1":0.0, "y1":rhoPhiPadYSize, "x2":1.0-rhoPhiPadYSize, "y2":1.0})
 #--
 #--        r.gStyle.SetOptStat(110011)        
