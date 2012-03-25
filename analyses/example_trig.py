@@ -22,7 +22,7 @@ class example_trig(supy.analysis) :
             steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
-            steps.displayer.displayer(doL1Jets=True, doEfJets = True, doOfflineJets=True),
+            steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
             #--steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
             #--supy.steps.filters.multiplicity("vx_Indices",min=1),
@@ -59,6 +59,7 @@ class example_trig(supy.analysis) :
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
+                              calculables.jet.L2Jets(),
                               calculables.jet.EfJets(),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
