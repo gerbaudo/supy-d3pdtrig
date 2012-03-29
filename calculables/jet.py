@@ -10,9 +10,9 @@ def l1jetAttributes() :
 def l1jetCollection() :
     return (("trig_L1_jet_", ""))
 def l2jetAttributes() :
-    return ["n", "E", "eta", "phi", "RoIWord", "ehad0", "eem0",
+    return ["E", "eta", "phi", "ehad0", "eem0",
             "nLeadingCells", "hecf", "jetQuality", "emf", "jetTimeCells",
-            "RoiWord", "InputType", "OutputType"]
+            "RoIWord", "InputType", "OutputType"]
 def l2jetCollection() :
     return ("trig_L2_jet_", "")
 def efJetAttributes() :
@@ -64,26 +64,52 @@ class L1Jets(supy.wrappedChain.calculable) :
 #___________________________________________________________
 # todo: subdivide the L2 jets in categories (cone, L1.5, L2PS)
 class IndicesL2(supy.wrappedChain.calculable) :
-    def __init__(self, collection = l2jetCollection(), minEt = None):
+    def __init__(self, collection = l2jetCollection(), minEt = None, input = None, output = None):
         self.minEt = minEt
+        self.input = input
+        self.output = output
         self.fixes = collection
-        self.stash(l2jetAttributes())
+        self.stash(l2jetAttributes()+["n"])
         self.moreName = ""
-        if minEt!=None: self.moreName += "et>%.1f"%minEt
+        if minEt!=None : self.moreName += "et>%.1f"%minEt
+        if input!=None : self.moreName += "%s"%input
+        if output!=None : self.moreName += "%s"%output
     @property
     def name(self):
-        return 'IndicesL2Jets'
+        return 'IndicesL2Jets%s%s'%(self.input if self.input else '',
+                                    self.output if self.output else '')
     def update(self, _) :
         energies = self.source[self.E]
         etas = self.source[self.eta]
-        self.value = []
+        inputs = self.source[self.InputType]
+        outputs = self.source[self.OutputType]
+        words = self.source[self.RoIWord]
+
+        indices = []
         for i in range(self.source[self.n]):
-            if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt: continue
-            self.value.append(i)
+            if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt : continue
+            if self.input and inputs.at(i) != self.input : continue
+            if self.output and outputs.at(i) != self.output : continue
+            indices.append(i)
+
+        self.value = self.filtered(indices, words)
+
+    def filtered(self, inList, inWords) :
+        out = []
+        usedWords = []
+        for iJet in inList :
+            word = inWords[iJet]
+            if word in usedWords : continue
+            usedWords.append(word)
+            out.append(iJet)
+        return out
+        
+# should I define a base class jet with eta,phi,et?
+
 class L2Jet(object) :
-    def __init__(self, E=0., eta=0., phi=0., ehad0=0., eem0=0., nLeadingCells=0.,
-                 hecf=0., jetQuality=0., emf=0., jetTimeCells=0., roiWord=0,
-                 inputType='', outputType=''):
+    def __init__(self, E=0., eta=0., phi=0., ehad0=0., eem0=0.,
+                 nLeadingCells=0., hecf=0., jetQuality=0., emf=0., jetTimeCells=0.,
+                 RoIWord =0, InputType='', OutputType=''):
         self.E = E
         self.eta = eta
         self.phi = phi
@@ -94,21 +120,16 @@ class L2Jet(object) :
         self.jetQuality = jetQuality
         self.emf = emf
         self.jetTimeCells = jetTimeCells
-        self.roiWord = roiWord
-        self.inputType = inputType
-        self.outputType = outputType
+        self.RoIWord = RoIWord
+        self.InputType = InputType
+        self.OutputType = OutputType
     def et(self) :
         return self.E/cosh(self.eta)
     def inputOutputJetCounter(self) :
         return inputOutputJetCounter(self.roiWord)
 
-        
-class L2Jets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = l2jetCollection(), minimumEt=10.*GeV,
-                 inputType='', outputType='', label=''):
-        self.minimumEt = minimumEt
-        self.inputType = inputType
-        self.outputType = outputType
+class L2JetsTake1(supy.wrappedChain.calculable) :
+    def __init__(self, collection = l2jetCollection(), label=''):
         self.label = label
         self.fixes = collection
         self.stash(l2jetAttributes())
@@ -122,7 +143,7 @@ class L2Jets(supy.wrappedChain.calculable) :
                             #jetQuality=jetQuality,
                             #emf=emf,
                             #jetTimeCells,
-                            roiWord=roiWord,inputType=it,outputType=ot)
+                            RoIWord=roiWord, InputType=it, OutputType=ot)
                       for E, eta, phi, ehad0, eem0, roiWord, it, ot in
                       zip(self.source[self.E], self.source[self.eta],
                           self.source[self.phi], self.source[self.ehad0],
@@ -132,10 +153,39 @@ class L2Jets(supy.wrappedChain.calculable) :
                           #self.source[self.hecf], self.source[self.jetTimeCells],
                           #self.source[self.emf],
                           self.source[self.RoIWord],
-                          self.source[self.InputType], self.source[self.OutputType])
-                      if E/cosh(eta)>self.minimumEt and \
-                      (not self.inputType or self.inputType==it) and \
-                      (not self.outputType or self.outputType==ot)]
+                          self.source[self.InputType], self.source[self.OutputType])]
+        print sorted([x.E for x in self.value])
+
+class L2JetExp(object) :
+    def __init__(self, **kargs) :
+        for k,v in kargs.iteritems() :
+            setattr(self,k,v)
+    def et(self) :
+        return self.E/cosh(self.eta)
+
+class L2Jets(supy.wrappedChain.calculable) :
+    def __init__(self, collection = l2jetCollection(), indices=''):
+        self.indices = indices
+        self.fixes = collection
+        self.stash(l2jetAttributes())
+    @property
+    def name(self):
+        return self.indices.replace("Indices","")
+    def update(self, _) :
+        self.value = []
+
+        l2jetAttributeArrays = [self.source[getattr(self,x)] for x in l2jetAttributes()]
+        jetIndices = self.source[self.indices]
+        #print len(jetIndices),jetIndices
+        for iJet in jetIndices :
+            keys = l2jetAttributes()
+            values = [x[iJet] for x in l2jetAttributeArrays]
+            #kargs = {"E":3.4, "eta":2.5}
+            kargs = dict(zip(keys, values))
+            self.value.append(L2JetExp(**kargs))
+
+        #lst = sorted([x.E for x in self.value])
+        #print len(lst),lst
 #___________________________________________________________
 class IndicesEf(supy.wrappedChain.calculable) :
     def __init__(self, collection = efJetCollection(), minEt = None):
