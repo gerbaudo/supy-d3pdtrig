@@ -61,10 +61,17 @@ class example_trig(supy.analysis) :
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
+                              calculables.jet.IndicesL2(input='NON_L15', output='L2CONE'),# regular L2
+                              calculables.jet.IndicesL2(input='NONE', output='A4TT'),     # L1.5 EM
+                              calculables.jet.IndicesL2(input='NONE', output='A4TT_JES'), # L1.5 HAD JES
+                              calculables.jet.IndicesL2(input='NONE', output='A4CC_JES'), # A4CC HAD JES
+                              calculables.jet.L2Jets(indices="IndicesL2JetsNON_L15L2CONE"),
+                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
+                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT_JES"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4CC_JES"),
-                              calculables.jet.IndicesL2(input='NONE', output='A4CC_JES'),
                               #calculables.jet.L2Jets(inputType='NONE', outputType='A4TT_JES', label='A4TT'),
-                              calculables.jet.EfJets(),
+                              calculables.jet.IndicesEf(calibTag='AntiKt4_topo_calib_EMJES'),
+                              calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
                               calculables.jet.IndicesEf(collection=("trig_EF_jet_emscale_", ""), minEt=10.*GeV),

@@ -18,7 +18,7 @@ class displayer(supy.steps.displayer) :
     def __init__(self,
                  doL1Jets = False, doL2Jets = False,
                  doEfJets = False, doOfflineJets = False,
-                 scale = 100.0, prettyMode = False,
+                 scale = 100.0, prettyMode = True,
                  printExtraText = True):
         self.moreName = "(see below)"
         for item in ['doL1Jets', 'doL2Jets', 'doEfJets', 'doOfflineJets',
@@ -28,11 +28,17 @@ class displayer(supy.steps.displayer) :
         self.prettyReName = {
             'trig_L1_jet_' : 'L1 jets',
             'trig_EF_jet_emscale_' : 'EF jets (EM)',
+            'L2JetsNONEA4CC_JES' : 'L2 A4CC (HAD)',
+            'L2JetsNONEA4TT' : 'L1.5 A4TT (EM)',
+            'L2JetsNON_L15L2CONE' : 'L2 CONE',
+            'EfJetsAntiKt4_topo_calib_EMJES' : 'EF A4TC (EMJES)'
             #--"clean jets (xcak5JetPat)": "jets (AK5 Calo)",
             #--"clean jets (xcak5JetPFPat)": "jets (AK5 PF)",
             }
         self.l1Jets = 'L1Jets'
         self.l2Jets = 'L2JetsNONEA4CC_JES'
+        self.l15Jets = 'L2JetsNONEA4TT'
+        self.l2cJets = 'L2JetsNON_L15L2CONE'
         self.efJets = 'EfJetsAntiKt4_topo_calib_EMJES'
         self.offlineJets = 'OfflineJets'
 
@@ -262,8 +268,8 @@ class displayer(supy.steps.displayer) :
         jets = sorted([j for j in jets], key = lambda j:j.et8x8)
 
         self.printText(self.renamedDesc(self.l1Jets))
-        self.printText(" et8x8  eta  phi")
-        self.printText("----------------")
+        self.printText("Et8x8  eta  phi")
+        self.printText("---------------")
         nJets = len(jets)
         for iJet,jet in enumerate(reversed(jets)) :
             if nMax<=iJet :
@@ -271,23 +277,23 @@ class displayer(supy.steps.displayer) :
                 break
             self.printText("%5.1f %4.1f %4.1f"%(jet.et8x8*MeV2GeV, jet.eta, jet.phi))
 
-    def printL2Jets(self, eventVars, params, coords, nMax) :
+    def printL2Jets(self, eventVars, collection, params, coords, nMax) :
         self.prepareText(params, coords)
-        jets = eventVars[self.l2Jets]
-        jets = [j for j in jets if j.InputType=='NONE' and j.OutputType=='A4CC_JES']
+        jets = eventVars[collection]
+        #jets = [j for j in jets if j.InputType=='NONE' and j.OutputType=='A4CC_JES']
         jets = sorted([j for j in jets], key = lambda j:j.et(), reverse = True)
 
-        self.printText(self.renamedDesc(self.l2Jets))
-        self.printText("Et   eta   phi nLeading   hecf   qual  EmF  Input  Output")
-        self.printText("---------------------------------------------------------")
+        self.printText(self.renamedDesc(collection))
+        self.printText("Et     eta   phi")
+        self.printText("----------------")
         nJets = len(jets)
         for iJet,jet in enumerate(jets) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            self.printText("%5.1f %4.1f %4.1f  %s %s"%\
-                           (jet.et()*MeV2GeV, jet.eta, jet.phi,
-                            jet.InputType, jet.OutputType))
+            self.printText("%5.1f %4.1f %4.1f"%\
+                           (jet.et()*MeV2GeV, jet.eta, jet.phi))
+                            #jet.InputType, jet.OutputType))
 
     def printEfJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
@@ -590,19 +596,19 @@ class displayer(supy.steps.displayer) :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius)
 
     def drawL2Jets(self, eventVars, color, lineWidth, circleRadius) :
-        self.legendFunc(color, name = "L2Jet", desc = "L2 jets (%s)"%self.l2Jets)
+        self.legendFunc(color, name = "L2Jet", desc = "L2 jets (%s)"%self.renamedDesc(self.l2Jets))
         jets = eventVars[self.l2Jets]
         for jet in jets :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius)
 
     def drawEfJets(self, eventVars, color, lineWidth, circleRadius) :
-        self.legendFunc(color, name = "EfJet", desc = "EF jets (%s)"%self.efJets)
+        self.legendFunc(color, name = "EfJet", desc = "EF jets (%s)"%self.renamedDesc(self.efJets))
         jets = eventVars[self.efJets]
         for jet in jets :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius)
 
     def drawOfflineJets(self, eventVars, color, lineWidth, circleRadius) :
-        self.legendFunc(color, name = "OfflineJet", desc = "Offline jets (%s)"%self.efJets)
+        self.legendFunc(color, name = "OfflineJet", desc = "Offline jets (%s)"%self.renamedDesc(self.efJets))
         jets = eventVars[self.offlineJets]
         for jet in jets :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius, lineStyle=2)
@@ -996,7 +1002,9 @@ class displayer(supy.steps.displayer) :
             if self.doL1Jets :
                 self.printL1Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-8*s}, nMax = 6)
             if self.doL2Jets :
-                self.printL2Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, nMax = 20)
+                self.printL2Jets(  eventVars, collection = self.l2Jets, params = defaults, coords = {"x":x0,      "y":yy-18*s}, nMax = 20)
+                self.printL2Jets(  eventVars, collection = self.l15Jets, params = defaults, coords = {"x":x0+0.35,"y":yy-18*s}, nMax = 20)
+                self.printL2Jets(  eventVars, collection = self.l2cJets, params = defaults, coords = {"x":x0+0.70,"y":yy-18*s}, nMax = 20)
             if self.doEfJets :
                 self.printEfJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-46*s}, nMax = 7)
             if self.doOfflineJets :
