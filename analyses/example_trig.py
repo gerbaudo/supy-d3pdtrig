@@ -60,6 +60,7 @@ class example_trig(supy.analysis) :
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
                               calculables.jet.L2Jets(),
+                              #calculables.jet.L2Jets(inputType='NONE', outputType='A4TT_JES', label='A4TT'),
                               calculables.jet.EfJets(),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
@@ -80,7 +81,8 @@ class example_trig(supy.analysis) :
 # eos ls /eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3408_r3410_p661/data11_7TeV.00191628.physics_EnhancedBias.merge.NTUP_TRIG.r3408_r3410_p661_tid742401_00
 # (these are the suspicious eventd from Brian's email)
         exampleDict.add("Pythia_ttbar_bWincbHminus",
-                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/NTUP*.root*", isDirectory = False)',
+                        #'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/NTUP*.root*", isDirectory = False)',
+                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/*.root*", isDirectory = False)',
                         #'[""]',
                         lumi = 1.0e+3 ) #/pb
         return [exampleDict]

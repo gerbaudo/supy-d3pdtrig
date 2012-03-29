@@ -274,19 +274,20 @@ class displayer(supy.steps.displayer) :
     def printL2Jets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         jets = eventVars[self.l2Jets]
-        jets = sorted([j for j in jets], key = lambda j:j.et())
+        jets = [j for j in jets if j.inputType=='NONE' and j.outputType=='A4CC_JES']
+        jets = sorted([j for j in jets], key = lambda j:j.et(), reverse = True)
 
         self.printText(self.renamedDesc(self.l2Jets))
         self.printText("Et   eta   phi nLeading   hecf   qual  EmF  Input  Output")
         self.printText("---------------------------------------------------------")
         nJets = len(jets)
-        for iJet,jet in enumerate(reversed(jets)) :
+        for iJet,jet in enumerate(jets) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            input, output, jCounter = jet.inputOutputJetCounter()
             self.printText("%5.1f %4.1f %4.1f  %s %s"%\
-                           (jet.et()*MeV2GeV, jet.eta, jet.phi, input, output))
+                           (jet.et()*MeV2GeV, jet.eta, jet.phi,
+                            jet.inputType, jet.outputType))
 
     def printEfJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
