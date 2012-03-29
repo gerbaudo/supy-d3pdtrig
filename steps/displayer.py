@@ -32,7 +32,7 @@ class displayer(supy.steps.displayer) :
             #--"clean jets (xcak5JetPFPat)": "jets (AK5 PF)",
             }
         self.l1Jets = 'L1Jets'
-        self.l2Jets = 'L2Jets'
+        self.l2Jets = 'L2JetsNONEA4CC_JES'
         self.efJets = 'EfJets'
         self.offlineJets = 'OfflineJets'
 
@@ -274,7 +274,7 @@ class displayer(supy.steps.displayer) :
     def printL2Jets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         jets = eventVars[self.l2Jets]
-        jets = [j for j in jets if j.inputType=='NONE' and j.outputType=='A4CC_JES']
+        jets = [j for j in jets if j.InputType=='NONE' and j.OutputType=='A4CC_JES']
         jets = sorted([j for j in jets], key = lambda j:j.et(), reverse = True)
 
         self.printText(self.renamedDesc(self.l2Jets))
@@ -287,7 +287,7 @@ class displayer(supy.steps.displayer) :
                 break
             self.printText("%5.1f %4.1f %4.1f  %s %s"%\
                            (jet.et()*MeV2GeV, jet.eta, jet.phi,
-                            jet.inputType, jet.outputType))
+                            jet.InputType, jet.OutputType))
 
     def printEfJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
