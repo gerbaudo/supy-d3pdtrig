@@ -1,3 +1,4 @@
+
 import supy
 from math import cosh
 from T2L1_RoIParser import inputOutputJetCounter
@@ -11,13 +12,13 @@ def l1jetCollection() :
 def l2jetAttributes() :
     return ["n", "E", "eta", "phi", "RoIWord", "ehad0", "eem0",
             "nLeadingCells", "hecf", "jetQuality", "emf", "jetTimeCells",
-            "RoiWord"]
+            "RoiWord", "InputType", "OutputType"]
 def l2jetCollection() :
     return ("trig_L2_jet_", "")
 def efJetAttributes() :
     return ["E", "pt", "m", "eta", "phi", "calibtags",]
 def efJetCollection() :
-    return ("trig_EF_jet_emscale_", "")
+    return ("trig_EF_jet_", "")
 def offlineJetAttributes() :
     return ["n", "E", "pt", "m", "eta", "phi",
             "isUgly", "isBadLoose"]
@@ -81,7 +82,8 @@ class IndicesL2(supy.wrappedChain.calculable) :
             self.value.append(i)
 class L2Jet(object) :
     def __init__(self, E=0., eta=0., phi=0., ehad0=0., eem0=0., nLeadingCells=0.,
-                 hecf=0., jetQuality=0., emf=0., jetTimeCells=0., roiWord=0):
+                 hecf=0., jetQuality=0., emf=0., jetTimeCells=0., roiWord=0,
+                 inputType='', outputType=''):
         self.E = E
         self.eta = eta
         self.phi = phi
@@ -93,6 +95,8 @@ class L2Jet(object) :
         self.emf = emf
         self.jetTimeCells = jetTimeCells
         self.roiWord = roiWord
+        self.inputType = inputType
+        self.outputType = outputType
     def et(self) :
         return self.E/cosh(self.eta)
     def inputOutputJetCounter(self) :
@@ -100,13 +104,17 @@ class L2Jet(object) :
 
         
 class L2Jets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = l2jetCollection(), minimumEt=10.*GeV):
+    def __init__(self, collection = l2jetCollection(), minimumEt=10.*GeV,
+                 inputType='', outputType='', label=''):
+        self.minimumEt = minimumEt
+        self.inputType = inputType
+        self.outputType = outputType
+        self.label = label
         self.fixes = collection
         self.stash(l2jetAttributes())
-        self.minimumEt = minimumEt
     @property
     def name(self):
-        return 'L2Jets'
+        return 'L2Jets%s'%self.label
     def update(self, _) :
         self.value = [L2Jet(E=E, eta=eta, phi=phi, ehad0=ehad0, eem0=eem0,
                             # nLeadingCells,
@@ -114,8 +122,8 @@ class L2Jets(supy.wrappedChain.calculable) :
                             #jetQuality=jetQuality,
                             #emf=emf,
                             #jetTimeCells,
-                            roiWord=roiWord)
-                      for E, eta, phi, ehad0, eem0, roiWord in
+                            roiWord=roiWord,inputType=it,outputType=ot)
+                      for E, eta, phi, ehad0, eem0, roiWord, it, ot in
                       zip(self.source[self.E], self.source[self.eta],
                           self.source[self.phi], self.source[self.ehad0],
                           self.source[self.eem0],
@@ -123,9 +131,11 @@ class L2Jets(supy.wrappedChain.calculable) :
                           #self.source[self.nLeadingCells],
                           #self.source[self.hecf], self.source[self.jetTimeCells],
                           #self.source[self.emf],
-                          self.source[self.RoIWord])
-                      if E/cosh(eta)>self.minimumEt]
-
+                          self.source[self.RoIWord],
+                          self.source[self.InputType], self.source[self.OutputType])
+                      if E/cosh(eta)>self.minimumEt and \
+                      (not self.inputType or self.inputType==it) and \
+                      (not self.outputType or self.outputType==ot)]
 #___________________________________________________________
 class IndicesEf(supy.wrappedChain.calculable) :
     def __init__(self, collection = efJetCollection(), minEt = None):
@@ -157,20 +167,25 @@ class EfJet(object) :
         return self.E/cosh(self.eta)
         
 class EfJets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = efJetCollection(), minimumEt=10.*GeV):
+    def __init__(self, collection = efJetCollection(), minimumEt=10.*GeV,
+                 calibTag='', label=''):
+        self.calibTag = calibTag
+        self.label = label
+        self.minimumEt = minimumEt
         self.fixes = collection
         self.stash(efJetAttributes())
-        self.minimumEt = minimumEt
     @property
     def name(self):
-        return 'EfJets'
+        return 'EfJets%s'%self.label
     def update(self, _) :
         self.value = [EfJet(E, pt, m, eta, phi)
-                      for E, pt, m, eta, phi in
+                      for E, pt, m, eta, phi, ct in
                       zip(self.source[self.E], self.source[self.pt],
                           self.source[self.m],
-                          self.source[self.eta], self.source[self.phi],)
-                      if E/cosh(eta)>self.minimumEt]
+                          self.source[self.eta], self.source[self.phi],
+                          self.source[self.calibtags])
+                      if E/cosh(eta)>self.minimumEt and \
+                      (not self.calibTag or self.calibTag==ct)]
     def et(self) :
         return self.E/cosh(self.eta)
 
