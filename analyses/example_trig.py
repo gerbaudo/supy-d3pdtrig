@@ -19,6 +19,8 @@ class example_trig(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
+            supy.steps.histos.multiplicity(var='IndicesL2JetsNONEA4CC_JES'),
+            #supy.steps.printer.printstuff(["IndicesL2JetsNONEA4CC_JES",]),
             steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
             steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
@@ -59,7 +61,8 @@ class example_trig(supy.analysis) :
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
-                              calculables.jet.L2Jets(),
+                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4CC_JES"),
+                              calculables.jet.IndicesL2(input='NONE', output='A4CC_JES'),
                               #calculables.jet.L2Jets(inputType='NONE', outputType='A4TT_JES', label='A4TT'),
                               calculables.jet.EfJets(),
                               calculables.jet.OfflineJets(),
