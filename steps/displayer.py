@@ -18,7 +18,7 @@ class displayer(supy.steps.displayer) :
     def __init__(self,
                  doL1Jets = False, doL2Jets = False,
                  doEfJets = False, doOfflineJets = False,
-                 scale = 50.0, prettyMode = False,
+                 scale = 100.0, prettyMode = False,
                  printExtraText = True):
         self.moreName = "(see below)"
         for item in ['doL1Jets', 'doL2Jets', 'doEfJets', 'doOfflineJets',
@@ -33,7 +33,7 @@ class displayer(supy.steps.displayer) :
             }
         self.l1Jets = 'L1Jets'
         self.l2Jets = 'L2JetsNONEA4CC_JES'
-        self.efJets = 'EfJets'
+        self.efJets = 'EfJetsAntiKt4_topo_calib_EMJES'
         self.offlineJets = 'OfflineJets'
 
         self.l1JetsColor = r.kRed
@@ -507,6 +507,7 @@ class displayer(supy.steps.displayer) :
         self.ellipse.SetLineWidth(1)
         self.ellipse.SetLineStyle(1)
         self.ellipse.DrawEllipse(coords["x0"], coords["y0"], coords["radius"], coords["radius"], 0.0, 360.0, 0.0, "")
+        self.ellipse.DrawEllipse(coords["x0"], coords["y0"], 0.5*coords["radius"], 0.5*coords["radius"], 0.0, 360.0, 0.0, "")
 
         self.line.SetLineColor(color)
         self.line.DrawLine(coords["x0"]-coords["radius"], coords["y0"]                 , coords["x0"]+coords["radius"], coords["y0"]                 )
