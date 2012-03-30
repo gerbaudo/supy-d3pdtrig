@@ -75,6 +75,8 @@ class example_trig(supy.analysis) :
                               calculables.jet.IndicesEf(minEt=minEt, calibTag='AntiKt4_topo_calib_EMJES'),
                               calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
 
+                              calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
+                                                          otherColls=['L2JetsNONEA4CC_JES','L2JetsNONEA4TT']),
                               calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
