@@ -235,6 +235,4 @@ class OfflineJets(supy.wrappedChain.calculable) :
                           self.source[self.eta], self.source[self.phi],
                           self.source[self.isUgly], self.source[self.isBadLoose])
                       if E/cosh(eta)>self.minimumEt]
-    def et(self) :
-        return self.E/cosh(self.eta)
 
