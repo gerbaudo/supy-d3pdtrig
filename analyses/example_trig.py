@@ -9,7 +9,7 @@ TeV=1.0e+3*GeV
 class example_trig(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        return {'minJetPt' : 10.0,
+        return {'minJetEt' : 10.0*GeV,
                 'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[5-9]+j.*(em|had)$',
@@ -19,7 +19,7 @@ class example_trig(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
-            supy.steps.histos.multiplicity(var='IndicesL2JetsNONEA4CC_JES'),
+            supy.steps.histos.multiplicity(var='IndicesL2JetsNONEA4CC_JES', max=20),
             #supy.steps.printer.printstuff(["IndicesL2JetsNONEA4CC_JES",]),
             steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
@@ -33,7 +33,7 @@ class example_trig(supy.analysis) :
             #--supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             #--supy.steps.histos.multiplicity(var = "vx_Indices", max = 20),
             #--steps.filters.goodRun().onlyData(),
-            supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
+            #supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             steps.trigger.jetPt(collection="RunNumber"),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
@@ -47,6 +47,7 @@ class example_trig(supy.analysis) :
     
     def listOfCalculables(self,config) :
         pars = self.parameters()
+        minEt = pars['minJetEt']
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += [calculables.TrigD3PD.Tdt(),]
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),
@@ -61,21 +62,21 @@ class example_trig(supy.analysis) :
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
-                              calculables.jet.IndicesL2(input='NON_L15', output='L2CONE'),# regular L2
-                              calculables.jet.IndicesL2(input='NONE', output='A4TT'),     # L1.5 EM
-                              calculables.jet.IndicesL2(input='NONE', output='A4TT_JES'), # L1.5 HAD JES
-                              calculables.jet.IndicesL2(input='NONE', output='A4CC_JES'), # A4CC HAD JES
+
+                              calculables.jet.IndicesL2(minEt=minEt, input='NON_L15', output='L2CONE'),# regular L2
+                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4TT'),     # L1.5 EM
+                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4TT_JES'), # L1.5 HAD JES
+                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4CC_JES'), # A4CC HAD JES
                               calculables.jet.L2Jets(indices="IndicesL2JetsNON_L15L2CONE"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT_JES"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4CC_JES"),
-                              #calculables.jet.L2Jets(inputType='NONE', outputType='A4TT_JES', label='A4TT'),
-                              calculables.jet.IndicesEf(calibTag='AntiKt4_topo_calib_EMJES'),
+
+                              calculables.jet.IndicesEf(minEt=minEt, calibTag='AntiKt4_topo_calib_EMJES'),
                               calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
+
+                              calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
-                              calculables.jet.IndicesL2(collection=("trig_L2_jet_", ""), minEt=10.*GeV),
-                              calculables.jet.IndicesEf(collection=("trig_EF_jet_emscale_", ""), minEt=10.*GeV),
-                              calculables.jet.IndicesOffline(collection=("jet_AntiKt4TopoEMJets_", "")),
                               calculables.jet.IndicesOfflineBad(),
                               ]
         return listOfCalculables

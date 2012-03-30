@@ -20,8 +20,7 @@ def efJetAttributes() :
 def efJetCollection() :
     return ("trig_EF_jet_", "")
 def offlineJetAttributes() :
-    return ["n", "E", "pt", "m", "eta", "phi",
-            "isUgly", "isBadLoose"]
+    return ["E", "pt", "m", "eta", "phi", "isUgly", "isBadLoose"]
 def offlineJetCollection() :
     return ("jet_AntiKt4TopoEMJets_", "")
 #___________________________________________________________
@@ -180,7 +179,7 @@ class IndicesOffline(supy.wrappedChain.calculable) :
     def __init__(self, collection = offlineJetCollection(), minEt = None):
         self.minEt = minEt
         self.fixes = collection
-        self.stash(offlineJetAttributes())
+        self.stash(offlineJetAttributes()+['n'])
         self.moreName = ""
         if minEt!=None: self.moreName += "et>%.1f"%minEt
     @property
@@ -206,33 +205,27 @@ class IndicesOfflineBad(supy.wrappedChain.calculable) :
     @property
     def name(self):
         return "IndicesOfflineBadJets"
-#___________________________________________________________
-class OfflineJet(object) :
-    def __init__(self, E=0., pt=0., m=0., eta=0., phi=0., isUgly=0., isBadLoose=0.) :
-        self.E = E
-        self.pt = pt
-        self.m = m
-        self.eta = eta
-        self.phi = phi
-        self.isUgly = isUgly
-        self.isBadLoose = isBadLoose
-    def et(self) :
-        return self.E/cosh(self.eta)
-#___________________________________________________________
+
+class OfflineJet(HltJet) :
+    def __init__(self, **kargs) :
+        super(OfflineJet, self).__init__(**kargs)
+
 class OfflineJets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), minimumEt=10.*GeV):
+    def __init__(self, collection = offlineJetCollection(), indices = 'IndicesOfflineJets') :
+        self.indices = indices
         self.fixes = collection
         self.stash(offlineJetAttributes())
-        self.minimumEt = minimumEt
     @property
     def name(self):
-        return 'OfflineJets'
+        return self.indices.replace("Indices","")
     def update(self, _) :
-        self.value = [OfflineJet(E, pt, m, eta, phi, isUgly, isBadLoose)
-                      for E, pt, m, eta, phi, isUgly, isBadLoose in
-                      zip(self.source[self.E], self.source[self.pt],
-                          self.source[self.m],
-                          self.source[self.eta], self.source[self.phi],
-                          self.source[self.isUgly], self.source[self.isBadLoose])
-                      if E/cosh(eta)>self.minimumEt]
+        self.value = []
+        ofJetAttributeArrays = [self.source[getattr(self,x)] for x in offlineJetAttributes()]
+        jetIndices = self.source[self.indices]
+        for iJet in jetIndices :
+            keys = offlineJetAttributes()
+            values = [x[iJet] for x in ofJetAttributeArrays]
+            kargs = dict(zip(keys, values))
+            self.value.append(OfflineJet(**kargs))
 
+#___________________________________________________________
