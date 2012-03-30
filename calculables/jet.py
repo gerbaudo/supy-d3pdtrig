@@ -2,6 +2,7 @@
 import supy
 from math import cosh
 from T2L1_RoIParser import inputOutputJetCounter
+import ROOT as r
 
 GeV = 1000.
 
@@ -229,3 +230,32 @@ class OfflineJets(supy.wrappedChain.calculable) :
             self.value.append(OfflineJet(**kargs))
 
 #___________________________________________________________
+
+class MatchedJets(supy.wrappedChain.calculable) :
+    "Loop over coll1 and find the matches otherColls; requires et(), eta, phi."
+    def __init__(self, coll1 = None, otherColls = [], maxDr = 0.4) :
+        self.coll1 = coll1
+        self.otherColls = otherColls
+        self.maxDr = maxDr
+    @property
+    def name(self):
+        return "%sMatch%s"%(self.coll1, ''.join(self.otherColls))
+    def update(self, _) :
+        self.value = []
+        jets1 = sorted([j for j in self.source[self.coll1]], key = lambda j:j.et(), reverse = True)
+        otherJets = [sorted([j for j in self.source[coll]], key = lambda j:j.et(), reverse = True)
+                     for coll in self.otherColls]
+        # using here LorentzV(pt,eta,phi,m) as (et,eta,phi,0.), but we only care about eta,phi.
+        for j1 in jets1:
+            j1lv = supy.utils.root.LorentzV(j1.et(), j1.eta, j1.phi, 0.)
+            jetWithMatches = [j1]
+            for jets2 in otherJets:
+                matchedJet = None
+                for j2 in jets2:
+                    j2lv = supy.utils.root.LorentzV(j2.et(), j2.eta, j2.phi, 0.)
+                    if r.Math.VectorUtil.DeltaR(j1lv, j2lv) < self.maxDr :
+                        matchedJet = j2
+                    #jets2.pop(jets2.index(jet2)) # avoid double match and speed up
+                        break
+                jetWithMatches.append(matchedJet)
+            self.value.append(tuple(jetWithMatches))
