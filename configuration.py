@@ -15,6 +15,7 @@ def useCachedFileLists() :
 
 def cppFiles() :
     return ["../RootCore/scripts/load_packages.C",
+            "cpp/linkdef.cxx",
             ]
 
 def haddErrorsToIgnore() :
