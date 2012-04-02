@@ -23,9 +23,8 @@ class example_trig(supy.analysis) :
             #supy.steps.printer.printstuff(["IndicesL2JetsNONEA4CC_JES",]),
             steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
-            steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
+            #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
+            #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
             #--steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
             #--supy.steps.filters.multiplicity("vx_Indices",min=1),
@@ -34,7 +33,14 @@ class example_trig(supy.analysis) :
             #--supy.steps.histos.multiplicity(var = "vx_Indices", max = 20),
             #--steps.filters.goodRun().onlyData(),
             #supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
-            steps.trigger.jetPt(collection="RunNumber"),
+            #steps.trigger.jetPt(collection="RunNumber"),
+            steps.histos.deltaEta(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4CC_JES',
+                                  title='#Delta #eta ; #Delta #eta matched (EfJetsAntiKt4, A4CC); jets'),
+            steps.histos.deltaEta(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                  title='#Delta #eta ; #Delta #eta matched (EfJetsAntiKt4, L2CONE); jets'),
+            steps.histos.deltaEta(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
+                                  title='#Delta #eta ; #Delta #eta matched (EfJetsAntiKt4, A4TT); jets'),
+
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
@@ -77,6 +83,13 @@ class example_trig(supy.analysis) :
 
                               calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
                                                           otherColls=['L2JetsNONEA4CC_JES','L2JetsNONEA4TT']),
+
+                              calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
+                                                          otherColls=['L2JetsNONEA4CC_JES']),
+                              calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
+                                                          otherColls=['L2JetsNON_L15L2CONE']),
+                              calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
+                                                          otherColls=['L2JetsNONEA4TT']),
                               calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
@@ -95,7 +108,8 @@ class example_trig(supy.analysis) :
 # (these are the suspicious eventd from Brian's email)
         exampleDict.add("Pythia_ttbar_bWincbHminus",
                         #'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/NTUP*.root*", isDirectory = False)',
-                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/*.root*", isDirectory = False)',
+                        #'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/*.root*", isDirectory = False)',
+                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/r3466_r3467_p661/*.root*", isDirectory = False)',
                         #'[""]',
                         lumi = 1.0e+3 ) #/pb
         return [exampleDict]
