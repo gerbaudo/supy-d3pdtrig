@@ -6,7 +6,7 @@ import calculables,steps,samples, ROOT as r
 GeV=1.0e+3
 TeV=1.0e+3*GeV
 
-class example_trig(supy.analysis) :
+class display_L2FSPS(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetEt' : 10.0*GeV,
