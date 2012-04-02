@@ -1,7 +1,8 @@
-import os,collections,copy,ROOT as r
+import os,re,collections,copy,ROOT as r
 from supy import utils
 import supy
 import configuration
+from math import sin, cos
 #####################################
 pdgLookupExists = False
 try:
@@ -10,59 +11,79 @@ try:
 except ImportError:
     pass
 #####################################
+
+MeV2GeV = 0.001
 class displayer(supy.steps.displayer) :
     
-    def __init__(self, jets = None, met = None, muons = None, electrons = None, photons = None, taus = None,
-                 recHits = None, recHitPtThreshold = -100.0, scale = 200.0, etRatherThanPt = False, doGenParticles = False, doGenJets = False,
-                 doEtaPhiPlot = True, deltaPhiStarExtraName = "", deltaPhiStarCut = None, deltaPhiStarDR = None, mhtOverMetName = "",
-                 showAlphaTMet = True, jetsOtherAlgo = None, metOtherAlgo = None, printExtraText = True, j2Factor = None,
-                 ra1Mode = True, ra1CutBits = True, prettyMode = False, tipToTail = False, triggersToPrint = [],
-                 flagsToPrint = ["logErrorTooManyClusters","logErrorTooManySeeds",
-                                 #"beamHaloCSCLooseHaloId","beamHaloCSCTightHaloId","beamHaloEcalLooseHaloId","beamHaloEcalTightHaloId",
-                                 #"beamHaloGlobalLooseHaloId","beamHaloGlobalTightHaloId","beamHaloHcalLooseHaloId","beamHaloHcalTightHaloId"
-                                 ]
-                 ) :
-
+    def __init__(self,
+                 doL1Jets = False, doL2Jets = False,
+                 doEfJets = False, doOfflineJets = False,
+                 scale = 100.0, prettyMode = True,
+                 printExtraText = True):
         self.moreName = "(see below)"
-
-        for item in ["scale","jets","met","muons","electrons","photons","taus","recHits","recHitPtThreshold","doGenParticles", "doGenJets",
-                     "doEtaPhiPlot","deltaPhiStarExtraName", "deltaPhiStarCut", "deltaPhiStarDR", "mhtOverMetName", "showAlphaTMet",
-                     "jetsOtherAlgo", "metOtherAlgo", "printExtraText", "j2Factor", "ra1Mode", "ra1CutBits", "prettyMode","tipToTail",
-                     "triggersToPrint", "flagsToPrint"] :
+        for item in ['doL1Jets', 'doL2Jets', 'doEfJets', 'doOfflineJets',
+                     'scale', 'prettyMode','printExtraText']:
             setattr(self,item,eval(item))
 
-        if len(self.flagsToPrint)>3 : print "WARNING: More than three flags specified in the displayer.  The list will run off the page."
-        self.etaBE = configuration.detectorSpecs()["cms"]["etaBE"]
-        self.subdetectors = configuration.detectorSpecs()["cms"]["%sSubdetectors"%self.recHits] if self.recHits else []
-        self.recHitCollections = configuration.detectorSpecs()["cms"]["%sRecHitCollections"%self.recHits] if self.recHits else []
-        
-        self.jetRadius = 0.7 if "ak7Jet" in self.jets[0] else 0.5
-        self.genJets = "gen%sGenJetsP4"%(self.jets[0].replace("xc","")[:3])
-        self.genMet  = "genmetP4True"
-        self.deltaHtName = "%sDeltaPseudoJetEt%s"%self.jets if etRatherThanPt else "%sDeltaPseudoJetPt%s"%self.jets
-        
-        self.doReco = not self.doGenParticles
-        #self.helper = r.displayHelper()
-
         self.prettyReName = {
-            "clean jets (xcak5JetPat)": "jets (AK5 Calo)",
-            "clean jets (xcak5JetPFPat)": "jets (AK5 PF)",
-            "ignored jets (xcak5JetPat)": "ignored jets (AK5 Calo)",
-            "ignored jets (xcak5JetPFPat)": "ignored jets (AK5 PF)",
-            "MHT (xcak5JetPat)": "MHT",
-            "MHT (xcak5JetPFPat)": "MHT",
-            "MET (metP4AK5TypeII)": "MET (Calo Type II)",
-            "MET (metP4PF)": "PF MET",
-            "muons (muonPat)": "muons",
-            "electrons (electronPat)": "electrons",
-            "photons (photonPat)": "photons",
-            "xcak5JetPat": "AK5 Calo Jets",
-            "xcak5JetPFPat": "AK5 PF Jets",
-            "muonPat": "muons",
-            "electronPat": "electrons",
-            "photonPat": "photons",
+            'trig_L1_jet_' : 'L1 jets',
+            'trig_EF_jet_emscale_' : 'EF jets (EM)',
+            'L2JetsNONEA4CC_JES' : 'L2 A4CC (HAD)',
+            'L2JetsNONEA4TT' : 'L1.5 A4TT (EM)',
+            'L2JetsNON_L15L2CONE' : 'L2 CONE',
+            'EfJetsAntiKt4_topo_calib_EMJES' : 'EF A4TC (EMJES)'
+            #--"clean jets (xcak5JetPat)": "jets (AK5 Calo)",
+            #--"clean jets (xcak5JetPFPat)": "jets (AK5 PF)",
             }
+        self.l1Jets = 'L1Jets'
+        self.l2Jets = 'L2JetsNONEA4CC_JES'
+        self.l15Jets = 'L2JetsNONEA4TT'
+        self.l2cJets = 'L2JetsNON_L15L2CONE'
+        self.efJets = 'EfJetsAntiKt4_topo_calib_EMJES'
+        self.offlineJets = 'OfflineJets'
 
+        self.l1JetsColor = r.kRed
+        self.l2JetsColor = r.kOrange
+        self.efJetsColor = r.kBlue
+        self.offlineJetsColor = r.kCyan
+
+
+
+        self.etaBE = 1.5 # configuration.detectorSpecs()["cms"]["etaBE"]
+        self.etaEF = 3.2
+
+#--    def __init__(self, jets = None, met = None, muons = None, electrons = None, photons = None, taus = None,
+#--                 recHits = None, recHitPtThreshold = -100.0, scale = 200.0, etRatherThanPt = False, doGenParticles = False, doGenJets = False,
+#--                 doEtaPhiPlot = True, deltaPhiStarExtraName = "", deltaPhiStarCut = None, deltaPhiStarDR = None, mhtOverMetName = "",
+#--                 showAlphaTMet = True, jetsOtherAlgo = None, metOtherAlgo = None, printExtraText = True, j2Factor = None,
+#--                 ra1Mode = True, ra1CutBits = True, prettyMode = False, tipToTail = False, triggersToPrint = [],
+#--                 flagsToPrint = ["logErrorTooManyClusters","logErrorTooManySeeds",
+#--                                 #"beamHaloCSCLooseHaloId","beamHaloCSCTightHaloId","beamHaloEcalLooseHaloId","beamHaloEcalTightHaloId",
+#--                                 #"beamHaloGlobalLooseHaloId","beamHaloGlobalTightHaloId","beamHaloHcalLooseHaloId","beamHaloHcalTightHaloId"
+#--                                 ]
+#--                 ) :
+#--
+#--        self.moreName = "(see below)"
+#--
+#--        for item in ["scale","jets","met","muons","electrons","photons","taus","recHits","recHitPtThreshold","doGenParticles", "doGenJets",
+#--                     "doEtaPhiPlot","deltaPhiStarExtraName", "deltaPhiStarCut", "deltaPhiStarDR", "mhtOverMetName", "showAlphaTMet",
+#--                     "jetsOtherAlgo", "metOtherAlgo", "printExtraText", "j2Factor", "ra1Mode", "ra1CutBits", "prettyMode","tipToTail",
+#--                     "triggersToPrint", "flagsToPrint"] :
+#--            setattr(self,item,eval(item))
+#--
+#--        if len(self.flagsToPrint)>3 : print "WARNING: More than three flags specified in the displayer.  The list will run off the page."
+#--        self.etaBE = configuration.detectorSpecs()["cms"]["etaBE"]
+#--        self.subdetectors = configuration.detectorSpecs()["cms"]["%sSubdetectors"%self.recHits] if self.recHits else []
+#--        self.recHitCollections = configuration.detectorSpecs()["cms"]["%sRecHitCollections"%self.recHits] if self.recHits else []
+#--        
+#--        self.jetRadius = 0.7 if "ak7Jet" in self.jets[0] else 0.5
+#--        self.genJets = "gen%sGenJetsP4"%(self.jets[0].replace("xc","")[:3])
+#--        self.genMet  = "genmetP4True"
+#--        self.deltaHtName = "%sDeltaPseudoJetEt%s"%self.jets if etRatherThanPt else "%sDeltaPseudoJetPt%s"%self.jets
+#--        
+#--        self.doReco = not self.doGenParticles
+#--        #self.helper = r.displayHelper()
+#--
         self.titleSizeFactor = 1.0
         
         self.legendDict = collections.defaultdict(int)
@@ -87,18 +108,18 @@ class displayer(supy.steps.displayer) :
         self.arrow = r.TArrow()
         self.text = r.TText()
         self.latex = r.TLatex()
-
-        self.alphaFuncs=[
-            self.makeAlphaTFunc(0.55,r.kBlack),
-            self.makeAlphaTFunc(0.50,r.kOrange+3),
-            self.makeAlphaTFunc(0.45,r.kOrange+7)
-            ]
-
-        epsilon=1.0e-6
-        self.mhtLlHisto=r.TH2D("mhtLlHisto",";log ( likelihood / likelihood0 ) / N varied jets;#slashH_{T};tries / bin",100,-20.0+epsilon,0.0+epsilon,100,0.0,300.0)
-        self.metLlHisto=r.TH2D("metLlHisto",";log ( likelihood / likelihood0 ) / N varied jets;#slashE_{T};tries / bin",100,-20.0+epsilon,0.0+epsilon,100,0.0,300.0)
-        self.mhtLlHisto.SetDirectory(0)
-        self.metLlHisto.SetDirectory(0)
+#--
+#--        self.alphaFuncs=[
+#--            self.makeAlphaTFunc(0.55,r.kBlack),
+#--            self.makeAlphaTFunc(0.50,r.kOrange+3),
+#--            self.makeAlphaTFunc(0.45,r.kOrange+7)
+#--            ]
+#--
+#--        epsilon=1.0e-6
+#--        self.mhtLlHisto=r.TH2D("mhtLlHisto",";log ( likelihood / likelihood0 ) / N varied jets;#slashH_{T};tries / bin",100,-20.0+epsilon,0.0+epsilon,100,0.0,300.0)
+#--        self.metLlHisto=r.TH2D("metLlHisto",";log ( likelihood / likelihood0 ) / N varied jets;#slashE_{T};tries / bin",100,-20.0+epsilon,0.0+epsilon,100,0.0,300.0)
+#--        self.mhtLlHisto.SetDirectory(0)
+#--        self.metLlHisto.SetDirectory(0)
 
     def prepareText(self, params, coords) :
         self.text.SetTextSize(params["size"])
@@ -116,14 +137,14 @@ class displayer(supy.steps.displayer) :
 
     def printEvent(self, eventVars, params, coords) :
         self.prepareText(params, coords)
-        for message in ["Run   %#10d"%eventVars["run"],
-                        "Ls    %#10d"%eventVars["lumiSection"],
-                        "Event %#10d"%eventVars["event"],
-                        "PtHat(GeV) %#5.1f"%eventVars["genpthat"] if not eventVars["isRealData"] else "",
+        for message in ["Run   %#10d"%eventVars["RunNumber"],
+                        "LB    %#10d"%eventVars["lbn"],
+                        "Event %#10d"%eventVars["EventNumber"],
+                        #"PtHat(GeV) %#5.1f"%eventVars["genpthat"] if not eventVars["isRealData"] else "",
                         ] :
             if message : self.printText(message)
-        for item in self.triggersToPrint :
-            self.printText("%s"%(item if eventVars["triggered"][item] else ""))
+#--        for item in self.triggersToPrint :
+#--            self.printText("%s"%(item if eventVars["triggered"][item] else ""))
         
     def printVertices(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
@@ -241,6 +262,94 @@ class displayer(supy.steps.displayer) :
             if recHits=="Calo" : outString +=" %2d"%hit[4]
             self.printText(outString)
         
+    def printL1Jets(self, eventVars, params, coords, nMax) :
+        self.prepareText(params, coords)
+        jets = eventVars[self.l1Jets]
+        jets = sorted([j for j in jets], key = lambda j:j.et8x8)
+
+        self.printText(self.renamedDesc(self.l1Jets))
+        self.printText("Et8x8  eta  phi")
+        self.printText("---------------")
+        nJets = len(jets)
+        for iJet,jet in enumerate(reversed(jets)) :
+            if nMax<=iJet :
+                self.printText("[%d more not listed]"%(nJets-nMax))
+                break
+            self.printText("%5.1f %4.1f %4.1f"%(jet.et8x8*MeV2GeV, jet.eta, jet.phi))
+
+    def printL2Jets(self, eventVars, collection, params, coords, nMax) :
+        self.prepareText(params, coords)
+        jets = eventVars[collection]
+        #jets = [j for j in jets if j.InputType=='NONE' and j.OutputType=='A4CC_JES']
+        jets = sorted([j for j in jets], key = lambda j:j.et(), reverse = True)
+
+        self.printText(self.renamedDesc(collection))
+        self.printText("Et     eta  phi")
+        self.printText("---------------")
+        nJets = len(jets)
+        for iJet,jet in enumerate(jets) :
+            if nMax<=iJet :
+                self.printText("[%d more not listed]"%(nJets-nMax))
+                break
+            self.printText("%5.1f %4.1f %4.1f"%\
+                           (jet.et()*MeV2GeV, jet.eta, jet.phi))
+                            #jet.InputType, jet.OutputType))
+
+    def printEfJets(self, eventVars, params, coords, nMax) :
+        self.prepareText(params, coords)
+        efJets = eventVars[self.efJets]
+        matchedEfJets = eventVars['%sMatch%s'%(self.efJets, ''.join([self.l2Jets, self.l15Jets]))]
+
+        # the EF jet is the first one in the tuple; the other elements are matched jets
+        matchedEfJets = sorted([jTuple for jTuple in matchedEfJets],
+                               key = lambda jTuple: jTuple[0].et(),
+                               reverse = True)
+
+        self.printText(self.renamedDesc(self.efJets))
+        self.printText("Et     eta  phi Et(A4CC) Et(A4TT)")
+        self.printText("---------------------------------")
+        nJets = len(matchedEfJets)
+        lenCmpLabel = len('Et(A4CC)')
+        for iJet,jetTuple in enumerate(matchedEfJets) :
+            jetEf, jetA4cc, jetA4tt = jetTuple[0], jetTuple[1], jetTuple[2]
+            if nMax<=iJet :
+                self.printText("[%d more not listed]"%(nJets-nMax))
+                break
+            flagA4cc = (' ' if not jetA4cc else '<' if jetEf.et()<jetA4cc.et() else '>').center(lenCmpLabel)
+            flagA4tt = (' ' if not jetA4tt else '<' if jetEf.et()<jetA4tt.et() else '>').center(lenCmpLabel)
+            self.printText("%5.1f %4.1f %4.1f %s  %s"%(jetEf.et()*MeV2GeV, jetEf.eta, jetEf.phi, flagA4cc, flagA4tt))
+    def printOfflineJets(self, eventVars, params, coords, nMax) :
+        self.prepareText(params, coords)
+        jets = eventVars[self.offlineJets]
+        jets = sorted([j for j in jets], key = lambda j:j.et())
+
+        self.printText(self.renamedDesc(self.offlineJets))
+        self.printText("Et     eta phi  B|U")
+        self.printText("--------------------")
+        nJets = len(jets)
+        for iJet,jet in enumerate(reversed(jets)) :
+            if nMax<=iJet :
+                self.printText("[%d more not listed]"%(nJets-nMax))
+                break
+            self.printText("%5.1f %4.1f %4.1f  %d"%\
+                           (jet.et()*MeV2GeV, jet.eta, jet.phi,
+                            jet.isBadLoose or jet.isUgly))
+
+    def printTriggers(self, eventVars, params, coords,
+                      passedTriggers = 'PassedTriggers', pattern = r'.*',
+                      nMax=20) :
+        self.prepareText(params, coords)
+        triggers = eventVars[passedTriggers]
+        triggers = sorted([x for x in triggers if re.match(pattern,x)])
+        self.printText("Triggers (%s)"%pattern)
+        self.printText("-------------------------")
+        nTrig = len(triggers)
+        for trig in triggers :
+            if nMax<=nTrig :
+                self.printText("[%d more not listed]"%(nTrig-nMax))
+                break
+            self.printText(trig)
+
     def printJets(self, eventVars, params, coords, jets, nMax) :
         self.prepareText(params, coords)
         jets2 = (jets[0].replace("xc",""),jets[1])
@@ -413,6 +522,7 @@ class displayer(supy.steps.displayer) :
         self.ellipse.SetLineWidth(1)
         self.ellipse.SetLineStyle(1)
         self.ellipse.DrawEllipse(coords["x0"], coords["y0"], coords["radius"], coords["radius"], 0.0, 360.0, 0.0, "")
+        self.ellipse.DrawEllipse(coords["x0"], coords["y0"], 0.5*coords["radius"], 0.5*coords["radius"], 0.0, 360.0, 0.0, "")
 
         self.line.SetLineColor(color)
         self.line.DrawLine(coords["x0"]-coords["radius"], coords["y0"]                 , coords["x0"]+coords["radius"], coords["y0"]                 )
@@ -421,7 +531,7 @@ class displayer(supy.steps.displayer) :
     def drawScale(self, color, size, scale, point) :
         self.latex.SetTextSize(size)
         self.latex.SetTextColor(color)
-        self.latex.DrawLatex(point["x"], point["y"],"radius = "+str(scale)+" GeV p_{T}")
+        self.latex.DrawLatex(point["x"], point["y"],"radius = "+str(scale)+" GeV E_{T}")
 
     def drawP4(self, c, p4, color, lineWidth, arrowSize, p4Initial = None) :
         x0 = c["x0"]+p4Initial.px()*c["radius"]/c["scale"] if p4Initial else c["x0"]
@@ -438,12 +548,31 @@ class displayer(supy.steps.displayer) :
         self.arrow.SetArrowSize(arrowSize)
         self.arrow.SetFillColor(color)
         self.arrow.DrawArrow(x0,y0,x1,y1)
+
+    def drawEt(self, c, etObj, color, lineWidth, arrowSize) :
+        x0 = c["x0"]
+        y0 = c["y0"]
+        et = etObj.et()*MeV2GeV*c["radius"]/c["scale"]
+        x1 = x0+et*cos(etObj.phi)
+        y1 = y0+et*sin(etObj.phi)
+
+        self.arrow.SetLineColor(color)
+        self.arrow.SetLineWidth(lineWidth)
+        self.arrow.SetArrowSize(arrowSize if et>0.2 else arrowSize*0.5)
+        self.arrow.SetFillColor(color)
+        self.arrow.DrawArrow(x0,y0,x1,y1)
         
     def drawCircle(self, p4, color, lineWidth, circleRadius, lineStyle = 1) :
         self.ellipse.SetLineColor(color)
         self.ellipse.SetLineWidth(lineWidth)
         self.ellipse.SetLineStyle(lineStyle)
         self.ellipse.DrawEllipse(p4.eta(), p4.phi(), circleRadius, circleRadius, 0.0, 360.0, 0.0, "")
+
+    def drawCircleTrig(self, trigObj, color, lineWidth, circleRadius, lineStyle = 1) :
+        self.ellipse.SetLineColor(color)
+        self.ellipse.SetLineWidth(lineWidth)
+        self.ellipse.SetLineStyle(lineStyle)
+        self.ellipse.DrawEllipse(trigObj.eta, trigObj.phi, circleRadius, circleRadius, 0.0, 360.0, 0.0, "")
 
     def renamedDesc(self, desc) :
         if not self.prettyMode : return desc
@@ -468,7 +597,31 @@ class displayer(supy.steps.displayer) :
             return
         for iJet in range(len(p4s)) :
             self.drawP4(coords, p4s.at(iJet), color, lineWidth, arrowSize)
-            
+
+    def drawL1Jets(self, eventVars, color, lineWidth, circleRadius) :
+        self.legendFunc(color, name = "L1Jet", desc = "L1 jets (%s)"%self.l1Jets)
+        jets = eventVars[self.l1Jets]
+        for jet in jets :
+            self.drawCircleTrig(jet, color, lineWidth, circleRadius)
+
+    def drawL2Jets(self, eventVars, color, lineWidth, circleRadius) :
+        self.legendFunc(color, name = "L2Jet", desc = "L2 jets (%s)"%self.renamedDesc(self.l2Jets))
+        jets = eventVars[self.l2Jets]
+        for jet in jets :
+            self.drawCircleTrig(jet, color, lineWidth, circleRadius)
+
+    def drawEfJets(self, eventVars, color, lineWidth, circleRadius) :
+        self.legendFunc(color, name = "EfJet", desc = "EF jets (%s)"%self.renamedDesc(self.efJets))
+        jets = eventVars[self.efJets]
+        for jet in jets :
+            self.drawCircleTrig(jet, color, lineWidth, circleRadius)
+
+    def drawOfflineJets(self, eventVars, color, lineWidth, circleRadius) :
+        self.legendFunc(color, name = "OfflineJet", desc = "Offline jets (%s)"%self.renamedDesc(self.efJets))
+        jets = eventVars[self.offlineJets]
+        for jet in jets :
+            self.drawCircleTrig(jet, color, lineWidth, circleRadius, lineStyle=2)
+
     def drawGenParticles(self, eventVars, coords, color, lineWidth, arrowSize, statusList = None, pdgIdList = None, motherList = None, label = "", circleRadius = None) :
         self.legendFunc(color, name = "genParticle"+label, desc = label)
 
@@ -613,98 +766,34 @@ class displayer(supy.steps.displayer) :
 
     def drawEtaPhiPlot (self, eventVars, corners) :
         pad=r.TPad("etaPhiPad", "etaPhiPad", corners["x1"], corners["y1"], corners["x2"], corners["y2"])
+        pad.SetTopMargin(0.20*pad.GetTopMargin())
+        pad.SetBottomMargin(0.75*pad.GetBottomMargin())
+        pad.SetLeftMargin(0.75*pad.GetLeftMargin())
+        pad.SetRightMargin(0.20*pad.GetRightMargin())
         pad.cd()
         pad.SetTickx()
         pad.SetTicky()
 
-        etaPhiPlot = r.TH2D("etaPhi",";#eta;#phi;",1, -3.0, 3.0, 1, -r.TMath.Pi(), r.TMath.Pi() )
+        etaPhiPlot = r.TH2D("etaPhi",";#eta;#phi;",1, -5.0, 5.0, 1, -r.TMath.Pi(), r.TMath.Pi() )
         etaPhiPlot.SetStats(False)
         etaPhiPlot.Draw()
 
         self.line.SetLineColor(r.kBlack)
         self.line.DrawLine(-self.etaBE, etaPhiPlot.GetYaxis().GetXmin(), -self.etaBE, etaPhiPlot.GetYaxis().GetXmax() )
         self.line.DrawLine( self.etaBE, etaPhiPlot.GetYaxis().GetXmin(),  self.etaBE, etaPhiPlot.GetYaxis().GetXmax() )
+        self.line.DrawLine(-self.etaEF, etaPhiPlot.GetYaxis().GetXmin(), -self.etaEF, etaPhiPlot.GetYaxis().GetXmax() )
+        self.line.DrawLine( self.etaEF, etaPhiPlot.GetYaxis().GetXmin(),  self.etaEF, etaPhiPlot.GetYaxis().GetXmax() )
         suspiciousJetColor = r.kRed
         suspiciousJetStyle = 2
-        
-        def drawEcalBox(fourVector, nBadXtals, maxStatus) :
-            value = (0.087/2) * nBadXtals / 25
-            args = (fourVector.eta()-value, fourVector.phi()-value, fourVector.eta()+value, fourVector.phi()+value)
-            if maxStatus==14 :
-                self.deadBox.DrawBox(*args)
-            else :
-                self.coldBox.DrawBox(*args)
-                
-        def drawHcalBox(fourVector) :
-            value = 0.087/2
-            args = (fourVector.eta()-value, fourVector.phi()-value, fourVector.eta()+value, fourVector.phi()+value)
-            self.hcalBox.DrawBox(*args)
 
-        if self.ra1Mode :
-            #draw dead ECAL regions
-            nRegions = eventVars["ecalDeadTowerTrigPrimP4"].size()
-            for iRegion in range(nRegions) :
-                drawEcalBox(fourVector = eventVars["ecalDeadTowerTrigPrimP4"].at(iRegion),
-                            nBadXtals  = eventVars["ecalDeadTowerNBadXtals"].at(iRegion),
-                            maxStatus  = eventVars["ecalDeadTowerMaxStatus"].at(iRegion),
-                            )
-
-            #draw masked HCAL regions
-            nBadHcalChannels = eventVars["hcalDeadChannelP4"].size()
-            for iChannel in range(nBadHcalChannels) :
-                drawHcalBox(fourVector = eventVars["hcalDeadChannelP4"].at(iChannel))
-
-        if self.doGenParticles :
-            self.drawGenParticles(eventVars,r.kMagenta, lineWidth = 1, arrowSize = -1.0, statusList = [1], pdgIdList = [22],
-                                  motherList = [1,2,3,4,5,6,-1,-2,-3,-4,-5,-6], label = "status 1 photon w/quark as mother", circleRadius = 0.15)
-            self.drawGenParticles(eventVars,r.kOrange, lineWidth = 1, arrowSize = -1.0, statusList = [1], pdgIdList = [22],
-                                  motherList = [22], label = "status 1 photon w/photon as mother", circleRadius = 0.15)
-        else :
-            etaPhiPlot.SetTitle("")
-            if self.ra1Mode :
-                suspiciousJetIndices = []
-                for dPhiStar,iJet in eventVars["%sDeltaPhiStar%s%s"%(self.jets[0],self.jets[1],self.deltaPhiStarExtraName)] :
-                    if dPhiStar < self.deltaPhiStarCut : suspiciousJetIndices.append(iJet)
-
-            suspiciousJetLegendEntry = False
-            if not eventVars["isRealData"] :
-                genJets = eventVars[self.genJets]
-                for index in range(genJets.size()) :
-                    self.drawCircle(genJets.at(index), r.kBlack, lineWidth = 2, circleRadius = self.jetRadius, lineStyle = suspiciousJetStyle)
-            jets = eventVars["%sCorrectedP4%s"%self.jets]
-            for index in range(jets.size()) :
-                jet = jets.at(index)
-                if index in eventVars["%sIndices%s"%self.jets] :
-                    self.drawCircle(jet, r.kBlue, lineWidth = 1, circleRadius = self.jetRadius)
-                else :
-                    self.drawCircle(jet, r.kCyan, lineWidth = 1, circleRadius = self.jetRadius)
-                if self.ra1Mode and (index in suspiciousJetIndices) :
-                    self.drawCircle(jet, suspiciousJetColor, lineWidth = 1, circleRadius = self.deltaPhiStarDR, lineStyle = suspiciousJetStyle)
-                    suspiciousJetLegendEntry = True
-
-            legend1 = r.TLegend(0.02, 0.9, 0.72, 1.0)
-            legend1.SetFillStyle(0)
-            legend1.SetBorderSize(0)
-            if self.ra1Mode : 
-                legend1.AddEntry(self.deadBox,"dead ECAL cells","f")
-                legend1.AddEntry(self.coldBox,"dead ECAL cells w/TP link","f")
-                legend1.AddEntry(self.hcalBox,"masked HCAL cells","f")
-                legend1.Draw()
-
-            legend2 = r.TLegend(0.48, 0.933, 0.98, 1.0)
-            legend2.SetFillStyle(0)
-            legend2.SetBorderSize(0)
-
-            if self.ra1Mode : 
-                self.ellipse.SetLineColor(suspiciousJetColor)
-                self.ellipse.SetLineStyle(suspiciousJetStyle)
-                if suspiciousJetLegendEntry :
-                    legend2.AddEntry(self.ellipse,"jet with min. #Delta#phi* < %3.1f"%self.deltaPhiStarCut,"l")
-                legend2.Draw()
+        self.drawL1Jets(eventVars, color=self.l1JetsColor, lineWidth=1, circleRadius=0.2)
+        self.drawL2Jets(eventVars, color=self.l2JetsColor, lineWidth=3, circleRadius=0.4)
+        self.drawEfJets(eventVars, color=self.efJetsColor, lineWidth=1, circleRadius=0.4)
+        self.drawOfflineJets(eventVars, color=self.offlineJetsColor, lineWidth=1, circleRadius=0.4)
 
         self.canvas.cd()
         pad.Draw()
-        return [pad, etaPhiPlot, legend1, legend2]
+        return [pad, etaPhiPlot,]# legend1, legend2]
 
     def drawAlphaPlot (self, eventVars, color, showAlphaTMet, corners) :
         pad = r.TPad("alphaTpad", "alphaTpad", corners["x1"], corners["y1"], corners["x2"], corners["y2"])
@@ -823,51 +912,56 @@ class displayer(supy.steps.displayer) :
         self.drawSkeleton(coords, skeletonColor)
         self.drawScale(color = skeletonColor, size = 0.03, scale = coords["scale"], point = {"x":0.0, "y":coords["radius"]+coords["y0"]+0.03})
 
-        defArrowSize=0.5*self.arrow.GetDefaultArrowSize()
+        defArrowSize=0.25*self.arrow.GetDefaultArrowSize()
         defWidth=1
-        #                                  color      , width   , arrow size
-        if not eventVars["isRealData"] :
-            if self.doGenParticles :
-                self.drawGenParticles(eventVars, coords,r.kBlack  , defWidth, defArrowSize,       label = "all GEN particles")
-                self.drawGenParticles(eventVars, coords,r.kBlue   , defWidth, defArrowSize*4/6.0, statusList = [1], label = "status 1")
-                self.drawGenParticles(eventVars, coords,r.kGreen  , defWidth, defArrowSize*2/6.0, statusList = [1], pdgIdList = [22], label = "status 1 photon")
-                self.drawGenParticles(eventVars, coords,r.kMagenta, defWidth, defArrowSize*1/6.0, statusList = [1], pdgIdList = [22],
-                                      motherList = [1,2,3,4,5,6,-1,-2,-3,-4,-5,-6], label = "status 1 photon w/quark as mother")
-                self.drawGenParticles(eventVars, coords,r.kOrange, defWidth, defArrowSize*1/6.0, statusList = [1], pdgIdList = [22],
-                                      motherList = [22], label = "status 1 photon w/photon as mother")
-            else :
-                self.drawGenJets    (eventVars, coords,r.kBlack   , defWidth, defArrowSize)
-                self.drawGenMet     (eventVars, coords,r.kMagenta , defWidth, defArrowSize*2/6.0)
-            
-        if self.doReco : 
-            #self.drawP4(eventVars["%sLongP4%s"%self.jets],r.kGray,defWidth,defArrowSize*1/100.0)
-            #self.drawP4(-eventVars["%sLongP4%s"%self.jets],r.kGray,defWidth,defArrowSize*1/100.0)
-            self.drawCleanJets      (eventVars, coords, self.jets, r.kBlue    , defWidth, defArrowSize)
-                                     
-            #self.drawCleanJets      (eventVars, coords,
-            #                         (self.jets[0].replace("xc","")+"JPT","Pat"),896,defWidth, defArrowSize*3/4.0)
-            #self.drawCleanJets      (eventVars, coords,
-            #                         (self.jets[0].replace("xc","")+"PF","Pat"), 38,defWidth, defArrowSize*1/2.0)
-            
-            self.drawIgnoredJets    (eventVars, coords,r.kCyan    , defWidth, defArrowSize*1/6.0)
-            #self.drawOtherJets      (eventVars, coords,r.kBlack  )
-            if self.ra1Mode and not self.prettyMode :
-                self.drawHt         (eventVars, coords,r.kBlue+3  , defWidth, defArrowSize*1/6.0)
-                self.drawNJetDeltaHt(eventVars, coords,r.kBlue-9  , defWidth, defArrowSize*1/6.0)
-            
-            if self.ra1Mode :
-                self.drawMht        (eventVars, coords,r.kRed     , defWidth, defArrowSize*3/6.0)
-            if self.met :
-                self.drawMet        (eventVars, coords,r.kGreen   , defWidth, defArrowSize*2/6.0)
-            
-            if self.muons :     self.drawMuons    (eventVars, coords,r.kYellow  , defWidth, defArrowSize*2/6.0)
-            if self.electrons : self.drawElectrons(eventVars, coords,r.kOrange+7, defWidth, defArrowSize*2.5/6.0)
-            if self.photons :   self.drawPhotons  (eventVars, coords,r.kOrange  , defWidth, defArrowSize*1.8/6.0)
-            if not self.prettyMode :
-                if self.taus :      self.drawTaus     (eventVars, coords,r.kYellow  , defWidth, defArrowSize*2/6.0)
-                if self.recHits :
-                    #self.drawCleanedRecHits (eventVars, coords,r.kOrange-6, defWidth, defArrowSize*2/6.0)
-                    self.drawCleanedRecHitSumP4(eventVars, coords,r.kOrange-6, defWidth, defArrowSize*2/6.0)
+
+        for j in eventVars[self.l1Jets] : self.drawEt(coords, j, self.l1JetsColor, defWidth, defArrowSize)
+        for j in eventVars[self.l2Jets] : self.drawEt(coords, j, self.l2JetsColor, defWidth, defArrowSize)
+        for j in eventVars[self.efJets] : self.drawEt(coords, j, self.efJetsColor, defWidth, defArrowSize)
+        for j in eventVars[self.offlineJets] : self.drawEt(coords, j, self.offlineJetsColor, defWidth, defArrowSize)
+
+        #--if not eventVars["isRealData"] :
+        #--    if self.doGenParticles :
+        #--        self.drawGenParticles(eventVars, coords,r.kBlack  , defWidth, defArrowSize,       label = "all GEN particles")
+        #--        self.drawGenParticles(eventVars, coords,r.kBlue   , defWidth, defArrowSize*4/6.0, statusList = [1], label = "status 1")
+        #--        self.drawGenParticles(eventVars, coords,r.kGreen  , defWidth, defArrowSize*2/6.0, statusList = [1], pdgIdList = [22], label = "status 1 photon")
+        #--        self.drawGenParticles(eventVars, coords,r.kMagenta, defWidth, defArrowSize*1/6.0, statusList = [1], pdgIdList = [22],
+        #--                              motherList = [1,2,3,4,5,6,-1,-2,-3,-4,-5,-6], label = "status 1 photon w/quark as mother")
+        #--        self.drawGenParticles(eventVars, coords,r.kOrange, defWidth, defArrowSize*1/6.0, statusList = [1], pdgIdList = [22],
+        #--                              motherList = [22], label = "status 1 photon w/photon as mother")
+        #--    else :
+        #--        self.drawGenJets    (eventVars, coords,r.kBlack   , defWidth, defArrowSize)
+        #--        self.drawGenMet     (eventVars, coords,r.kMagenta , defWidth, defArrowSize*2/6.0)
+        #--    
+        #--if self.doReco : 
+        #--    #self.drawP4(eventVars["%sLongP4%s"%self.jets],r.kGray,defWidth,defArrowSize*1/100.0)
+        #--    #self.drawP4(-eventVars["%sLongP4%s"%self.jets],r.kGray,defWidth,defArrowSize*1/100.0)
+        #--    self.drawCleanJets      (eventVars, coords, self.jets, r.kBlue    , defWidth, defArrowSize)
+        #--                             
+        #--    #self.drawCleanJets      (eventVars, coords,
+        #--    #                         (self.jets[0].replace("xc","")+"JPT","Pat"),896,defWidth, defArrowSize*3/4.0)
+        #--    #self.drawCleanJets      (eventVars, coords,
+        #--    #                         (self.jets[0].replace("xc","")+"PF","Pat"), 38,defWidth, defArrowSize*1/2.0)
+        #--    
+        #--    self.drawIgnoredJets    (eventVars, coords,r.kCyan    , defWidth, defArrowSize*1/6.0)
+        #--    #self.drawOtherJets      (eventVars, coords,r.kBlack  )
+        #--    if self.ra1Mode and not self.prettyMode :
+        #--        self.drawHt         (eventVars, coords,r.kBlue+3  , defWidth, defArrowSize*1/6.0)
+        #--        self.drawNJetDeltaHt(eventVars, coords,r.kBlue-9  , defWidth, defArrowSize*1/6.0)
+        #--    
+        #--    if self.ra1Mode :
+        #--        self.drawMht        (eventVars, coords,r.kRed     , defWidth, defArrowSize*3/6.0)
+        #--    if self.met :
+        #--        self.drawMet        (eventVars, coords,r.kGreen   , defWidth, defArrowSize*2/6.0)
+        #--    
+        #--    if self.muons :     self.drawMuons    (eventVars, coords,r.kYellow  , defWidth, defArrowSize*2/6.0)
+        #--    if self.electrons : self.drawElectrons(eventVars, coords,r.kOrange+7, defWidth, defArrowSize*2.5/6.0)
+        #--    if self.photons :   self.drawPhotons  (eventVars, coords,r.kOrange  , defWidth, defArrowSize*1.8/6.0)
+        #--    if not self.prettyMode :
+        #--        if self.taus :      self.drawTaus     (eventVars, coords,r.kYellow  , defWidth, defArrowSize*2/6.0)
+        #--        if self.recHits :
+        #--            #self.drawCleanedRecHits (eventVars, coords,r.kOrange-6, defWidth, defArrowSize*2/6.0)
+        #--            self.drawCleanedRecHitSumP4(eventVars, coords,r.kOrange-6, defWidth, defArrowSize*2/6.0)
 
         self.canvas.cd()
         pad.Draw()
@@ -878,6 +972,7 @@ class displayer(supy.steps.displayer) :
         pad.cd()
         
         legend = r.TLegend(0.0, 0.0, 1.0, 1.0)
+        legend.SetFillColor(0)
         for item in self.legendList :
             self.line.SetLineColor(item[0])
             someLine = self.line.DrawLine(0.0,0.0,0.0,0.0)
@@ -905,64 +1000,69 @@ class displayer(supy.steps.displayer) :
         x0 = 0.01
         x1 = 0.45
         self.printEvent(   eventVars, params = defaults, coords = {"x":x0, "y":yy})
-
         if self.printExtraText :
-            self.printVertices(eventVars, params = defaults, coords = {"x":x1, "y":yy}, nMax = 3)
-            self.printJets(    eventVars, params = defaults, coords = {"x":x0, "y":yy-7*s}, jets = self.jets, nMax = 7)
+            #--self.printVertices(eventVars, params = defaults, coords = {"x":x1, "y":yy}, nMax = 3)
+            #--self.printJets(    eventVars, params = defaults, coords = {"x":x0, "y":yy-7*s}, jets = self.jets, nMax = 7)
 
-            if self.doGenJets :
-                self.printGenJets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, nMax = 7)
-                self.printGenParticles(eventVars,params=defaults, coords = {"x":x0+0.40, "y":yy-18*s}, nMax = 7)
-            if self.jetsOtherAlgo :
-                self.printJets(     eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, jets = self.jetsOtherAlgo, nMax = 7)
-            if self.photons :
-                self.printPhotons(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-40*s}, photons = self.photons, nMax = 3)
-            if self.electrons :
-                self.printElectrons(eventVars, params = defaults, coords = {"x":x0+0.50, "y":yy-40*s}, electrons = self.electrons, nMax = 3)
-            if self.muons :
-                muonPars = defaults if self.prettyMode else smaller
-                self.printMuons(    eventVars, params = muonPars, coords = {"x":x0,      "y":yy-47*s}, muons = self.muons, nMax = 3)
-            if self.recHits and not self.prettyMode :
-                self.printRecHits(  eventVars, params = smaller,  coords = {"x":x0+0.52, "y":yy-47*s}, recHits = self.recHits, nMax = 3)
-            if self.flagsToPrint :
-                self.printFlags(    eventVars, params = defaults, coords = {"x":x0,      "y":yy-55*s}, flags = self.flagsToPrint)
-            if self.ra1Mode :
-                self.printKinematicVariables(eventVars, params = defaults, coords = {"x":x0, "y":yy-30*s}, jets = self.jets, jets2 = self.jetsOtherAlgo)
-                if self.ra1CutBits :
-                    self.printCutBits(       eventVars, params = defaults, coords = {"x":x0, "y":yy-35*s}, jets = self.jets, jets2 = self.jetsOtherAlgo,
-                                         met = self.met, met2 = self.metOtherAlgo)
+            self.printTriggers(eventVars, params = defaults,
+                               coords = {"x":x0+0.35, "y":yy},
+                               passedTriggers = 'PassedTriggers', pattern = r'.*5j55.*',
+                               nMax=30)
+            if self.doL1Jets :
+                self.printL1Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-8*s}, nMax = 10)
+            if self.doL2Jets :
+                self.printL2Jets(  eventVars, collection = self.l2Jets, params = defaults, coords = {"x":x0,      "y":yy-22*s}, nMax = 10)
+                self.printL2Jets(  eventVars, collection = self.l15Jets, params = defaults, coords = {"x":x0+0.35,"y":yy-22*s}, nMax = 10)
+                self.printL2Jets(  eventVars, collection = self.l2cJets, params = defaults, coords = {"x":x0+0.70,"y":yy-22*s}, nMax = 10)
+            if self.doEfJets :
+                self.printEfJets(eventVars, params  = defaults, coords = {"x":x0,  "y":yy-42*s}, nMax = 10)
+            if self.doOfflineJets :
+                self.printOfflineJets(eventVars, params  = defaults, coords = {"x":x0+0.62,  "y":yy-42*s}, nMax = 10)
+                #self.printGenParticles(eventVars,params=defaults, coords = {"x":x0+0.40, "y":yy-18*s}, nMax = 7)
+            #--if self.jetsOtherAlgo :
+            #--    self.printJets(     eventVars, params = defaults, coords = {"x":x0,      "y":yy-18*s}, jets = self.jetsOtherAlgo, nMax = 7)
+            #--if self.photons :
+            #--    self.printPhotons(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-40*s}, photons = self.photons, nMax = 3)
+            #--if self.electrons :
+            #--    self.printElectrons(eventVars, params = defaults, coords = {"x":x0+0.50, "y":yy-40*s}, electrons = self.electrons, nMax = 3)
+            #--if self.muons :
+            #--    muonPars = defaults if self.prettyMode else smaller
+            #--    self.printMuons(    eventVars, params = muonPars, coords = {"x":x0,      "y":yy-47*s}, muons = self.muons, nMax = 3)
+            #--if self.recHits and not self.prettyMode :
+            #--    self.printRecHits(  eventVars, params = smaller,  coords = {"x":x0+0.52, "y":yy-47*s}, recHits = self.recHits, nMax = 3)
+            #--if self.flagsToPrint :
+            #--    self.printFlags(    eventVars, params = defaults, coords = {"x":x0,      "y":yy-55*s}, flags = self.flagsToPrint)
+            #--if self.ra1Mode :
+            #--    self.printKinematicVariables(eventVars, params = defaults, coords = {"x":x0, "y":yy-30*s}, jets = self.jets, jets2 = self.jetsOtherAlgo)
+            #--    if self.ra1CutBits :
+            #--        self.printCutBits(       eventVars, params = defaults, coords = {"x":x0, "y":yy-35*s}, jets = self.jets, jets2 = self.jetsOtherAlgo,
+            #--                             met = self.met, met2 = self.metOtherAlgo)
         self.canvas.cd()
         pad.Draw()
         return [pad]
 
     def display(self, eventVars) :
-        rhoPhiPadYSize = 0.50*self.canvas.GetAspectRatio()
-        rhoPhiPadXSize = 0.50
-        radius = 0.4
+
+        rhoPhiPadYSize = 0.375*self.canvas.GetAspectRatio()
+        rhoPhiPadXSize = 0.375
+        etaPhiPadXSize = 0.50
+        radius = 0.3
+
         g1 = self.drawRhoPhiPlot(eventVars,
                                  coords = {"scale":self.scale, "radius":radius, "x0":radius, "y0":radius+0.05},
                                  corners = {"x1":0.0, "y1":0.0, "x2":rhoPhiPadXSize, "y2":rhoPhiPadYSize},
                                  )
-        l = self.drawLegend(corners = {"x1":0.0, "y1":rhoPhiPadYSize, "x2":1.0-rhoPhiPadYSize, "y2":1.0})
+        gg = self.drawEtaPhiPlot(eventVars, corners = {"x1":0.0,
+                                                       "y1":rhoPhiPadYSize-0.10*self.canvas.GetAspectRatio(),
+                                                       "x2":etaPhiPadXSize,
+                                                       "y2":1.0})
 
-        r.gStyle.SetOptStat(110011)        
-        if self.doGenParticles or self.doEtaPhiPlot :
-            gg = self.drawEtaPhiPlot(eventVars, corners = {"x1":rhoPhiPadXSize - 0.18,
-                                                           "y1":rhoPhiPadYSize - 0.08*self.canvas.GetAspectRatio(),
-                                                           "x2":rhoPhiPadXSize + 0.12,
-                                                           "y2":rhoPhiPadYSize + 0.22*self.canvas.GetAspectRatio()})
-            
-        if self.doReco :
-            if self.ra1Mode :
-                g3 = self.drawAlphaPlot(eventVars, r.kBlack, showAlphaTMet = (self.showAlphaTMet and not self.prettyMode),
-                                        corners = {"x1":rhoPhiPadXSize - 0.08,
-                                                   "y1":0.0,
-                                                   "x2":rhoPhiPadXSize + 0.12,
-                                                   "y2":0.55})
-            #g4 = self.drawMhtLlPlot(eventVars, r.kBlack, corners = {"x1":0.63, "y1":0.63, "x2":0.95, "y2":0.95})
+
+        l = self.drawLegend(corners = {"x1":rhoPhiPadXSize-0.10, "y1":0.0, "x2":etaPhiPadXSize-0.01, "y2":rhoPhiPadYSize-0.1*self.canvas.GetAspectRatio()})
+
         
         t = self.printAllText(eventVars,
-                              corners = {"x1":rhoPhiPadXSize + 0.11,
+                              corners = {"x1":etaPhiPadXSize,
                                          "y1":0.0,
                                          "x2":1.0,
                                          "y2":1.0})
