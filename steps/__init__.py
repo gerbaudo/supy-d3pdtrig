@@ -1,1 +1,1 @@
-import filters, trigger, displayer
+import filters, trigger, displayer, histos
