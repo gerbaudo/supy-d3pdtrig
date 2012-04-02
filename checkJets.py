@@ -1,11 +1,12 @@
 #!/bin/env python
 
-import collections, operator
+import collections, operator, pprint as pp
 import ROOT as r
 r.gROOT.SetBatch(1)
 
 filename = '/tmp/user.chapleau.001130.EXT0._00082.NTUP.root'
 filename = '/tmp/gerbaudo/dq2/user.chapleau.001130.EXT0._00082.NTUP.root'
+filename = '/tmp/gerbaudo/eos/r3466_r3467_p661/NTUP_TRIG.754790._000001.root.1'
 treename = 'trigger'
 confTreeName = 'triggerMeta/TrigConfTree'
 maxEntries = 100
@@ -55,12 +56,14 @@ for iEntry in xrange(nEntries):
                                                   tree.trig_L2_jet_InputType,
                                                   tree.trig_L2_jet_OutputType,
                                                   tree.trig_L2_jet_RoIWord)]
+    l2jets = sorted( l2jets, key = lambda j:j.E, reverse = True)
     # count duplicates in all jets
     processedRois = []
     duplicatededRois = []
     for j in l2jets:
         if j.roi in processedRois : duplicatededRois.append(j.roi)
         else : processedRois.append(j.roi)
+    if not len(duplicatededRois) : continue
     if iEntry<maxEntries :
         print "[%d] %s duplicated jets in total"%(iEntry, len(duplicatededRois))
         #print '\n'.join([j.str() for j in l2jets])
@@ -82,7 +85,8 @@ for iEntry in xrange(nEntries):
     duplicateFactor = 0
     if not len(duplicateFactors) : continue
     duplicateFactor = duplicateFactors[0]
-    if iEntry<maxEntries :
+    #if iEntry<maxEntries :
+    if duplicateFactors :
         print "[%d] %s duplicated jets in A4CC_JES"%(iEntry, len(duplicatededRois))
         print 'roi counts: ',roiCounts
         #print '\n'.join([j.str() for j in jetsA4cc if j.roi in duplicatededRois])
@@ -94,8 +98,12 @@ for iEntry in xrange(nEntries):
             crossCounts[key21] += duplicateFactor
     #print l2Triggers
     #print [t for t in l2Triggers if 'a4cc' in t.lower()]
-    if iEntry>maxEntries: break
+    #if iEntry>maxEntries: break
 #print crossCounts
-topNduplTriggers = sorted(crossCounts.iteritems(), key=operator.itemgetter(1), reverse=True)[:40]
-print topNduplTriggers
-print 'max crossCounts',max(crossCounts.values())
+topNduplTriggers = sorted(crossCounts.iteritems(), key=operator.itemgetter(1), reverse=True)
+maxCrossCounts = max(crossCounts.values())
+topNduplTriggers = [(k,v) for k,v in crossCounts.iteritems() if v==maxCrossCounts]
+
+print 'max crossCounts',maxCrossCounts
+
+#pp.pprint(topNduplTriggers)
