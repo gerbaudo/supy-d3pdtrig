@@ -27,7 +27,7 @@ class example_trig(supy.analysis) :
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
             #--steps.filters.triggers(["EF_mu18_medium",]),
             #supy.steps.printer.printstuff(["EF_mu18_medium",]),
-            supy.steps.filters.multiplicity("vx_Indices",min=1),
+            supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             #--supy.steps.histos.multiplicity(var = "vx_Indices", max = 20),
@@ -92,7 +92,7 @@ class example_trig(supy.analysis) :
                               #calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
                               calculables.TrigD3PD.PassedTriggers(),
                               ]
-        listOfCalculables += [calculables.vertex.Indices(collection=('vx_',''),
+        listOfCalculables += [calculables.vertex.Indices(collection=('vxp_',''),
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
@@ -142,14 +142,18 @@ class example_trig(supy.analysis) :
                         'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/r3466_r3467_p661/*.root*", isDirectory = False)',
                         #'[""]',
                         lumi = 1.0e+3 ) #/pb
+        exampleDict.add("data12_8TeV.00200804",
+                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/")',
+                        lumi = 0.03547) #/pb
         return [exampleDict]
 
     def listOfSamples(self,config) :
         return (
-            supy.samples.specify(names = "r3466_r3467_p661", color = r.kBlack, markerStyle = 20,
-                                 #nFilesMax = 100,
-                                 #nEventsMax=1000,
-                                 )
+            supy.samples.specify(names = "data12_8TeV.00200804", color = r.kBlack)
+            #supy.samples.specify(names = "r3466_r3467_p661", color = r.kBlack, markerStyle = 20,
+            #                     #nFilesMax = 100,
+            #                     #nEventsMax=1000,
+            #                     )
             #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
             #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
             )
