@@ -1,0 +1,16 @@
+
+# reprocessing 2011 data (with almost-final d3pd making)
+inputDir="/eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3466_r3467_p661/data11_7TeV.00189421.physics_EnhancedBias.merge.NTUP_TRIG.r3466_r3467_p661_tid754539_00/"
+for X in $(eos ls $inputDir  | grep root )
+do
+xrdcp root://eosatlas/$inputDir/$X .
+done
+
+
+
+# Bertrand's more recent ntuples (see email Mar22)
+dq2-ls -f user.chapleau.valid1.105204.TTbar_FullHad_McAtNlo_Jimmy.recon.AOD.e825_s1310_s1300_r3391.NTUP_TRIG.JetOnly.v1/
+
+# 2012 8TeV data trig ntuples
+# need export STAGE_SVCCLASS=atlcal for this castor area
+/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109
