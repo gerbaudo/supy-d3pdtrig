@@ -35,3 +35,11 @@ def haddErrorsToIgnore() :
 def initializeROOT(r, cppFiles = []) :
     supy.defaults.initializeROOT(r, cppFiles)
     r.load_packages()
+
+# this seems to hang supy...to be investigated
+#def cppROOTDictionariesToGenerate() :
+#        return [ ("vector<vector<vector<float> > >", "vector"),
+#                 ]
+
+def leavesToBlackList() :
+    return ["ph_vx_convTrk_weight",]
