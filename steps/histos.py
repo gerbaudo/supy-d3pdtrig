@@ -2,6 +2,7 @@ import ROOT as r
 from supy import analysisStep
 import supy
 
+MeV2GeV = 1.0e-3
 class deltaEta(analysisStep) :
     def __init__(self, matchCollPair='', var='',N=100,low=-1.0,up=1.0,title="#Delta #eta") :
         for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
@@ -47,4 +48,4 @@ class deltaEt(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            self.book.fill(elem1.et() - elem2.et(), self.hName, self.N, self.low, self.up, title=self.title)
+            self.book.fill(MeV2GeV*(elem1.et() - elem2.et()), self.hName, self.N, self.low, self.up, title=self.title)
