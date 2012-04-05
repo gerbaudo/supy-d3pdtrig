@@ -143,7 +143,9 @@ class example_trig(supy.analysis) :
                         #'[""]',
                         lumi = 1.0e+3 ) #/pb
         exampleDict.add("data12_8TeV.00200804",
-                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/")',
+                        #'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/")',
+                        # need export STAGE_SVCCLASS=atlcal for this castor area
+                        'utils.fileListFromCastor(location = "/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109",pruneList=False)',
                         lumi = 0.03547) #/pb
         return [exampleDict]
 
