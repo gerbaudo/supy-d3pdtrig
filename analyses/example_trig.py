@@ -43,6 +43,32 @@ class example_trig(supy.analysis) :
             steps.histos.deltaEta(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
                                   title='#Delta #eta ; #Delta #eta matched (EfJetsAntiKt4, A4TT); jets'),
 
+            steps.histos.deltaPhi(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL1Jets',
+                                  title='#Delta #phi ; #Delta #phi matched (EfJetsAntiKt4, L1); jets'),
+            steps.histos.deltaPhi(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4CC_JES',
+                                  title='#Delta #phi ; #Delta #phi matched (EfJetsAntiKt4, A4CC); jets'),
+            steps.histos.deltaPhi(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                  title='#Delta #phi ; #Delta #phi matched (EfJetsAntiKt4, L2CONE); jets'),
+            steps.histos.deltaPhi(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
+                                  title='#Delta #phi ; #Delta #phi matched (EfJetsAntiKt4, A4TT); jets'),
+
+            steps.histos.deltaR(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL1Jets',
+                                  title='#Delta R ; #Delta R matched (EfJetsAntiKt4, L1); jets'),
+            steps.histos.deltaR(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4CC_JES',
+                                  title='#Delta R ; #Delta R matched (EfJetsAntiKt4, A4CC); jets'),
+            steps.histos.deltaR(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                  title='#Delta R ; #Delta R matched (EfJetsAntiKt4, L2CONE); jets'),
+            steps.histos.deltaR(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
+                                  title='#Delta R ; #Delta R matched (EfJetsAntiKt4, A4TT); jets'),
+
+            steps.histos.deltaEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL1Jets',
+                                  title='#Delta E_{T} ; #Delta E_{T} matched (EfJetsAntiKt4, L1); jets'),
+            steps.histos.deltaEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4CC_JES',
+                                  title='#Delta E_{T} ; #Delta E_{T} matched (EfJetsAntiKt4, A4CC); jets'),
+            steps.histos.deltaEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                  title='#Delta E_{T} ; #Delta E_{T} matched (EfJetsAntiKt4, L2CONE); jets'),
+            steps.histos.deltaEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
+                                  title='#Delta E_{T} ; #Delta E_{T} matched (EfJetsAntiKt4, A4TT); jets'),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
@@ -110,7 +136,7 @@ class example_trig(supy.analysis) :
 # get these files from
 # eos ls /eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3408_r3410_p661/data11_7TeV.00191628.physics_EnhancedBias.merge.NTUP_TRIG.r3408_r3410_p661_tid742401_00
 # (these are the suspicious eventd from Brian's email)
-        exampleDict.add("Pythia_ttbar_bWincbHminus",
+        exampleDict.add("r3466_r3467_p661",
                         #'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/NTUP*.root*", isDirectory = False)',
                         #'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/*.root*", isDirectory = False)',
                         'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/r3466_r3467_p661/*.root*", isDirectory = False)',
@@ -119,13 +145,14 @@ class example_trig(supy.analysis) :
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
-                                     #nFilesMax = 100,
-                                     #nEventsMax=10,
-                                     )
-                #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
-                #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
-                )
+        return (
+            supy.samples.specify(names = "r3466_r3467_p661", color = r.kBlack, markerStyle = 20,
+                                 #nFilesMax = 100,
+                                 #nEventsMax=1000,
+                                 )
+            #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
+            #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
+            )
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
