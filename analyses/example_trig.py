@@ -147,11 +147,15 @@ class example_trig(supy.analysis) :
                         # need export STAGE_SVCCLASS=atlcal for this castor area
                         'utils.fileListFromCastor(location = "/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109",pruneList=False)',
                         lumi = 0.03547) #/pb
+        exampleDict.add("data12_8TeV.00200863",
+                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200863.txt")',
+                        lumi = 3.505)
         return [exampleDict]
 
     def listOfSamples(self,config) :
         return (
-            supy.samples.specify(names = "data12_8TeV.00200804", color = r.kBlack)
+            #supy.samples.specify(names = "data12_8TeV.00200804", color = r.kBlack)
+            supy.samples.specify(names = "data12_8TeV.00200863", nEventsMax=1000, nFilesMax=1,color = r.kBlack) #
             #supy.samples.specify(names = "r3466_r3467_p661", color = r.kBlack, markerStyle = 20,
             #                     #nFilesMax = 100,
             #                     #nEventsMax=1000,
