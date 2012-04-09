@@ -1,0 +1,4 @@
+/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109._0001.1
+/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109._0002.1
+/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109._0003.1
+/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109._0004.1
