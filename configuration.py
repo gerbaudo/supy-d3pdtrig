@@ -1,6 +1,9 @@
 from supy.defaults import *
 import supy
 
+def experiment() :
+    return "atlas"
+
 def mainTree() :
     return ("/","trigger")
 
