@@ -1,6 +1,17 @@
 from math import fabs
 from supy import wrappedChain
 
+#for compatibility with old ntuples
+class vxp_z(wrappedChain.calculable) :
+    def update(self,_) :
+        self.value = self.source["vx_z"]
+class vxp_n(wrappedChain.calculable) :
+    def update(self,_) :
+        self.value = self.source["vx_n"]
+class vxp_nTracks(wrappedChain.calculable) :
+    def update(self,_) :
+        self.value = self.source["vx_nTracks"]
+
 #_________________________________________________
 class Indices(wrappedChain.calculable) :
     def __init__(self, collection = None, zPosMax = None, nTracksMin = None) :
