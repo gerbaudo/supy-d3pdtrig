@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import collections, operator, pprint as pp
+import collections, operator, sys, pprint as pp
 import ROOT as r
 r.gROOT.SetBatch(1)
 
@@ -27,6 +27,16 @@ class L2jet(object):
                                                self.outputType,
                                                self.roi)
 #____________________________________________________________
+
+
+inputFile = r.TFile.Open("data12_8TeV.00200863.physics_JetTauEtmiss.merge.NTUP_TRIG.f431_m1109._0001.1")
+inputFile.ls()
+tree = inputFile.Get(treename)
+c1 = r.TCanvas('c1',"output vs. input")
+c1.cd()
+tree.Draw("trig_L2_jet_InputType:trig_L2_jet_OutputType","","box")
+c1.SaveAs("inputOutput.png")
+sys.exit()
 
 r.gROOT.ProcessLine('.x ../RootCore/scripts/load_packages.C+' )                     
 
