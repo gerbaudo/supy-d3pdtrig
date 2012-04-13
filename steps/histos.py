@@ -70,8 +70,9 @@ class deltaEtFrac(analysisStep) :
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
             value = (elem1.et() - elem2.et())
-            if elem2.et() : value = value/elem2.et()
-            self.book.fill(value, self.hName, self.N, self.low, self.up, title=self.title)
+            if elem2.et() :
+                value = value/elem2.et()
+                self.book.fill(value, self.hName, self.N, self.low, self.up, title=self.title)
 
 class etaPhiMap(analysisStep) :
     def __init__(self, coll='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-pi,yUp=+pi,title="") :
