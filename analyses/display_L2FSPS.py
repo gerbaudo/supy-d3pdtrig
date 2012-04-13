@@ -69,12 +69,22 @@ class display_L2FSPS(supy.analysis) :
         exampleDict.add("Pythia_ttbar_bWincbHminus",
                         'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/user.chapleau.001130.EXT0._00082.NTUP.root", isDirectory = False)',
                         lumi = 1.0e+3 ) #/pb
+        exampleDict.add("ttbar-00-01-28",
+                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-28"),
+                        lumi = 1.0e3)
+        exampleDict.add("ttbar-00-01-29",
+                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
+                        lumi = 1.0e3)
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        return (supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
-                                     #nFilesMax = 100,
-                                     #nEventsMax=10,
+        return (#supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
+                #                     #nFilesMax = 100,
+                #                     #nEventsMax=10,
+                #                     )
+                supy.samples.specify(names = "ttbar-00-01-29", color = r.kBlack, markerStyle = 20,
+                                     nFilesMax = 1,
+                                     nEventsMax=1000,
                                      )
                 )
 
