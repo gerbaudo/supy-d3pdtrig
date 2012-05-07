@@ -45,6 +45,6 @@ def initializeROOT(r, cppFiles = []) :
 #                 ]
 
 def leavesToBlackList() :
-    return ["ph_vx_convTrk_weight",]
+    return ["ph_vx_convTrk_weight","trig_bgCode"]
 
 def useCachedFileLists() : return False
