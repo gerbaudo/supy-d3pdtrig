@@ -18,12 +18,15 @@ class display_L2FSPS(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+            #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
+            #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+            steps.filters.triggers(["L2_5j15_a4TTem"]),
+            steps.filters.triggers(["L2_5j15_a4TTem_5j50_a4cchad"]).invert(),
+            
             steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
             ]
         return outList
-    
+
     def listOfCalculables(self,config) :
         pars = self.parameters()
         minEt = pars['minJetEt']
@@ -33,6 +36,9 @@ class display_L2FSPS(supy.analysis) :
                               ]
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FSPS"),
                               calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FS"),
+                              calculables.TrigD3PD.TriggerBit("L2_5j15_a4TTem"),
+                              calculables.TrigD3PD.TriggerBit("L2_5j15_a4TTem_5j50_a4cchad"),
+
                               ]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
@@ -40,17 +46,17 @@ class display_L2FSPS(supy.analysis) :
                               calculables.jet.L2Jets(indices="IndicesL2JetsNON_L15L2CONE"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT_JES"),
-                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4CC_JES"),
+                              calculables.jet.L2Jets(indices="IndicesL2JetsA4TTA4CC_JES"),
                               calculables.jet.IndicesL2(minEt=minEt, input='NON_L15', output='L2CONE'),# regular L2
                               calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4TT'),     # L1.5 EM
                               calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4TT_JES'), # L1.5 HAD JES
-                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4CC_JES'), # A4CC HAD JES
+                              calculables.jet.IndicesL2(minEt=minEt, input='A4TT', output='A4CC_JES'), # A4CC HAD JES
 
                               calculables.jet.IndicesEf(minEt=minEt, calibTag='AntiKt4_topo_calib_EMJES'),
                               calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
 
                               calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
-                                                          otherColls=['L2JetsNONEA4CC_JES','L2JetsNONEA4TT']),
+                                                          otherColls=['L2JetsA4TTA4CC_JES','L2JetsNONEA4TT']),
                               calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               ]
@@ -75,6 +81,21 @@ class display_L2FSPS(supy.analysis) :
         exampleDict.add("ttbar-00-01-29",
                         '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
                         lumi = 1.0e3)
+        exampleDict.add("ttbar-00-01-31",
+                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-31"),
+                        lumi = 1.0e3)
+        exampleDict.add("data12_8TeV.00202609",
+                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609_f.txt")',
+                        lumi = 0.313)
+        exampleDict.add("data12_8TeV.00202660",
+                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202660.txt")',
+                        lumi = 2.178)
+        exampleDict.add("data12_8TeV.00202668",
+                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202668.txt")',
+                        lumi = 26.11)
+        exampleDict.add("data12_8TeV.00202798",
+                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202798.txt")',
+                        lumi = 26.11)
         return [exampleDict]
 
     def listOfSamples(self,config) :
@@ -82,10 +103,19 @@ class display_L2FSPS(supy.analysis) :
                 #                     #nFilesMax = 100,
                 #                     #nEventsMax=10,
                 #                     )
-                supy.samples.specify(names = "ttbar-00-01-29", color = r.kBlack, markerStyle = 20,
-                                     nFilesMax = 1,
-                                     nEventsMax=1000,
-                                     )
+#                supy.samples.specify(names = "ttbar-00-01-29", color = r.kBlack, markerStyle = 20,
+#                                     nFilesMax = 1,
+#                                     nEventsMax=1000,
+#                                     )
+#                supy.samples.specify(names = "ttbar-00-01-31", color = r.kBlack, markerStyle = 20,
+#                                     nFilesMax = 1,
+#                                     nEventsMax=1000,
+#                                     )
+                #supy.samples.specify(names = "data12_8TeV.00202609",   color = r.kBlack, nEventsMax=-1, nFilesMax=-1,)
+                supy.samples.specify(names = "data12_8TeV.00202660",   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
+                #supy.samples.specify(names = "data12_8TeV.00202668",   color = r.kBlack, nEventsMax=1000, nFilesMax=1,)
+                #supy.samples.specify(names = "data12_8TeV.00202798",   color = r.kBlack, nEventsMax=1000, nFilesMax=-1,)
+
                 )
 
     def conclude(self,pars) :
