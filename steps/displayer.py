@@ -36,7 +36,7 @@ class displayer(supy.steps.displayer) :
             #--"clean jets (xcak5JetPFPat)": "jets (AK5 PF)",
             }
         self.l1Jets = 'L1Jets'
-        self.l2Jets = 'L2JetsNONEA4CC_JES'
+        self.l2Jets = 'L2JetsA4TTA4CC_JES'
         self.l15Jets = 'L2JetsNONEA4TT'
         self.l2cJets = 'L2JetsNON_L15L2CONE'
         self.efJets = 'EfJetsAntiKt4_topo_calib_EMJES'
@@ -1006,7 +1006,8 @@ class displayer(supy.steps.displayer) :
 
             self.printTriggers(eventVars, params = defaults,
                                coords = {"x":x0+0.35, "y":yy},
-                               passedTriggers = 'PassedTriggers', pattern = r'.*5j55.*',
+                               #passedTriggers = 'PassedTriggers', pattern = r'.*5j55.*',
+                               passedTriggers = 'PassedTriggers', pattern = r'.*L2FS.*',
                                nMax=30)
             if self.doL1Jets :
                 self.printL1Jets(  eventVars, params = defaults, coords = {"x":x0,      "y":yy-8*s}, nMax = 10)
