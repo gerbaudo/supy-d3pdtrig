@@ -87,16 +87,17 @@ class etaPhiMap(analysisStep) :
                            title="%s;#eta;#phi"%self.title)
 
 class matchingEffVsEt(analysisStep) :
-    def __init__(self, matchCollPair='',N=100,low=0.0,up=100.0,title="matching efficiency vs. E_{T}") :
-        for item in ['matchCollPair','N','low','up','title'] : setattr(self,item,eval(item))
-        self.hName = 'matchingEffVsEt%s'%(matchCollPair)
+    def __init__(self, matchCollPair='', nTh=None, N=100,low=0.0,up=100.0,title="matching efficiency vs. E_{T}") :
+        for item in ['matchCollPair','nTh','N','low','up','title'] : setattr(self,item,eval(item))
+        self.hName = 'matchingEffVsEt%s%s'%(matchCollPair,"_%dthJet"%nTh if nTh else "")
         self.numTitle = 'num_%s'%self.hName
         self.denTitle = 'den_%s'%self.hName
         self.effTitle = 'eff_%s'%self.hName
 
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
-        for pair in matchCollPair :
+        for i,pair in enumerate(matchCollPair) :
+            if self.nTh and not self.nTh==i : continue
             elem1 = pair[0]
             elem2 = pair[1]
             # the first collection is the one with higher eff (denominator)
