@@ -5,7 +5,8 @@ def experiment() :
     return "atlas"
 
 def mainTree() :
-    return ("/","trigger")
+    return ("/","susy")
+    #return ("/","trigger")
 
 def otherTreesToKeepWhenSkimming() :
     return []
