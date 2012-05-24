@@ -3,6 +3,10 @@ from supy import analysisStep
 import supy
 from math import pi
 
+# for all the deltas, the first value is the reference one, so
+# delta = val_i+1 - val_1
+# deltaFrac = (val_i+1 - val_1)/val_1
+
 MeV2GeV = 1.0e-3
 def phi_mpi_pi(value) :
     "same as r.Math.GenVector.VectorUtil.Phi_mpi_pi (for some reason cannot import it...)"
@@ -13,7 +17,7 @@ def phi_mpi_pi(value) :
     while value >  +pi: value = value-2.*pi
     return value
 class deltaEta(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=-1.0,up=1.0,title="#Delta #eta") :
+    def __init__(self, matchCollPair='', var='',N=100,low=-0.5,up=+0.5,title="#Delta #eta") :
         for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'delta%s%s'%(var,matchCollPair)
     def uponAcceptance(self, eventVars) :
@@ -22,9 +26,9 @@ class deltaEta(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            self.book.fill(elem1.eta - elem2.eta, self.hName, self.N, self.low, self.up, title=self.title)
+            self.book.fill(elem2.eta - elem1.eta, self.hName, self.N, self.low, self.up, title=self.title)
 class deltaPhi(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=-1.0,up=1.0,title="#Delta #phi") :
+    def __init__(self, matchCollPair='', var='',N=100,low=-0.5,up=+0.5,title="#Delta #phi") :
         for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'delta%s%s'%(var,matchCollPair)
     def uponAcceptance(self, eventVars) :
@@ -33,9 +37,9 @@ class deltaPhi(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            self.book.fill(elem1.phi - elem2.phi, self.hName, self.N, self.low, self.up, title=self.title)
+            self.book.fill(elem2.phi - elem1.phi, self.hName, self.N, self.low, self.up, title=self.title)
 class deltaR(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=0.0,up=1.0,title="#Delta R") :
+    def __init__(self, matchCollPair='', var='',N=100,low=0.0,up=0.5,title="#Delta R") :
         for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'delta%s%s'%(var,matchCollPair)
     def uponAcceptance(self, eventVars) :
@@ -57,7 +61,7 @@ class deltaEt(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            self.book.fill(MeV2GeV*(elem1.et() - elem2.et()), self.hName, self.N, self.low, self.up, title=self.title)
+            self.book.fill(MeV2GeV*(elem2.et() - elem1.et()), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEtFrac(analysisStep) :
     # todo: merge it with deltaEt
     def __init__(self, matchCollPair='', var='',N=200,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
@@ -69,10 +73,9 @@ class deltaEtFrac(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            value = (elem1.et() - elem2.et())
-            if elem2.et() :
-                value = value/elem2.et()
-                self.book.fill(value, self.hName, self.N, self.low, self.up, title=self.title)
+            et1, et2 = elem1.et(), elem2.et()
+            if et1 :
+                self.book.fill((et2-et1)/et1, self.hName, self.N, self.low, self.up, title=self.title)
 
 class etaPhiMap(analysisStep) :
     def __init__(self, coll='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-pi,yUp=+pi,title="") :
@@ -87,7 +90,7 @@ class etaPhiMap(analysisStep) :
                            title="%s;#eta;#phi"%self.title)
 
 class deltaEtaVsEtaMap(analysisStep) :
-    def __init__(self, matchCollPair='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-1.0,yUp=+1.0,title="") :
+    def __init__(self, matchCollPair='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-0.5,yUp=+0.5,title="") :
         for item in ['matchCollPair','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
         self.hName = 'deltaEtaVsEtaMap%s'%matchCollPair
     def uponAcceptance(self, eventVars) :
@@ -126,6 +129,25 @@ class deltaEtFracVsEtaMap(analysisStep) :
                            (self.xUp, self.yUp),
                            title="%s;#eta; #Delta E_{T}/E_{T}"%self.hName if not self.title else self.title)
 
+class deltaEtFracVsMinDrMap(analysisStep) :
+    def __init__(self, matchCollPair='', nX=100,xLo=0.,xUp=5.0,nY=100,yLo=-5.0,yUp=+5.0,title="") :
+        for item in ['matchCollPair','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEtFracVsMinDrMap%s'%matchCollPair
+    def uponAcceptance(self, eventVars) :
+        matchCollPair = eventVars[self.matchCollPair]
+        for i,pair in enumerate(matchCollPair) :
+            # the first collection is the one with minDr
+            elem1 = pair[0]
+            elem2 = pair[1]
+            if not elem1 : continue
+            if not elem2 : continue
+            etRef = elem1.et()
+            self.book.fill((elem1.minDr, (elem2.et() - etRef)/etRef),
+                           self.hName,
+                           (self.nX, self.nY),
+                           (self.xLo, self.yLo),
+                           (self.xUp, self.yUp),
+                           title="%s;#min #Delta R; #Delta E_{T}/E_{T}"%self.hName if not self.title else self.title)
 
 class matchingEffVsEt(analysisStep) :
     def __init__(self, matchCollPair='', nTh=None, N=100,low=0.0,up=100.0,title="matching efficiency vs. E_{T}") :
