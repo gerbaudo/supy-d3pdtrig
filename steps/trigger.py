@@ -22,7 +22,7 @@ class triggerCounts(supy.analysisStep) :
                 self.counts[key] += value
         names = sorted(self.counts.keys())
         hist = r.TH1D('triggerCountHisto',
-                      "Trigger counts;;events",
+                      "Trigger counts ('%s');;events"%self.pattern,
                       len(names), 0, len(names))
         for i,name in enumerate(names) :
             hist.GetXaxis().SetBinLabel(i+1,name)
