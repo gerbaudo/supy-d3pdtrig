@@ -261,8 +261,11 @@ class example_trig(supy.analysis) :
     def listOfSampleDictionaries(self) :
         protocol="root://xrootd-disk.pic.es/"
         basedir="/pnfs-disk/pic.es/at3/projects/TOPD3PD/2011/Skimming/DPD_prod01_02_October11"
-        castorBaseDir="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
+                        # need export STAGE_SVCCLASS=atlcal for this castor area
+        castorBdirX="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
+        castorBdirJ="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss"
         castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
+        eosMyBDir="/eos/atlas/user/g/gerbaudo/trigger"
 
         exampleDict = supy.samples.SampleHolder()
 
@@ -273,77 +276,82 @@ class example_trig(supy.analysis) :
 # eos ls /eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3408_r3410_p661/data11_7TeV.00191628.physics_EnhancedBias.merge.NTUP_TRIG.r3408_r3410_p661_tid742401_00
 # (these are the suspicious eventd from Brian's email)
         exampleDict.add("foo",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/bugfixCheck/TrigT2CaloJet-00-01-29"),
                         lumi = 1.0e3)
         exampleDict.add("data12_8TeV.00200804",
-                        # need export STAGE_SVCCLASS=atlcal for this castor area
                         'utils.fileListFromCastor('
-                        +'location='
-                        +'"/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/'
-                        +'data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109"'
-                        +',pruneList=False)',
+                        +'location="'+castorBdirJ+'/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109"'
+                        +'",'+castorDefaultOpt+')',
                         lumi = 0.03547) #/pb
         exampleDict.add("data12_8TeV.00200863",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200863.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="'+castorBdirJ+'/00200863/data12_8TeV.00200863.physics_JetTauEtmiss.merge.NTUP_TRIG.f431_m1109"'
+                        +'",'+castorDefaultOpt+')',
                         lumi = 3.505)
         exampleDict.add("data12_8TeV.00200913",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200913.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="'+castorBdirJ+'/00200913/data12_8TeV.00200913.physics_JetTauEtmiss.merge.NTUP_TRIG.f431_m1109"'
+                        +'",'+castorDefaultOpt+')',
                         lumi = 2.786)
         exampleDict.add("data12_8TeV.00200926",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200926.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="'+castorBdirJ+'/00200926/data12_8TeV.00200926.physics_JetTauEtmiss.merge.NTUP_TRIG.f431_m1109"'
+                        +'",'+castorDefaultOpt+')',
                         lumi = 9.226)
         exampleDict.add("data12_8TeV.00202609",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609.txt")',
-                        lumi = 0.313)
+                        'utils.fileListFromCastor('
+                        +'location="'+castorBdirJ+'/00202609/data12_8TeV.00202609.physics_JetTauEtmiss.merge.NTUP_TRIG.f441_m1129/'
+                        +'",'+castorDefaultOpt+')',
+                        lumi = 26.11)
+
         exampleDict.add("TrigT2CaloJet-00-01-29",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/bugfixCheck/TrigT2CaloJet-00-01-29"),
                         lumi = 1.0e3)
         exampleDict.add("TrigT2CaloJet-00-01-31",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-31"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/bugfixCheck/TrigT2CaloJet-00-01-31"),
                         lumi = 1.0e3)
         exampleDict.add("data12_8TeV.00202660",
                         'utils.fileListFromCastor('
-                        +'location="%s"'%(castorBaseDir+'/00202660/data12_8TeV.00202660.express_express.merge.NTUP_TRIG.x199_m1129/')
+                        +'location="%s"'%(castorBdirX+'/00202660/data12_8TeV.00202660.express_express.merge.NTUP_TRIG.x199_m1129/')
                         +','+castorDefaultOpt+')',
                         lumi = 2.178)
         exampleDict.add("data12_8TeV.00202668",
                         'utils.fileListFromCastor('
-                        +'location="%s"'%(castorBaseDir+'/00202668/data12_8TeV.00202668.express_express.merge.NTUP_TRIG.f443_m1139/')
+                        +'location="%s"'%(castorBdirX+'/00202668/data12_8TeV.00202668.express_express.merge.NTUP_TRIG.f443_m1139/')
                         +','+castorDefaultOpt+')',
                         lumi = 26.11)
 
         exampleDict.add("202668_L1_4J15",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202668.skim.L1_4J15"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/skim/SUSYD3PD.202668.skim.L1_4J15"),
                         lumi = 26.11)
         exampleDict.add("202712_L1_4J15",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202712.skim.L1_4J15"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/skim/SUSYD3PD.202712.skim.L1_4J15"),
                         lumi = 29.85)
         exampleDict.add("202712_L1_4J15_2",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202712.skim.L1_4J15_2"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/skim/SUSYD3PD.202712.skim.L1_4J15_2"),
                         lumi = 29.85)
         exampleDict.add("202740_L1_4J15",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202740.skim.L1_4J15"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/skim/SUSYD3PD.202740.skim.L1_4J15"),
                         lumi = 7.281)
         exampleDict.add("202798_L1_4J15",
                         (supy.utils.fileListFromEos,
                          dict(supy.sites.eosPars().items()
-                              +{'location':"/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202798.skim.L1_4J15"
+                              +{'location':eosMyBDir+"/skim/SUSYD3PD.202798.skim.L1_4J15"
                                 }.items())),
-                        #'%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202798.skim.L1_4J15"),
                         lumi = 52.6)
         exampleDict.add("data12_8TeV.00203277",
                         'utils.fileListFromCastor('
-                        +'location="%s"'%(castorBaseDir+'/00203277/data12_8TeV.00203277.express_express.merge.NTUP_TRIG.f444_m1141/')
+                        +'location="%s"'%(castorBdirX+'/00203277/data12_8TeV.00203277.express_express.merge.NTUP_TRIG.f444_m1141/')
                         +','+castorDefaultOpt+')',
                         lumi = 99.3)
         exampleDict.add("data12_8TeV.00203335",
                         'utils.fileListFromCastor('
-                        +'location="%s"'%(castorBaseDir+'/00203335/data12_8TeV.00203335.express_express.merge.NTUP_TRIG.f446_m1146/')
+                        +'location="%s"'%(castorBdirX+'/00203335/data12_8TeV.00203335.express_express.merge.NTUP_TRIG.f446_m1146/')
                         +','+castorDefaultOpt+')',
                         lumi = 61.81)
         exampleDict.add("data12_8TeV.00203336",
                         'utils.fileListFromCastor('
-                        +'location="%s"'%(castorBaseDir+'/00203336/data12_8TeV.00203336.express_express.merge.NTUP_TRIG.f446_m1146/')
+                        +'location="%s"'%(castorBdirX+'/00203336/data12_8TeV.00203336.express_express.merge.NTUP_TRIG.f446_m1146/')
                         +','+castorDefaultOpt+')',
                         lumi = 61.25)
         return [exampleDict]
