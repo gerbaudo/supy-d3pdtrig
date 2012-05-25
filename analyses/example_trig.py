@@ -2,6 +2,7 @@
 
 import supy
 import calculables,steps,samples, ROOT as r
+import re
 
 GeV=1.0e+3
 TeV=1.0e+3*GeV
@@ -23,10 +24,22 @@ class example_trig(supy.analysis) :
             #supy.steps.printer.printstuff(["IndicesL2JetsA4TTA4CC_JES",]),
             #steps.trigger.triggerCounts(pattern=r'.*5j55.*'),
             steps.trigger.triggerCounts(pattern=r'%s'%pars['L2multiJetChain']),
+            supy.steps.histos.value(var='averageIntPerXing', N=50+1, low=0.5, up=50.5),
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            steps.filters.triggers(["EF_4j55_a4tchad_L2FS"]),
+            #steps.filters.triggers(["EF_4j55_a4tchad_L2FS"]),
+            supy.steps.histos.multiplicity(var='IndicesL2JetsA4TTA4CC_JES', max=20),
+            supy.steps.histos.multiplicity(var='IndicesL2JetsNON_L15L2CONE', max=20),
+            supy.steps.histos.multiplicity(var='IndicesEfJetsAntiKt4_topo_calib_EMJES', max=20),
+            steps.histos.attribute(attrName='E',coll='L2JetsNON_L15L2CONE', nX=100,xLo=-10.0*GeV,xUp=1000.0*GeV,title="L2Cone: E; E [MeV]; jets"),
+            steps.histos.attribute(attrName='nLeadingCells',coll='L2JetsNON_L15L2CONE', nX=100,xLo=+0.0,xUp=500.0,title="L2Cone: nLeadingCells;N;jets"),
+            steps.histos.attribute(attrName='hecf',coll='L2JetsNON_L15L2CONE', nX=100,xLo=-0.5,xUp=+1.5,title="L2Cone: hecf; hecf; jets"),
+            steps.histos.attribute(attrName='jetQuality',coll='L2JetsNON_L15L2CONE', nX=100,xLo=-0.5,xUp=+1.5,title="L2Cone: jetQuality; jets"),
+            steps.histos.attribute(attrName='emf',coll='L2JetsNON_L15L2CONE', nX=100,xLo=-0.5,xUp=+1.5,title="L2Cone: emf; emf; jets"),
+            steps.histos.attribute(attrName='jetTimeCells',coll='L2JetsNON_L15L2CONE', nX=100,xLo=-50.0,xUp=+50.0,title="L2Cone: jetTimeCells;t [ns];jets"),
+            steps.histos.attribute(attrName='jetTimeCells',coll='L2JetsNON_L15L2CONE', nX=100,xLo=-10.0,xUp=+10.0,title="L2Cone: jetTimeCells;t [ns];jets"),
+
             #steps.filters.triggers(["EF_4j55_a4tchad_L2FS", "EF_4j55_a4tchad_L2FSPS",]),
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
@@ -110,60 +123,63 @@ class example_trig(supy.analysis) :
             steps.histos.etaPhiMap(coll='EfJetsAntiKt4_topo_calib_EMJES', title="Ef jets #phi vs. #eta"),
 
 
-            steps.histos.deltaEtaVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTL2CONE',
-                                          title='#Delta #eta matched (EfJetsAntiKt4, A4TTL2CONE); #eta; #Delta E_{T}/E_{T}'),
+            steps.histos.deltaEtaVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                          title='#Delta #eta matched (EfJetsAntiKt4, NON_L15L2CONE); #eta; #Delta E_{T}/E_{T}'),
             steps.histos.deltaEtaVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
                                           title='#Delta #eta matched (EfJetsAntiKt4, A4CC); #eta; #Delta E_{T}/E_{T}'),
 
-            steps.histos.deltaEtFracVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTL2CONE',
-                                             title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4TTL2CONE); #eta; #Delta E_{T}/E_{T}'),
+            steps.histos.deltaEtFracVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                             title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); #eta; #Delta E_{T}/E_{T}'),
             steps.histos.deltaEtFracVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
                                              title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4CC); #eta; #Delta E_{T}/E_{T}'),
-
-            #steps.filters.triggers(["L1_4J15"]),
-
-#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
-#                                         nTh=4,
-#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TT); E_{T}^{offline} [GeV]; eff"),
-#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-#                                         nTh=4,
-#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, L2CONE); E_{T}^{offline} [GeV]; eff"),
-#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-#                                         nTh=4,
-#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
-#                                         nTh=5,
-#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TT); E_{T}^{offline} [GeV]; eff"),
-#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-#                                         nTh=5,
-#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, L2CONE); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         nTh=4,
-                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTL2CONE',
-                                         nTh=4,
-                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TTL2CONE); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         nTh=5,
-                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTL2CONE',
-                                         nTh=5,
-                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TTL2CONE); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         nTh=6,
-                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTL2CONE',
-                                         nTh=6,
-                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TTL2CONE); E_{T}^{offline} [GeV]; eff"),
-
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
-            #steps.filters.triggers(["EF_6j55_a4tchad_L2FS"]),
-            #steps.filters.triggers(["EF_6j55_a4tchad_L2FSPS"]).invert(),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
-            steps.filters.triggers(["EF_4j55_a4tchad_L2FSPS"]).invert(),
-            steps.histos.deltaEtFrac(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                     title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4CC) FS !FSPS; #Delta E_{T}/E_{T}; jets'),
-
+#--today--            steps.histos.deltaEtFracVsMinDrMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+#--today--                                               title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); min #Delta R; #Delta E_{T}/E_{T}'),
+#--today--
+#--today--
+#--today--            #steps.filters.triggers(["L1_4J15"]),
+#--today--
+#--today--#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
+#--today--#                                         nTh=4,
+#--today--#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TT); E_{T}^{offline} [GeV]; eff"),
+#--today--#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+#--today--#                                         nTh=4,
+#--today--#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, L2CONE); E_{T}^{offline} [GeV]; eff"),
+#--today--#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+#--today--#                                         nTh=4,
+#--today--#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+#--today--#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
+#--today--#                                         nTh=5,
+#--today--#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4TT); E_{T}^{offline} [GeV]; eff"),
+#--today--#            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+#--today--#                                         nTh=5,
+#--today--#                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, L2CONE); E_{T}^{offline} [GeV]; eff"),
+#--today--            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+#--today--                                         nTh=4,
+#--today--                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+#--today--            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+#--today--                                         nTh=4,
+#--today--                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
+#--today--            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+#--today--                                         nTh=5,
+#--today--                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+#--today--            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+#--today--                                         nTh=5,
+#--today--                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
+#--today--            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+#--today--                                         nTh=6,
+#--today--                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+#--today--            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+#--today--                                         nTh=6,
+#--today--                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
+#--today--
+#--today--            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
+#--today--            #steps.filters.triggers(["EF_6j55_a4tchad_L2FS"]),
+#--today--            #steps.filters.triggers(["EF_6j55_a4tchad_L2FSPS"]).invert(),
+#--today--            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+#--today--            steps.filters.triggers(["EF_4j55_a4tchad_L2FSPS"]).invert(),
+#--today--            steps.histos.deltaEtFrac(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+#--today--                                     title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4CC) FS !FSPS; #Delta E_{T}/E_{T}; jets'),
+#--today--
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             #supy.steps.filters.multiplicity(min = 4, var = "jet_Indices"),
             #supy.steps.histos.multiplicity(var = "jet_Indices", max = 20),
@@ -180,8 +196,8 @@ class example_trig(supy.analysis) :
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += supy.calculables.zeroArgs(calculables)
         #listOfCalculables += supy.calculables.zeroArgs(calculables.vertex)
-        #listOfCalculables += [calculables.TrigD3PD.Tdt(),]
-        listOfCalculables += [calculables.TrigD3PD.Tdt(treeName = "TrigConfTree", dirName = "susyMeta"),]
+        listOfCalculables += [calculables.TrigD3PD.Tdt(),]
+        #listOfCalculables += [calculables.TrigD3PD.Tdt(treeName = "TrigConfTree", dirName = "susyMeta"),]
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_mu18_medium"),
                               calculables.TrigD3PD.TriggerBit("EF_4j55_a4tchad_L2FS"),
                               calculables.TrigD3PD.TriggerBit("EF_4j55_a4tchad_L2FSPS"),
@@ -245,6 +261,9 @@ class example_trig(supy.analysis) :
     def listOfSampleDictionaries(self) :
         protocol="root://xrootd-disk.pic.es/"
         basedir="/pnfs-disk/pic.es/at3/projects/TOPD3PD/2011/Skimming/DPD_prod01_02_October11"
+        castorBaseDir="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
+        castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
+
         exampleDict = supy.samples.SampleHolder()
 
 #        exampleDict.add("Pythia_ttbar_bWincbHminus",
@@ -256,21 +275,16 @@ class example_trig(supy.analysis) :
         exampleDict.add("foo",
                         '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
                         lumi = 1.0e3)
-
-        exampleDict.add("r3466_r3467_p661",
-                        #'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/NTUP*.root*", isDirectory = False)',
-                        #'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/*.root*", isDirectory = False)',
-                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/r3466_r3467_p661/*.root*", isDirectory = False)',
-                        #'[""]',
-                        lumi = 1.0e+3 ) #/pb
         exampleDict.add("data12_8TeV.00200804",
-                        #'utils.fileListFromDisk(location = "/tmp/gerbaudo/eos/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109/")',
                         # need export STAGE_SVCCLASS=atlcal for this castor area
-                        'utils.fileListFromCastor(location = "/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109",pruneList=False)',
+                        'utils.fileListFromCastor('
+                        +'location='
+                        +'"/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200804/'
+                        +'data12_8TeV.00200804.physics_JetTauEtmiss.merge.NTUP_TRIG.x191_m1109"'
+                        +',pruneList=False)',
                         lumi = 0.03547) #/pb
         exampleDict.add("data12_8TeV.00200863",
                         'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200863.txt")',
-                        #'utils.fileListFromCastor(location="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss/00200863/data12_8TeV.00200863.physics_JetTauEtmiss.merge.NTUP_TRIG.f431_m1109", pruneList=False)',
                         lumi = 3.505)
         exampleDict.add("data12_8TeV.00200913",
                         'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200913.txt")',
@@ -278,11 +292,8 @@ class example_trig(supy.analysis) :
         exampleDict.add("data12_8TeV.00200926",
                         'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00200926.txt")',
                         lumi = 9.226)
-#        exampleDict.add("data12_8TeV.00202609",
-#                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609.txt")',
-#                        lumi = 0.313)
         exampleDict.add("data12_8TeV.00202609",
-                        'utils.fileListFromDisk(location="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/foo.root", isDirectory=False)',
+                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609.txt")',
                         lumi = 0.313)
         exampleDict.add("TrigT2CaloJet-00-01-29",
                         '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
@@ -291,14 +302,16 @@ class example_trig(supy.analysis) :
                         '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-31"),
                         lumi = 1.0e3)
         exampleDict.add("data12_8TeV.00202660",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202660.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBaseDir+'/00202660/data12_8TeV.00202660.express_express.merge.NTUP_TRIG.x199_m1129/')
+                        +','+castorDefaultOpt+')',
                         lumi = 2.178)
         exampleDict.add("data12_8TeV.00202668",
-                        'utils.fileListFromTextFile(fileName="%s")'%("/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202668.txt"),
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBaseDir+'/00202668/data12_8TeV.00202668.express_express.merge.NTUP_TRIG.f443_m1139/')
+                        +','+castorDefaultOpt+')',
                         lumi = 26.11)
-        exampleDict.add("data12_8TeV.B1",
-                        'utils.fileListFromTextFile(fileName="%s")'%("/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.B1.txt"),
-                        lumi = 2.178+26.11+29.94+7.303+52.77)
+
         exampleDict.add("202668_L1_4J15",
                         '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202668.skim.L1_4J15"),
                         lumi = 26.11)
@@ -312,41 +325,42 @@ class example_trig(supy.analysis) :
                         '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202740.skim.L1_4J15"),
                         lumi = 7.281)
         exampleDict.add("202798_L1_4J15",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202798.skim.L1_4J15"),
+                        (supy.utils.fileListFromEos,
+                         dict(supy.sites.eosPars().items()
+                              +{'location':"/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202798.skim.L1_4J15"
+                                }.items())),
+                        #'%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202798.skim.L1_4J15"),
                         lumi = 52.6)
+        exampleDict.add("data12_8TeV.00203277",
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBaseDir+'/00203277/data12_8TeV.00203277.express_express.merge.NTUP_TRIG.f444_m1141/')
+                        +','+castorDefaultOpt+')',
+                        lumi = 99.3)
+        exampleDict.add("data12_8TeV.00203335",
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBaseDir+'/00203335/data12_8TeV.00203335.express_express.merge.NTUP_TRIG.f446_m1146/')
+                        +','+castorDefaultOpt+')',
+                        lumi = 61.81)
+        exampleDict.add("data12_8TeV.00203336",
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBaseDir+'/00203336/data12_8TeV.00203336.express_express.merge.NTUP_TRIG.f446_m1146/')
+                        +','+castorDefaultOpt+')',
+                        lumi = 61.25)
         return [exampleDict]
 
     def listOfSamples(self,config) :
+        nEventsMax=1000 #10000
         return (
             #supy.samples.specify(names = "data12_8TeV.00200804", color = r.kBlack)
-            # supy.samples.specify(names = "data12_8TeV.00200863",   color = r.kBlack)  # nEventsMax=1000, nFilesMax=1,
-            # + supy.samples.specify(names = "data12_8TeV.00200913", color = r.kViolet) # nEventsMax=1000, nFilesMax=1,
-            # + supy.samples.specify(names = "data12_8TeV.00200926", color = r.kRed) #    nEventsMax=1000, nFilesMax=1,
+            #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3)
+            #supy.samples.specify(names=['data12_8TeV.00202660', 'data12_8TeV.00202668',
+            #                            'data12_8TeV.00202712', 'data12_8TeV.00202740', 'data12_8TeV.00202798',],
+            #                     color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
 
-            #supy.samples.specify(names = "data12_8TeV.00202609",   color = r.kBlack, nEventsMax=1000, nFilesMax=1,)
-            #+ supy.samples.specify(names = "data12_8TeV.00200926", color = r.kRed, nEventsMax=1000, nFilesMax=1,) #
-            #supy.samples.specify(names = "data12_8TeV.00202668",   color = r.kBlack, nEventsMax=-1, nFilesMax=-1,)
-            #supy.samples.specify(names = "data12_8TeV.B1",   color = r.kBlack, nEventsMax=-1, nFilesMax=-1,)
+            supy.samples.specify(names="data12_8TeV.00203277", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
+            +supy.samples.specify(names="data12_8TeV.00203335", color = r.kRed, nEventsMax=nEventsMax, nFilesMax=-1, markerStyle=r.kOpenCircle)
+            +supy.samples.specify(names="data12_8TeV.00203336", color = r.kBlue, nEventsMax=nEventsMax, nFilesMax=-1)
 
-            supy.samples.specify(names="202668_L1_4J15", color = r.kBlack, nEventsMax=-1, nFilesMax=-1)
-            +supy.samples.specify(names="202712_L1_4J15", color = r.kRed, nEventsMax=-1, nFilesMax=-1)
-            +supy.samples.specify(names="202740_L1_4J15", color = r.kBlue, nEventsMax=-1, nFilesMax=-1)
-
-            #supy.samples.specify(names="202712_L1_4J15", color = r.kBlack, nEventsMax=-1, nFilesMax=-1)
-            #+supy.samples.specify(names="202712_L1_4J15_2", color = r.kRed, nEventsMax=-1, nFilesMax=-1)
-
-#            supy.samples.specify(names = "TrigT2CaloJet-00-01-29",   color = r.kBlack, nEventsMax=1000, nFilesMax=1,) #
-#            + supy.samples.specify(names = "TrigT2CaloJet-00-01-31",   color = r.kViolet, markerStyle=r.kOpenCircle,nEventsMax=1000, nFilesMax=1,) #
-#-            supy.samples.specify(names = "TrigT2CaloJet-00-01-29",   color = r.kBlack, nEventsMax=1000, nFilesMax=1,)
-#-            + supy.samples.specify(names = "TrigT2CaloJet-00-01-31",   color = r.kViolet, markerStyle=r.kOpenCircle, nEventsMax=1000, nFilesMax=1,)
-
-            #supy.samples.specify(names = "foo", nEventsMax=1000, nFilesMax=1,color = r.kBlack) #
-            #supy.samples.specify(names = "r3466_r3467_p661", color = r.kBlack, markerStyle = 20,
-            #                     #nFilesMax = 100,
-            #                     #nEventsMax=1000,
-            #                     )
-            #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3) +
-            #supy.samples.specify(names = "ttbar_skimMu", color = r.kViolet, effectiveLumi = 10.0e+3)
             )
 
     def conclude(self,pars) :
@@ -360,4 +374,5 @@ class example_trig(supy.analysis) :
                       doLog = False,
                       #samplesForRatios = ("Example_Skimmed_900_GeV_Data","Example_Skimmed_900_GeV_MC"),
                       #sampleLabelsForRatios = ("data","sim"),
+                      blackListRe = [re.compile(r'num_'), re.compile(r'den_')],
                       ).plotAll()
