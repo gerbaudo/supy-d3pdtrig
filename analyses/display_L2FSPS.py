@@ -63,6 +63,10 @@ class display_L2FSPS(supy.analysis) :
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
+        castorBdirX="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
+        castorBdirJ="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/physics_JetTauEtmiss"
+        castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
+        eosMyBDir="/eos/atlas/user/g/gerbaudo/trigger"
         exampleDict = supy.samples.SampleHolder()
         # get these files from
         # eos ls /eos/atlas/atlasdatadisk/data11_7TeV/NTUP_TRIG/r3408_r3410_p661/data11_7TeV.00191628.physics_EnhancedBias.merge.NTUP_TRIG.r3408_r3410_p661_tid742401_00
@@ -76,47 +80,41 @@ class display_L2FSPS(supy.analysis) :
                         'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/user.chapleau.001130.EXT0._00082.NTUP.root", isDirectory = False)',
                         lumi = 1.0e+3 ) #/pb
         exampleDict.add("ttbar-00-01-28",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-28"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/bugfixCheck/TrigT2CaloJet-00-01-28"),
                         lumi = 1.0e3)
         exampleDict.add("ttbar-00-01-29",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/bugfixCheck/TrigT2CaloJet-00-01-29"),
                         lumi = 1.0e3)
         exampleDict.add("ttbar-00-01-31",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-31"),
+                        '%s%s")'%(supy.sites.eos(), eosMyBDir+"/bugfixCheck/TrigT2CaloJet-00-01-31"),
                         lumi = 1.0e3)
         exampleDict.add("data12_8TeV.00202609",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609_f.txt")',
-                        lumi = 0.313)
+                        'utils.fileListFromCastor('
+                        +'location="'+castorBdirJ+'/00202609/data12_8TeV.00202609.physics_JetTauEtmiss.merge.NTUP_TRIG.f441_m1129/'
+                        +'",'+castorDefaultOpt+')',
+                        lumi = 26.11)
         exampleDict.add("data12_8TeV.00202660",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202660.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBdirX+'/00202660/data12_8TeV.00202660.express_express.merge.NTUP_TRIG.x199_m1129/')
+                        +','+castorDefaultOpt+')',
                         lumi = 2.178)
         exampleDict.add("data12_8TeV.00202668",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202668.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBdirX+'/00202668/data12_8TeV.00202668.express_express.merge.NTUP_TRIG.f443_m1139/')
+                        +','+castorDefaultOpt+')',
                         lumi = 26.11)
         exampleDict.add("data12_8TeV.00202798",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202798.txt")',
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBdirX+'/00202798/data12_8TeV.00202798.express_express.merge.NTUP_TRIG.f443_m1139/')
+                        +','+castorDefaultOpt+')',
                         lumi = 26.11)
+
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        return (#supy.samples.specify(names = "Pythia_ttbar_bWincbHminus", color = r.kBlack, markerStyle = 20,
-                #                     #nFilesMax = 100,
-                #                     #nEventsMax=10,
-                #                     )
-#                supy.samples.specify(names = "ttbar-00-01-29", color = r.kBlack, markerStyle = 20,
-#                                     nFilesMax = 1,
-#                                     nEventsMax=1000,
-#                                     )
-#                supy.samples.specify(names = "ttbar-00-01-31", color = r.kBlack, markerStyle = 20,
-#                                     nFilesMax = 1,
-#                                     nEventsMax=1000,
-#                                     )
-                #supy.samples.specify(names = "data12_8TeV.00202609",   color = r.kBlack, nEventsMax=-1, nFilesMax=-1,)
-                supy.samples.specify(names = "data12_8TeV.00202660",   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
-                #supy.samples.specify(names = "data12_8TeV.00202668",   color = r.kBlack, nEventsMax=1000, nFilesMax=1,)
-                #supy.samples.specify(names = "data12_8TeV.00202798",   color = r.kBlack, nEventsMax=1000, nFilesMax=-1,)
-
-                )
+        return (
+            supy.samples.specify(names = "data12_8TeV.00202660",   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
+            )
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
@@ -124,6 +122,4 @@ class display_L2FSPS(supy.analysis) :
         org.scale(lumiToUseInAbsenceOfData=1000.)
         supy.plotter( org,
                       pdfFileName = self.pdfFileName(org.tag),
-                      #samplesForRatios = ("Example_Skimmed_900_GeV_Data","Example_Skimmed_900_GeV_MC"),
-                      #sampleLabelsForRatios = ("data","sim"),
                       ).plotAll()
