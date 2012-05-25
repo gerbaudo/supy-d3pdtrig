@@ -108,12 +108,18 @@ class display_L2FSPS(supy.analysis) :
                         +'location="%s"'%(castorBdirX+'/00202798/data12_8TeV.00202798.express_express.merge.NTUP_TRIG.f443_m1139/')
                         +','+castorDefaultOpt+')',
                         lumi = 26.11)
+        exampleDict.add("data12_8TeV.00203336",
+                        'utils.fileListFromCastor('
+                        +'location="%s"'%(castorBdirX+'/00203336/data12_8TeV.00203336.express_express.merge.NTUP_TRIG.f446_m1146/')
+                        +','+castorDefaultOpt+')',
+                        lumi = 61.25)
 
         return [exampleDict]
 
     def listOfSamples(self,config) :
+        runN='00203336' #00202660
         return (
-            supy.samples.specify(names = "data12_8TeV.00202660",   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
+            supy.samples.specify(names = "data12_8TeV."+runN,   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
             )
 
     def conclude(self,pars) :
