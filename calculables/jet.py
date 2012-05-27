@@ -273,3 +273,17 @@ class MatchedJets(supy.wrappedChain.calculable) :
                         break
                 jetWithMatches.append(matchedJet)
             self.value.append(tuple(jetWithMatches))
+class MatchedJetsMarkers(supy.wrappedChain.calculable) :
+    "Given a matched jet collection, provide markers to zip and indicate them in the display"
+    def __init__(self, matchedColl='') :
+        self.coll = matchedColl
+        self.matchColors = [51, 57, 64, 70, 78, 89, 95, 100]
+        self.matchMarkers = int(len(self.matchColors)/2)*[33,34] # kFullDiamond, kFullCross
+    @property
+    def name(self):
+        return "%sMarkers"%(self.coll)
+    def update(self, _) :
+        # one could want to add as many markers as needed in each event...
+        self.value = {'colors' : self.matchColors,
+                      'markers' : self.matchMarkers
+                      }
