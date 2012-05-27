@@ -18,10 +18,10 @@ class display_L2FSPS(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
-            #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
-            #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
-            steps.filters.triggers(["L2_5j15_a4TTem"]),
-            steps.filters.triggers(["L2_5j15_a4TTem_5j50_a4cchad"]).invert(),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+            #steps.filters.triggers(["L2_5j15_a4TTem"]),
+            #steps.filters.triggers(["L2_5j15_a4TTem_5j50_a4cchad"]).invert(),
             
             steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
             ]
@@ -57,6 +57,11 @@ class display_L2FSPS(supy.analysis) :
 
                               calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
                                                           otherColls=['L2JetsA4TTA4CC_JES','L2JetsNONEA4TT']),
+                              calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
+                                                          otherColls=['L2JetsA4TTA4CC_JES','L2JetsNONEA4TT','L2JetsNON_L15L2CONE']),
+                              calculables.jet.MatchedJetsMarkers(matchedColl='EfJetsAntiKt4_topo_calib_EMJES'
+                                                                 +'Match'
+                                                                 +''.join(['L2JetsA4TTA4CC_JES','L2JetsNONEA4TT','L2JetsNON_L15L2CONE'])),
                               calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               ]
@@ -118,8 +123,9 @@ class display_L2FSPS(supy.analysis) :
 
     def listOfSamples(self,config) :
         runN='00203336' #00202660
+        nEventsMax=1000000
         return (
-            supy.samples.specify(names = "data12_8TeV."+runN,   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
+            supy.samples.specify(names = "data12_8TeV."+runN,   color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1,)
             )
 
     def conclude(self,pars) :
