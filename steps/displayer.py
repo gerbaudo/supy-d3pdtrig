@@ -41,13 +41,13 @@ class displayer(supy.steps.displayer) :
         self.l2cJets = 'L2JetsNON_L15L2CONE'
         self.efJets = 'EfJetsAntiKt4_topo_calib_EMJES'
         self.offlineJets = 'OfflineJets'
+        self.collToMatch = [self.l2Jets, self.l15Jets, self.l2cJets]
+        self.matchedEfJets = '%sMatch%s'%(self.efJets, ''.join(self.collToMatch))
 
         self.l1JetsColor = r.kRed
         self.l2JetsColor = r.kOrange
         self.efJetsColor = r.kBlue
         self.offlineJetsColor = r.kCyan
-
-
 
         self.etaBE = 1.5 # configuration.detectorSpecs()["cms"]["etaBE"]
         self.etaEF = 3.2
@@ -108,6 +108,8 @@ class displayer(supy.steps.displayer) :
         self.arrow = r.TArrow()
         self.text = r.TText()
         self.latex = r.TLatex()
+        self.marker = r.TMarker()
+        self.marker.SetMarkerSize(0.75*self.marker.GetMarkerSize())
 #--
 #--        self.alphaFuncs=[
 #--            self.makeAlphaTFunc(0.55,r.kBlack),
@@ -287,6 +289,11 @@ class displayer(supy.steps.displayer) :
         self.printText("Et     eta  phi")
         self.printText("---------------")
         nJets = len(jets)
+        iColl = self.collToMatch.index(collection)+1 if collection in self.collToMatch else 0
+        matchedEfJets = eventVars[self.matchedEfJets]
+        matchedJetsMarkers = eventVars[self.matchedEfJets+'Markers']
+        colors = matchedJetsMarkers['colors']
+        markers = matchedJetsMarkers['markers']
         for iJet,jet in enumerate(jets) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
@@ -294,30 +301,48 @@ class displayer(supy.steps.displayer) :
             self.printText("%5.1f %4.1f %4.1f"%\
                            (jet.et()*MeV2GeV, jet.eta, jet.phi))
                             #jet.InputType, jet.OutputType))
+            if iColl and iJet<len(colors):
+                jetsWithMatch = [jetTuple[iColl] for jetTuple in matchedEfJets]
+                xMark = self.textX - 0.0005 # avoid marker's overlap with text
+                if jet not in jetsWithMatch : continue
+                i = jetsWithMatch.index(jet)
+                if not i < len(colors) : continue
+                self.marker.SetMarkerColor(colors[i])
+                self.marker.SetMarkerStyle(markers[i])
+                self.marker.DrawMarker(xMark, self.textY - (self.textCounter-1.5) * self.textSlope)
 
     def printEfJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         efJets = eventVars[self.efJets]
-        matchedEfJets = eventVars['%sMatch%s'%(self.efJets, ''.join([self.l2Jets, self.l15Jets]))]
-
+        matchedEfJets = eventVars[self.matchedEfJets]
+        matchedJetsMarkers = eventVars[self.matchedEfJets+'Markers']
         # the EF jet is the first one in the tuple; the other elements are matched jets
-        matchedEfJets = sorted([jTuple for jTuple in matchedEfJets],
-                               key = lambda jTuple: jTuple[0].et(),
-                               reverse = True)
+        # note: already sorted just leaving it as example code
+        #matchedEfJets = sorted([jTuple for jTuple in matchedEfJets],
+        #                       key = lambda jTuple: jTuple[0].et(),
+        #                       reverse = True)
 
         self.printText(self.renamedDesc(self.efJets))
         self.printText("Et     eta  phi Et(A4CC) Et(A4TT)")
         self.printText("---------------------------------")
         nJets = len(matchedEfJets)
         lenCmpLabel = len('Et(A4CC)')
+        colors = matchedJetsMarkers['colors']
+        markers = matchedJetsMarkers['markers']
+        xMark = self.textX - 0.0005 # avoid marker's overlap with text
         for iJet,jetTuple in enumerate(matchedEfJets) :
-            jetEf, jetA4cc, jetA4tt = jetTuple[0], jetTuple[1], jetTuple[2]
+            jetEf, jetA4cc, jetA4tt, jetC4 = jetTuple[0], jetTuple[1], jetTuple[2], jetTuple[3]
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
             flagA4cc = (' ' if not jetA4cc else '<' if jetEf.et()<jetA4cc.et() else '>').center(lenCmpLabel)
             flagA4tt = (' ' if not jetA4tt else '<' if jetEf.et()<jetA4tt.et() else '>').center(lenCmpLabel)
             self.printText("%5.1f %4.1f %4.1f %s  %s"%(jetEf.et()*MeV2GeV, jetEf.eta, jetEf.phi, flagA4cc, flagA4tt))
+            if iJet in xrange(len(colors)) :
+                m, c = markers[iJet], colors[iJet]
+                self.marker.SetMarkerColor(c)
+                self.marker.SetMarkerStyle(m)
+                self.marker.DrawMarker(xMark, self.textY - (self.textCounter-1.5) * self.textSlope)
     def printOfflineJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         jets = eventVars[self.offlineJets]
@@ -613,8 +638,18 @@ class displayer(supy.steps.displayer) :
     def drawEfJets(self, eventVars, color, lineWidth, circleRadius) :
         self.legendFunc(color, name = "EfJet", desc = "EF jets (%s)"%self.renamedDesc(self.efJets))
         jets = eventVars[self.efJets]
+        matchedEfJets = eventVars[self.matchedEfJets]
+        matchedJetsMarkers = eventVars[self.matchedEfJets+'Markers']
+        marker = self.marker
+        markerSize = marker.GetMarkerSize()
+        marker.SetMarkerSize(1)
         for jet in jets :
             self.drawCircleTrig(jet, color, lineWidth, circleRadius)
+        for j, mj, c, m in zip(jets, matchedEfJets, matchedJetsMarkers['colors'], matchedJetsMarkers['markers']) :
+            marker.SetMarkerColor(c)
+            marker.SetMarkerStyle(m)
+            marker.DrawMarker(j.eta, j.phi)
+        marker.SetMarkerSize(markerSize)
 
     def drawOfflineJets(self, eventVars, color, lineWidth, circleRadius) :
         self.legendFunc(color, name = "OfflineJet", desc = "Offline jets (%s)"%self.renamedDesc(self.efJets))
