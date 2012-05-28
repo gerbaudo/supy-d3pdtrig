@@ -274,3 +274,25 @@ class MatchedJets(supy.wrappedChain.calculable) :
                         break
                 jetWithMatches.append(matchedJet)
             self.value.append(tuple(jetWithMatches))
+
+class EnergyL2Jets(supy.wrappedChain.calculable) :
+    def __init__(self, collection = l2jetCollection(), input = None, output = None):
+        self.input = input
+        self.output = output
+        self.fixes = collection
+        self.stash(l2jetAttributes()+["n"])
+    @property
+    def name(self):
+        return 'EnergyL2Jets%s%s'%(self.input if self.input else '',
+                               self.output if self.output else '')
+    def update(self, _) :
+        allEnergies = self.source[self.E]
+        inputs = self.source[self.InputType]
+        outputs = self.source[self.OutputType]
+        energies = []
+        for i in range(self.source[self.n]):
+            if self.input and inputs.at(i) != self.input : continue
+            if self.output and outputs.at(i) != self.output : continue
+            energies.append(allEnergies[i])
+
+        self.value = energies
