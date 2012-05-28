@@ -29,10 +29,13 @@ class TriggerBit(supy.wrappedChain.calculable) :
     def name(self):
         return self.trigName
 class PassedTriggers(supy.wrappedChain.calculable) :
-    def __init__(self,) :
-        pass
+    def __init__(self, regexp=None) :
+        self.regexp = regexp
     def update(self, _) :
-        self.value = [x for x in self.source['Tdt'].GetPassedTriggers() ]
+        regexp = None
+        if self.regexp : regexp = re.compile(self.regexp)
+        self.value = [x for x in self.source['Tdt'].GetPassedTriggers()
+                      if not regexp or regexp.match(x)]
 
 class Grlt(supy.wrappedChain.calculable) :
     def __init__(self, file='') :
