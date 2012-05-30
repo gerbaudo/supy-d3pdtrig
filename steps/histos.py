@@ -1,7 +1,7 @@
 import ROOT as r
 from supy import analysisStep
 import supy
-from math import pi
+from math import fabs, pi
 
 # for all the deltas, the first value is the reference one, so
 # delta = val_i+1 - val_1
@@ -181,6 +181,49 @@ class matchingEffVsEt(analysisStep) :
         den = r.gDirectory.Get(self.denTitle)
         if not num and den : return
         eff = num.Clone(self.effTitle)
+        eff.SetTitle(self.title)
+        eff.Divide(num,den,1,1,"B")
+        for bin in [0,self.N+1] :
+            eff.SetBinContent(bin,0)
+            eff.SetBinError(bin,0)
+        eff.Write()
+
+class turnOnJet(analysisStep) :
+    def __init__(self, jetColl='', trigger='', passedTriggers='PassedTriggers', nTh=None,
+                 drMin=None, drMax=None, etaMin=None, etaMax=None,
+                 N=100,low=0.0,up=100.0,title='') :
+        requiredPars = ['jetColl', 'trigger', 'passedTriggers', 'nTh']
+        filterPars = ['drMin', 'drMax', 'etaMin', 'etaMax']
+        histPars = ['N','low','up','title']
+        for item in requiredPars + filterPars + histPars : setattr(self,item,eval(item))
+        self.hName = ('turnOn%s%s'%(trigger, jetColl)
+                      +("_%dthJet"%nTh if nTh else "")
+                      +('_'.join(['']+['%s_%.1f'%(k,v) for k,v in
+                                       zip(filterPars,
+                                           [getattr(self,x) if hasattr(self,x) else None for x in filterPars]) if v])))
+        self.numName = 'num_%s'%self.hName
+        self.denName = 'den_%s'%self.hName
+        self.effName = 'eff_%s'%self.hName
+        if not self.title :
+            reqLabel = ', '.join(['%s=%.1f'%(k,v) for k,v in zip(filterPars, [getattr(self,x) if hasattr(self,x) else None for x in filterPars]) if v])
+            self.title = "%s efficiency %s; %sth jet E_{T} [GeV];eff"%(trigger, "" if not reqLabel else "(%s)"%reqLabel, nTh+1)
+    def uponAcceptance(self, eventVars) :
+        jetColl = eventVars[self.jetColl]
+        if self.nTh >= len(jetColl) : return
+        jet = jetColl[self.nTh]
+        if self.drMin and jet.minDr < self.drMin : return
+        if self.drMax and jet.minDr > self.drMax : return
+        if self.etaMin and fabs(jet.eta) < self.etaMin : return
+        if self.etaMax and fabs(jet.eta) > self.etaMax : return
+        jetEt = jet.et()*MeV2GeV
+        self.book.fill(jetEt, self.denName, self.N, self.low, self.up, title="denominator: %s;E_{T};jets"%self.denName)
+        if self.trigger in eventVars[self.passedTriggers] :
+            self.book.fill(jetEt, self.numName, self.N, self.low, self.up, title="numerator: %s;E_{T};jets"%self.numName)
+    def mergeFunc(self, products) :
+        num = r.gDirectory.Get(self.numName)
+        den = r.gDirectory.Get(self.denName)
+        if not num and den : return
+        eff = num.Clone(self.effName)
         eff.SetTitle(self.title)
         eff.Divide(num,den,1,1,"B")
         for bin in [0,self.N+1] :
