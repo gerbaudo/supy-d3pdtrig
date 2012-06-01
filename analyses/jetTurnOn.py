@@ -242,16 +242,20 @@ class jetTurnOn(supy.analysis) :
         castorBaseDir="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
         castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
 
+        lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
+                      202987:14.02, 202991:40.15, 203027:89.29, #B2
+                      }
         exampleDict = supy.samples.SampleHolder()
         exampleDict.add("PeriodB_L1_4J15",
                         'utils.fileListFromTextFile('
                         +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodB.txt"'
                         +')',
-                        lumi=26.11+29.85+7.281+52.6)
+                        lumi= sum(lumiPerRun.keys())
+                        )
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=1000 #10000
+        nEventsMax=-1#10000
         return (
             supy.samples.specify(names="PeriodB_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
             )
