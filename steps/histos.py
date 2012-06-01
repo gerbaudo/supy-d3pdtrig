@@ -98,31 +98,34 @@ class etaPhiMap(analysisStep) :
                            title="%s;#eta;#phi"%self.title)
 
 class deltaEtaVsEtaMap(analysisStep) :
-    def __init__(self, matchCollPair='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-0.5,yUp=+0.5,title="") :
-        for item in ['matchCollPair','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
-        self.hName = 'deltaEtaVsEtaMap%s'%matchCollPair
+    def __init__(self, matchCollPair='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-0.5,yUp=+0.5,title="") :
+        for item in ['matchCollPair','nTh','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEtaVsEtaMap%s%s'%(matchCollPair, "_%dthJet"%nTh if nTh else "")
+        if not self.title : self.title = "%s;#eta; #Delta #eta"%self.hName
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
         for i,pair in enumerate(matchCollPair) :
+            if self.nTh and not self.nTh==i : continue
             # the first collection is the one best precision (reference)
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 : continue
             if not elem2 : continue
-
             self.book.fill((elem1.eta, elem1.eta-elem2.eta),
                            self.hName,
                            (self.nX, self.nY),
                            (self.xLo, self.yLo),
                            (self.xUp, self.yUp),
-                           title="%s;#eta; #Delta #eta"%self.hName)
+                           title=self.title)
 class deltaEtFracVsEtaMap(analysisStep) :
-    def __init__(self, matchCollPair='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-5.0,yUp=+5.0,title="") :
-        for item in ['matchCollPair','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
-        self.hName = 'deltaEtFracVsEtFracMap%s'%matchCollPair
+    def __init__(self, matchCollPair='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-5.0,yUp=+5.0,title="") :
+        for item in ['matchCollPair', 'nTh', 'nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEtFracVsEtFracMap%s%s'%(matchCollPair, "_%dthJet"%nTh if nTh else "")
+        if not self.title : self.title = "%s;#eta; #Delta E_{T}/E_{T}"%self.hName
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
         for i,pair in enumerate(matchCollPair) :
+            if self.nTh and not self.nTh==i : continue
             # the first collection is the one best precision (reference)
             elem1 = pair[0]
             elem2 = pair[1]
@@ -138,12 +141,14 @@ class deltaEtFracVsEtaMap(analysisStep) :
                            title="%s;#eta; #Delta E_{T}/E_{T}"%self.hName if not self.title else self.title)
 
 class deltaEtFracVsMinDrMap(analysisStep) :
-    def __init__(self, matchCollPair='', nX=100,xLo=0.,xUp=5.0,nY=100,yLo=-5.0,yUp=+5.0,title="") :
-        for item in ['matchCollPair','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
-        self.hName = 'deltaEtFracVsMinDrMap%s'%matchCollPair
+    def __init__(self, matchCollPair='', nTh=None, nX=100,xLo=0.,xUp=5.0,nY=100,yLo=-5.0,yUp=+5.0,title="") :
+        for item in ['matchCollPair', 'nTh', 'nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEtFracVsMinDrMap%s%s'%(matchCollPair, "_%dthJet"%nTh if nTh else "")
+        if not self.title : self.title = "#Delta(E_{t})/E_{T} %s;#min #Delta R; #Delta E_{T}/E_{T}"%("" if not nTh else "%dth jet"%(nTh+1))
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
         for i,pair in enumerate(matchCollPair) :
+            if self.nTh and not self.nTh==i : continue
             # the first collection is the one with minDr
             elem1 = pair[0]
             elem2 = pair[1]
@@ -155,7 +160,7 @@ class deltaEtFracVsMinDrMap(analysisStep) :
                            (self.nX, self.nY),
                            (self.xLo, self.yLo),
                            (self.xUp, self.yUp),
-                           title="%s;#min #Delta R; #Delta E_{T}/E_{T}"%self.hName if not self.title else self.title)
+                           title=self.title)
 
 class matchingEffVsEt(analysisStep) :
     def __init__(self, matchCollPair='', nTh=None, N=100,low=0.0,up=100.0,title="matching efficiency vs. E_{T}") :
