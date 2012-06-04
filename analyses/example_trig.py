@@ -7,7 +7,6 @@ import re
 GeV=1.0e+3
 TeV=1.0e+3*GeV
 
-refTrigger = "EF_5j55_a4tchad_L2FS"
 # todo: also try with FSPS as ref (do the events for which A4CC jets
 # are not saved bias our selection?
 
@@ -18,34 +17,44 @@ class example_trig(supy.analysis) :
                 'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
+                'refTrigger' : "EF_5j55_a4tchad_L2FS",
                 }
 
     def listOfSteps(self,config) :
         pars = self.parameters()
+        drMin=0.7
+        drMax=None
+        etaMaxB=0.7 # barrel
+        etaMaxG=1.5 # gap
+        refJetColl='EfJetsAntiKt4_topo_calib_EMJES'
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.filters.triggers(["L1_4J15"]),
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            steps.filters.triggers([refTrigger]),
+            steps.filters.triggers([pars['refTrigger']]),
 
-            #EF_4j45_a4tchad_L2FS
-            #EF_4j55_a4tchad_L2FS # 62.1 L2 prescale
-            #EF_4j65_a4tchad_L2FS
-            #EF_5j45_a4tchad_L2FS
-            #EF_5j55_a4tchad_L2FS
-            #EF_5j60_a4tchad_L2FS
-            #EF_5j65_a4tchad_L2FS
-            #EF_6j45_a4tchad_L2FS
-            #
-            #EF_4j55_a4tchad_L2FSPS
-            #EF_7j55_a4tchad_L2FSPS
-            #
-            #EF_5j60_a4tchad_L2FSPS
-            #EF_5j55_a4tchad_L2FSPS
-            #EF_6j55_a4tchad_L2FSPS
-            #EF_4j110_a4tchad_L2FSPS
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+                                         title="jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+                                         nTh=4,
+                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                         nTh=4,
+                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+                                         nTh=5,
+                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                         nTh=5,
+                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+                                         nTh=6,
+                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
+            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
+                                         nTh=6,
+                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
 
             supy.steps.histos.multiplicity(var='IndicesL2JetsA4TTA4CC_JES', max=20),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
@@ -53,7 +62,6 @@ class example_trig(supy.analysis) :
             #                               "EnergyL2JetsA4TTA4CC_JES",
             #                               "IndicesL2JetsNON_L15L2CONE",
             #                               "IndicesEfJetsAntiKt4_topo_calib_EMJES"]),
-            supy.steps.histos.value(var='averageIntPerXing', N=50+1, low=0.5, up=50.5),
             supy.steps.histos.multiplicity(var='IndicesL2JetsA4TTA4CC_JES', max=20),
             supy.steps.histos.multiplicity(var='IndicesL2JetsNON_L15L2CONE', max=20),
             supy.steps.histos.multiplicity(var='IndicesEfJetsAntiKt4_topo_calib_EMJES', max=20),
@@ -66,6 +74,7 @@ class example_trig(supy.analysis) :
             #--steps.filters.goodRun().onlyData(),
             #supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             #steps.trigger.jetPt(collection="RunNumber"),
+
             steps.histos.deltaEta(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL1Jets',
                                   title='#Delta #eta matched (EfJetsAntiKt4, L1); #Delta #eta; jets'),
             steps.histos.deltaEta(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
@@ -116,7 +125,8 @@ class example_trig(supy.analysis) :
             #steps.histos.deltaEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA10TT',
             #                      title='#Delta E_{T} matched (EfJetsAntiKt4, A10TT); #Delta E_{T}; jets'),
 
-
+            #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
+            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
             steps.histos.deltaEtFrac(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
                                      title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4TT); #Delta E_{T}/E_{T}; jets'),
             steps.histos.deltaEtFrac(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL1Jets',
@@ -139,19 +149,31 @@ class example_trig(supy.analysis) :
             steps.histos.etaPhiMap(coll='L2JetsNONEA4TT', title="L2 A4TT jets #phi vs. #eta"),
             steps.histos.etaPhiMap(coll='L2JetsNONEA10TT', title="L2 A10TT jets #phi vs. #eta"),
             steps.histos.etaPhiMap(coll='EfJetsAntiKt4_topo_calib_EMJES', title="Ef jets #phi vs. #eta"),
-
+            ]
+        nThJet=4
+        dEtTitle="#Delta E_{T}/E_{T} matched "
+        dEtaTitle="#Delta #eta matched"
+        titleX="#eta %dth jet"
+        titleYdEt="#Delta E_{T}/E_{T}"
+        titleYdEta="#Delta#eta"
+        outList += [
 
             steps.histos.deltaEtaVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-                                          title='#Delta #eta matched (EfJetsAntiKt4, NON_L15L2CONE); #eta; #Delta E_{T}/E_{T}'),
+                                          nTh=nThJet,
+                                          title=dEtaTitle+' (EfJetsAntiKt4, NON_L15L2CONE);'+titleX%(nThJet+1)+titleYdEta),
             steps.histos.deltaEtaVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                          title='#Delta #eta matched (EfJetsAntiKt4, A4CC); #eta; #Delta E_{T}/E_{T}'),
+                                          nTh=nThJet,
+                                          title=dEtaTitle+' (EfJetsAntiKt4, A4CC);'+titleX%(nThJet+1)+titleYdEta),
 
             steps.histos.deltaEtFracVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-                                             title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); #eta; #Delta E_{T}/E_{T}'),
+                                             nTh=nThJet,
+                                             title=dEtTitle+' (EfJetsAntiKt4, NON_L15L2CONE);'+titleX%(nThJet+1)+titleYdEt),
             steps.histos.deltaEtFracVsEtaMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                             title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4CC); #eta; #Delta E_{T}/E_{T}'),
+                                             nTh=nThJet,
+                                             title=dEtTitle+' (EfJetsAntiKt4, A4CC);'+titleX%(nThJet+1)+titleYdEt),
             steps.histos.deltaEtFracVsMinDrMap(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-                                               title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); min #Delta R; #Delta E_{T}/E_{T}'),
+                                               nTh=nThJet,
+                                               title=dEtTitle+' (EfJetsAntiKt4, NON_L15L2CONE);'+titleX%(nThJet+1)+titleYdEt),
 
 #            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNONEA4TT',
 #                                         nTh=4,
@@ -168,29 +190,9 @@ class example_trig(supy.analysis) :
 #            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
 #                                         nTh=5,
 #                                         title="matching efficiency vs. E_{T} matched (EfJetsAntiKt4, L2CONE); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         title="jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         nTh=4,
-                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-                                         nTh=4,
-                                         title="4th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         nTh=5,
-                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-                                         nTh=5,
-                                         title="5th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                         nTh=6,
-                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, A4CC); E_{T}^{offline} [GeV]; eff"),
-            steps.histos.matchingEffVsEt(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsNON_L15L2CONE',
-                                         nTh=6,
-                                         title="6th jet matching efficiency vs. E_{T} matched (EfJetsAntiKt4, NON_L15L2CONE); E_{T}^{offline} [GeV]; eff"),
 
-            steps.histos.deltaEtFrac(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
-                                     title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4CC) FS !FSPS; #Delta E_{T}/E_{T}; jets'),
+#            steps.histos.deltaEtFrac(matchCollPair='EfJetsAntiKt4_topo_calib_EMJESMatchL2JetsA4TTA4CC_JES',
+#                                     title='#Delta E_{T}/E_{T} matched (EfJetsAntiKt4, A4CC) FS !FSPS; #Delta E_{T}/E_{T}; jets'),
 
             ]
         return outList
@@ -217,7 +219,7 @@ class example_trig(supy.analysis) :
                               ]
         listOfCalculables += [#calculables.TrigD3PD.Grlt(pars['grlFile']),
                               #calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
-                              calculables.TrigD3PD.PassedTriggers(r'.*'),
+                              calculables.TrigD3PD.PassedTriggers(),
                               #calculables.TrigD3PD.PassedTriggers(r'.*PS.*'),
                               ]
         listOfCalculables += [calculables.vertex.Indices(collection=('vxp_',''),
@@ -364,7 +366,7 @@ class example_trig(supy.analysis) :
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=2000 #10000
+        nEventsMax=-1
         return (
             #supy.samples.specify(names = "data12_8TeV.00200804", color = r.kBlack)
             #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3)
