@@ -17,12 +17,13 @@ def phi_mpi_pi(value) :
     while value >  +pi: value = value-2.*pi
     return value
 class attribute(analysisStep) :
-    def __init__(self, attrName='', coll='', nX=100,xLo=-5.0,xUp=5.0,title="") :
-        for item in ['attrName', 'coll','nX','xLo','xUp','title'] : setattr(self,item,eval(item))
+    def __init__(self, attrName='', coll='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,title="") :
+        for item in ['attrName', 'coll', 'nTh', 'nX','xLo','xUp','title'] : setattr(self,item,eval(item))
         self.hName = '%s_%s'%(coll,attrName)
     def uponAcceptance(self, eventVars) :
         coll = eventVars[self.coll]
-        for elem in coll :
+        for i, elem in enumerate(coll) :
+            if self.nTh and self.nTh!=i : continue
             self.book.fill(getattr(elem,self.attrName), self.hName, self.nX, self.xLo, self.xUp, title=self.title)
 class deltaEta(analysisStep) :
     def __init__(self, matchCollPair='', var='',N=100,low=-0.5,up=+0.5,title="#Delta #eta") :
