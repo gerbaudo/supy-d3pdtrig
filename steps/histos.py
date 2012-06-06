@@ -195,10 +195,12 @@ class matchingEffVsEt(analysisStep) :
 
 class turnOnJet(analysisStep) :
     def __init__(self, jetColl='', trigger='', passedTriggers='PassedTriggers', nTh=None,
-                 drMin=None, drMax=None, etaMin=None, etaMax=None,
+                 emulated=False,
+                 drMin=None, drMax=None, drAnyjet=None,
+                 etaMin=None, etaMax=None,
                  N=100,low=0.0,up=100.0,title='') :
-        requiredPars = ['jetColl', 'trigger', 'passedTriggers', 'nTh']
-        filterPars = ['drMin', 'drMax', 'etaMin', 'etaMax']
+        requiredPars = ['jetColl', 'trigger', 'passedTriggers', 'nTh', 'emulated']
+        filterPars = ['drMin', 'drMax', 'drAnyjet', 'etaMin', 'etaMax']
         histPars = ['N','low','up','title']
         for item in requiredPars + filterPars + histPars : setattr(self,item,eval(item))
         self.hName = ('turnOn%s%s'%(trigger, jetColl)
@@ -216,13 +218,17 @@ class turnOnJet(analysisStep) :
         jetColl = eventVars[self.jetColl]
         if self.nTh >= len(jetColl) : return
         jet = jetColl[self.nTh]
-        if self.drMin and jet.minDr < self.drMin : return
-        if self.drMax and jet.minDr > self.drMax : return
+        if self.drAnyjet and self.drMin and any(j.minDr and j.minDr > self.drMin for j in jetColl) : return
+        if self.drAnyjet and self.drMax and any(j.minDr and j.minDr > self.drMax for j in jetColl) : return
+        if self.drMin and jet.minDr and jet.minDr < self.drMin : return
+        if self.drMax and jet.minDr and jet.minDr > self.drMax : return
         if self.etaMin and fabs(jet.eta) < self.etaMin : return
         if self.etaMax and fabs(jet.eta) > self.etaMax : return
         jetEt = jet.et()*MeV2GeV
         self.book.fill(jetEt, self.denName, self.N, self.low, self.up, title="denominator: %s;E_{T};jets"%self.denName)
-        if self.trigger in eventVars[self.passedTriggers] :
+        if self.trigger in eventVars[self.passedTriggers] \
+               or \
+               self.emulated and eventVars[self.trigger] :
             self.book.fill(jetEt, self.numName, self.N, self.low, self.up, title="numerator: %s;E_{T};jets"%self.numName)
     def mergeFunc(self, products) :
         num = r.gDirectory.Get(self.numName)
