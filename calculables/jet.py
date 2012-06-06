@@ -157,28 +157,30 @@ class IndicesEf(supy.wrappedChain.calculable) :
             if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt : continue
             if self.calibTag and calibs.at(i) != self.calibTag : continue
             self.value.append(i)
-        
+
+def computeMinDr(jetCollection, drMinEt=40.0*GeV) :
+    lv = supy.utils.root.LorentzV
+    DeltaR = r.Math.VectorUtil.DeltaR
+    for i, jet in enumerate(jetCollection) :
+        minDr = None
+        # using here LorentzV(pt,eta,phi,m) as (0.,eta,phi,0.); we only care about eta,phi.
+        j1lv = lv(0., jet.eta, jet.phi, 0.)
+        otherJets = jetCollection[:i] + jetCollection[i+1:]
+        if drMinEt : otherJets = [j for j in otherJets if j.et()>drMinEt]
+        for j in otherJets :
+            dr = DeltaR(j1lv, lv(0., j.eta, j.phi, 0.))
+            if not minDr or minDr > dr : minDr = dr
+        jet.minDr = minDr
+
 class EfJets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = efJetCollection(), indices = '') :
+    def __init__(self, collection = efJetCollection(), indices = '', drMinPt=None) :
         self.indices = indices
         self.fixes = collection
         self.stash(efJetAttributes())
+        self.drMinPt = drMinPt
     @property
     def name(self):
         return self.indices.replace("Indices","")
-    def computeMinDr(self) :
-        lv = supy.utils.root.LorentzV
-        DeltaR = r.Math.VectorUtil.DeltaR
-        for i, jet in enumerate(self.value) :
-            minDr = None
-            # using here LorentzV(pt,eta,phi,m) as (0.,eta,phi,0.); we only care about eta,phi.
-            j1lv = lv(0., jet.eta, jet.phi, 0.)
-            otherJets = self.value[:i] + self.value[i+1:]
-            for j in otherJets :
-                dr = DeltaR(j1lv, lv(0., j.eta, j.phi, 0.))
-                if not minDr or minDr > dr : minDr = dr
-            jet.minDr = minDr
-
     def update(self, _) :
         self.value = []
         efjetAttributeArrays = [self.source[getattr(self,x)] for x in efJetAttributes()]
@@ -188,7 +190,7 @@ class EfJets(supy.wrappedChain.calculable) :
             values = [x[iJet] for x in efjetAttributeArrays]
             kargs = dict(zip(keys, values))
             self.value.append(HltJet(**kargs))
-        self.computeMinDr()
+        computeMinDr(self.value)
 
 #___________________________________________________________
 class IndicesOffline(supy.wrappedChain.calculable) :
@@ -243,6 +245,7 @@ class OfflineJets(supy.wrappedChain.calculable) :
             values = [x[iJet] for x in ofJetAttributeArrays]
             kargs = dict(zip(keys, values))
             self.value.append(OfflineJet(**kargs))
+        computeMinDr(self.value)
 
 #___________________________________________________________
 
