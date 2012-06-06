@@ -3,6 +3,9 @@ import supy
 import math,collections,bisect,itertools,re
 import ROOT as r
 
+GeV2MeV=1000.
+MeV2GeV=0.001
+
 class Tdt(supy.wrappedChain.calculable) :
     ""
     def __init__(self, treeName = "TrigConfTree", dirName = "triggerMeta") :
@@ -36,6 +39,17 @@ class PassedTriggers(supy.wrappedChain.calculable) :
         if self.regexp : regexp = re.compile(self.regexp)
         self.value = [x for x in self.source['Tdt'].GetPassedTriggers()
                       if not regexp or regexp.match(x)]
+class EmulatedMultijetTriggerBit(supy.wrappedChain.calculable) :
+    # todo: add ref input?
+    def __init__(self, jetColl='', multi=1, minEt=50., label='') :
+        for item in ['jetColl','multi','minEt','label'] : setattr(self, item, eval(item))
+        self.bitName = "Emulated%s_%dj%0.f"%(self.label, self.multi, self.minEt*MeV2GeV)
+    def update(self, _) :
+        jets = self.source[self.jetColl]
+        self.value = len([1 for j in jets if j.et()>self.minEt]) >= self.multi
+    @property
+    def name(self):
+        return self.bitName
 
 class Grlt(supy.wrappedChain.calculable) :
     def __init__(self, file='') :
