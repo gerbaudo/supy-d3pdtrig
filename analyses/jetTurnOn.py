@@ -15,6 +15,7 @@ class jetTurnOn(supy.analysis) :
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
                 'refTrigger' : "EF_5j55_a4tchad_L2FS",
+                'refJetColl' : 'OfflineJets', # 'EfJetsAntiKt4_topo_calib_EMJES'
                 }
 
     def listOfSteps(self,config) :
@@ -23,7 +24,7 @@ class jetTurnOn(supy.analysis) :
         drMax=None
         etaMaxB=0.7 # barrel
         etaMaxG=1.5 # gap
-        refJetColl='EfJetsAntiKt4_topo_calib_EMJES'
+        refJetColl=pars['refJetColl']
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.filters.triggers(["L1_4J15"]),
@@ -31,6 +32,9 @@ class jetTurnOn(supy.analysis) :
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             steps.filters.triggers([pars['refTrigger']]),
+
+            #supy.steps.printer.printstuff(['PassedTriggers',]),
+            #supy.steps.printer.printstuff(['EmulatedL2FSPS_6j55']),
 
             supy.steps.filters.label('EF, 4th and 5th jet'),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EF_4j55_a4tchad_L2FSPS', nTh=3),
@@ -96,6 +100,8 @@ class jetTurnOn(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='L2_5j15_a4TTem_5j55_a4cchad', nTh=4, etaMin=etaMaxB, etaMax=etaMaxG),
             supy.steps.filters.label('L2 6th jet'),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='L2_5j15_a4TTem_6j45_a4cchad', nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j50', nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j55', nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='L2_5j15_a4TTem_6j45_a4cchad', nTh=5, drMax=drMin),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='L2_5j15_a4TTem_6j45_a4cchad', nTh=5, drMin=drMin),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='L2_5j15_a4TTem_6j45_a4cchad', nTh=5, etaMax=etaMaxB),
@@ -227,12 +233,21 @@ class jetTurnOn(supy.analysis) :
                               calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
                               ]
         for jColl in ['L1Jets', 'L2JetsNON_L15L2CONE', 'L2JetsA4TTL2CONE',
-                      'L2JetsNONEA4TT', 'L2JetsNONEA10TT', 'L2JetsA4TTA4CC_JES'] :
-            listOfCalculables += [calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
+                      'L2JetsNONEA4TT', 'L2JetsNONEA10TT', 'L2JetsA4TTA4CC_JES',
+                      'EfJetsAntiKt4_topo_calib_EMJES'] :
+            listOfCalculables += [calculables.jet.MatchedJets(coll1=pars['refJetColl'],
                                                               otherColls=[jColl])]
         listOfCalculables += [calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
+                              ]
+        listOfCalculables += [calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=50.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=55.*GeV),
+
                               ]
         return listOfCalculables
 
@@ -255,7 +270,7 @@ class jetTurnOn(supy.analysis) :
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=-1#10000
+        nEventsMax=100#10000
         return (
             supy.samples.specify(names="PeriodB_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
             )
@@ -271,5 +286,5 @@ class jetTurnOn(supy.analysis) :
         supy.plotter( org,
                       pdfFileName = self.pdfFileName(org.tag),
                       doLog = False,
-                      blackListRe = [re.compile(r'num_'), re.compile(r'den_')],
+                      blackList = ['num_', 'den_'],
                       ).plotAll()
