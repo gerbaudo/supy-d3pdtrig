@@ -219,7 +219,7 @@ class turnOnJet(analysisStep) :
         jetColl = eventVars[self.jetColl]
         if self.nTh >= len(jetColl) : return
         jet = jetColl[self.nTh]
-        if self.drAnyjet and self.drMin and any(j.minDr and j.minDr > self.drMin for j in jetColl) : return
+        if self.drAnyjet and self.drMin and any(j.minDr and j.minDr < self.drMin for j in jetColl) : return
         if self.drAnyjet and self.drMax and any(j.minDr and j.minDr > self.drMax for j in jetColl) : return
         if self.drMin and jet.minDr and jet.minDr < self.drMin : return
         if self.drMax and jet.minDr and jet.minDr > self.drMax : return
@@ -234,8 +234,10 @@ class turnOnJet(analysisStep) :
     def mergeFunc(self, products) :
         num = r.gDirectory.Get(self.numName)
         den = r.gDirectory.Get(self.denName)
-        if not num and den : return
+        if not num : return
+        if not den : return
         eff = num.Clone(self.effName)
+        if not eff : return
         eff.SetTitle(self.title)
         eff.Divide(num,den,1,1,"B")
         for bin in [0,self.N+1] :
