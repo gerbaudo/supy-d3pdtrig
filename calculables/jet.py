@@ -158,7 +158,7 @@ class IndicesEf(supy.wrappedChain.calculable) :
             if self.calibTag and calibs.at(i) != self.calibTag : continue
             self.value.append(i)
 
-def computeMinDr(jetCollection, drMinEt=40.0*GeV) :
+def computeMinDr(jetCollection, drMinEt=None) :
     lv = supy.utils.root.LorentzV
     DeltaR = r.Math.VectorUtil.DeltaR
     for i, jet in enumerate(jetCollection) :
@@ -173,11 +173,11 @@ def computeMinDr(jetCollection, drMinEt=40.0*GeV) :
         jet.minDr = minDr
 
 class EfJets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = efJetCollection(), indices = '', drMinPt=None) :
+    def __init__(self, collection = efJetCollection(), indices = '', drMinEt=40.0*GeV) :
         self.indices = indices
         self.fixes = collection
         self.stash(efJetAttributes())
-        self.drMinPt = drMinPt
+        self.drMinEt = drMinEt
     @property
     def name(self):
         return self.indices.replace("Indices","")
@@ -190,11 +190,11 @@ class EfJets(supy.wrappedChain.calculable) :
             values = [x[iJet] for x in efjetAttributeArrays]
             kargs = dict(zip(keys, values))
             self.value.append(HltJet(**kargs))
-        computeMinDr(self.value)
+        computeMinDr(self.value, self.drMinEt)
 
 #___________________________________________________________
 class IndicesOffline(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), minEt = None):
+    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV):
         self.minEt = minEt
         self.fixes = collection
         self.stash(offlineJetAttributes()+['n'])
@@ -229,10 +229,11 @@ class OfflineJet(HltJet) :
         super(OfflineJet, self).__init__(**kargs)
 
 class OfflineJets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), indices = 'IndicesOfflineJets') :
+    def __init__(self, collection = offlineJetCollection(), indices = 'IndicesOfflineJets', drMinEt=40.0*GeV) :
         self.indices = indices
         self.fixes = collection
         self.stash(offlineJetAttributes())
+        self.drMinEt = drMinEt
     @property
     def name(self):
         return self.indices.replace("Indices","")
@@ -245,8 +246,7 @@ class OfflineJets(supy.wrappedChain.calculable) :
             values = [x[iJet] for x in ofJetAttributeArrays]
             kargs = dict(zip(keys, values))
             self.value.append(OfflineJet(**kargs))
-        computeMinDr(self.value)
-
+        computeMinDr(self.value, self.drMinEt)
 #___________________________________________________________
 
 class MatchedJets(supy.wrappedChain.calculable) :
