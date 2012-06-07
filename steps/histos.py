@@ -195,15 +195,24 @@ class matchingEffVsEt(analysisStep) :
         eff.Write()
 
 class turnOnJet(analysisStep) :
+    """Turn on for a multijet trigger.
+    You need to specify: the jet collection, the trigger, and the Nth jet whose E_T is to be used on the x-axis.
+    You can specify the following parameters:
+    (1) min/max eta of the Nth jet (by default any eta is accepted)
+    (2) min/max deltaR: requirement for the Nth jet, or for any jet if drAnyJet=True)
+    Note that in case (2) the jets must have a minDr attribute.
+    """
     def __init__(self, jetColl='', trigger='', passedTriggers='PassedTriggers', nTh=None,
                  emulated=False,
-                 drMin=None, drMax=None, drAnyjet=None,
+                 drMin=None, drMax=None,
+                 drAnyJet=None,
                  etaMin=None, etaMax=None,
                  N=100,low=0.0,up=100.0,title='') :
         requiredPars = ['jetColl', 'trigger', 'passedTriggers', 'nTh', 'emulated']
-        filterPars = ['drMin', 'drMax', 'drAnyjet', 'etaMin', 'etaMax']
+        filterPars = ['drMin', 'drMax', 'etaMin', 'etaMax']
+        otherPars = ['drAnyJet']
         histPars = ['N','low','up','title']
-        for item in requiredPars + filterPars + histPars : setattr(self,item,eval(item))
+        for item in requiredPars + filterPars + otherPars + histPars : setattr(self,item,eval(item))
         self.hName = ('turnOn%s%s'%(trigger, jetColl)
                       +("_%dthJet"%nTh if nTh else "")
                       +('_'.join(['']+['%s_%.1f'%(k,v) for k,v in
@@ -219,10 +228,14 @@ class turnOnJet(analysisStep) :
         jetColl = eventVars[self.jetColl]
         if self.nTh >= len(jetColl) : return
         jet = jetColl[self.nTh]
-        if self.drAnyjet and self.drMin and any(j.minDr and j.minDr < self.drMin for j in jetColl) : return
-        if self.drAnyjet and self.drMax and any(j.minDr and j.minDr > self.drMax for j in jetColl) : return
-        if self.drMin and jet.minDr and jet.minDr < self.drMin : return
-        if self.drMax and jet.minDr and jet.minDr > self.drMax : return
+        if self.drAnyJet and (self.drMin or self.drMax):
+            if any((self.drMin and j.minDr and j.minDr < self.drMin)
+                   or
+                   (self.drMax and j.minDr and j.minDr > self.drMax)
+                   for j in jetColl) : return
+        else :
+            if self.drMin and jet.minDr and jet.minDr < self.drMin : return
+            if self.drMax and jet.minDr and jet.minDr > self.drMax : return
         if self.etaMin and fabs(jet.eta) < self.etaMin : return
         if self.etaMax and fabs(jet.eta) > self.etaMax : return
         jetEt = jet.et()*MeV2GeV
