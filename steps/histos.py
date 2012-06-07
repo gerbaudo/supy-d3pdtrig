@@ -73,12 +73,16 @@ class deltaEt(analysisStep) :
             self.book.fill(MeV2GeV*(elem2.et() - elem1.et()), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEtFrac(analysisStep) :
     # todo: merge it with deltaEt
-    def __init__(self, matchCollPair='', var='',N=200,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
-        for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
+    def __init__(self, matchCollPair='', var='',nTh=None,N=200,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
+        for item in ['matchCollPair', 'var', 'nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'fracDelta%s%s'%(var,matchCollPair)
+        if self.nTh :
+            self.hName += "_%dthJet"%self.nTh
+            self.title += "(%dth jet)"%self.nTh
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
-        for pair in matchCollPair :
+        for i, pair in enumerate(matchCollPair) :
+            if self.nTh and self.nTh!=i : continue
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
