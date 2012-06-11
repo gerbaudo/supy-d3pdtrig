@@ -61,19 +61,23 @@ class deltaR(analysisStep) :
             j2lv = supy.utils.root.LorentzV(elem2.et(), elem2.eta, elem2.phi, 0.)
             self.book.fill(r.Math.VectorUtil.DeltaR(j1lv, j2lv), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEt(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=-50.0,up=50.0,title="#Delta E_{T}") :
-        for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
+    def __init__(self, matchCollPair='', var='', nTh=None,N=100,low=-50.0,up=50.0,title="#Delta E_{T}") :
+        for item in ['matchCollPair', 'var','nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'delta%s%s'%(var,matchCollPair)
+        if self.nTh :
+            self.hName += "_%dthJet"%self.nTh
+            self.title += "(%dth jet)"%self.nTh
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
-        for pair in matchCollPair :
+        for i, pair in enumerate(matchCollPair) :
+            if self.nTh and self.nTh!=i : continue
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
             self.book.fill(MeV2GeV*(elem2.et() - elem1.et()), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEtFrac(analysisStep) :
     # todo: merge it with deltaEt
-    def __init__(self, matchCollPair='', var='',nTh=None,N=200,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
+    def __init__(self, matchCollPair='', var='',nTh=None,N=100,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
         for item in ['matchCollPair', 'var', 'nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'fracDelta%s%s'%(var,matchCollPair)
         if self.nTh :
@@ -91,12 +95,13 @@ class deltaEtFrac(analysisStep) :
                 self.book.fill((et2-et1)/et1, self.hName, self.N, self.low, self.up, title=self.title)
 
 class etaPhiMap(analysisStep) :
-    def __init__(self, coll='', nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-pi,yUp=+pi,title="") :
-        for item in ['coll','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
-        self.hName = 'etaPhiMap%s'%coll
+    def __init__(self, coll='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-pi,yUp=+pi,title="") :
+        for item in ['coll','nTh','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
+        self.hName = "etaPhiMap%s%s"%(coll, , "_%dthJet"%nTh if nTh else "")
     def uponAcceptance(self, eventVars) :
         coll = eventVars[self.coll]
-        for elem in coll :
+        for i,elem in enumerate(coll) :
+            if self.nTh and not self.nTh==i : continue
             self.book.fill((elem.eta, phi_mpi_pi(elem.phi)),
                            "%s_eta_phi"%self.coll,
                            (self.nX, self.nY), (self.xLo, self.yLo), (self.xUp, self.yUp),
