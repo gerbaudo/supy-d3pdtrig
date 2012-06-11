@@ -51,6 +51,19 @@ class EmulatedMultijetTriggerBit(supy.wrappedChain.calculable) :
     def name(self):
         return self.bitName
 
+class TriggerBitAnd(supy.wrappedChain.calculable) :
+    # todo: add ref input?
+    def __init__(self, bit1='', bit2='', label='') :
+        for item in ['bit1','bit2','label'] : setattr(self, item, eval(item))
+        self.bitName = "Emulated%s"%(self.label)
+    def update(self, _) :
+        bit1 = self.source[self.bit1]
+        bit2 = self.source[self.bit2]
+        self.value = bit1 and bit2
+    @property
+    def name(self):
+        return self.bitName
+
 class Grlt(supy.wrappedChain.calculable) :
     def __init__(self, file='') :
         self.grlReader = r.Root.TGoodRunsListReader(file)
