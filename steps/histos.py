@@ -97,7 +97,7 @@ class deltaEtFrac(analysisStep) :
 class etaPhiMap(analysisStep) :
     def __init__(self, coll='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,nY=100,yLo=-pi,yUp=+pi,title="") :
         for item in ['coll','nTh','nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
-        self.hName = "etaPhiMap%s%s"%(coll, , "_%dthJet"%nTh if nTh else "")
+        self.hName = "etaPhiMap%s%s"%(coll, "_%dthJet"%nTh if nTh else "")
     def uponAcceptance(self, eventVars) :
         coll = eventVars[self.coll]
         for i,elem in enumerate(coll) :
@@ -216,7 +216,7 @@ class turnOnJet(analysisStep) :
                  drMin=None, drMax=None,
                  drAnyJet=None,
                  etaMin=None, etaMax=None,
-                 N=100,low=0.0,up=100.0,title='') :
+                 N=50,low=0.0,up=100.0,title='') :
         requiredPars = ['jetColl', 'trigger', 'passedTriggers', 'nTh', 'emulated']
         filterPars = ['drMin', 'drMax', 'etaMin', 'etaMax']
         otherPars = ['drAnyJet']
