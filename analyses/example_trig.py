@@ -14,7 +14,8 @@ class example_trig(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetEt' : 10.0*GeV,
-                'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml",
+                #'grlFile' : "data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_SMjets.xml",
+                'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v45-pro13_CoolRunQuery-00-04-08_SMjets.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
                 'refTrigger' : "EF_5j55_a4tchad_L2FS",
@@ -28,10 +29,11 @@ class example_trig(supy.analysis) :
         drMax=None
         etaMaxB=0.7 # barrel
         etaMaxG=1.5 # gap
-        refJetColl=parameters['refJetColl']
-        refJetCollLabel=parameter['refJetCollLabel']
+        refJetColl=pars['refJetColl']
+        refJetCollLabel=pars['refJetCollLabel']
         outList=[
             supy.steps.printer.progressPrinter(),
+            steps.filters.goodRun().onlyData(),
             steps.filters.triggers(["L1_4J15"]),
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=1),
@@ -74,7 +76,6 @@ class example_trig(supy.analysis) :
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
 
             #--supy.steps.histos.multiplicity(var = "vx_Indices", max = 20),
-            #--steps.filters.goodRun().onlyData(),
             #supy.steps.histos.multiplicity(var="IndicesL2Jets",max=20),
             #steps.trigger.jetPt(collection="RunNumber"),
 
@@ -128,8 +129,15 @@ class example_trig(supy.analysis) :
             #steps.histos.deltaEt(matchCollPair=refJetColl+'MatchL2JetsNONEA10TT',
             #                      title='#Delta E_{T} matched ('+refJetCollLabel+', A10TT); #Delta E_{T}; jets'),
 
+            supy.steps.histos.value(var='RunNumber', N=500, low=202600, up=203100,),
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
-            steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+            #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
+            #steps.filters.triggers(["EF_6j45_a4tchad_L2FS"]),
+            #steps.filters.triggers(['EmulatedL2FSPS_6j45']).invert(),
+            #steps.filters.triggers(['EmulatedL2FSPS_6j45']).invert(),
+            steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
+            #steps.filters.triggers(['EmulatedL2FSPS_6j50']).invert(),
+            steps.filters.triggers(['EmulatedL15_6j15_L2FSPS_6j45']).invert(),
             steps.histos.deltaEtFrac(matchCollPair=refJetColl+'MatchL2JetsNONEA4TT',
                                      title='#Delta E_{T}/E_{T} matched ('+refJetCollLabel+', A4TT); #Delta E_{T}/E_{T}; jets'),
             steps.histos.deltaEtFrac(matchCollPair=refJetColl+'MatchL1Jets',
@@ -153,7 +161,7 @@ class example_trig(supy.analysis) :
             steps.histos.etaPhiMap(coll='L2JetsNONEA10TT', title="L2 A10TT jets #phi vs. #eta"),
             steps.histos.etaPhiMap(coll='EfJetsAntiKt4_topo_calib_EMJES', title="Ef jets #phi vs. #eta"),
             ]
-        nThJet=4
+        nThJet=5
         dEtTitle="#Delta E_{T}/E_{T} matched "
         dEtaTitle="#Delta #eta matched"
         titleX="#eta %dth jet"
@@ -161,6 +169,16 @@ class example_trig(supy.analysis) :
         titleYdEta="#Delta#eta"
 
         outList += [
+            steps.histos.attribute(attrName='eta', coll=refJetColl, nTh=nThJet, title="#eta %dth jet "%(nThJet+1)+"("+refJetColl+"); eta; events"),
+            steps.histos.etaPhiMap(coll=refJetColl, nTh=nThJet, title="%dth jet "%(nThJet+1)+"("+refJetColl+"); #eta; #phi"),
+            supy.steps.histos.value(var='RunNumber', N=500, low=202600, up=203100,),
+
+            steps.histos.deltaEt(matchCollPair='L2JetsA4TTA4CC_JES'+'Match'+'L2JetsNON_L15L2CONE',
+                                 nTh=nThJet,
+                                 title='#Delta E_{T} matched (A4CC, NON_L15L2CONE); #Delta E_{T}/E_{T}; jets'),
+            steps.histos.deltaEtFrac(matchCollPair='L2JetsA4TTA4CC_JES'+'Match'+'L2JetsNON_L15L2CONE',
+                                     nTh=nThJet,
+                                     title='#Delta E_{T}/E_{T} matched (A4CC, NON_L15L2CONE); #Delta E_{T}/E_{T}; jets'),
 
             steps.histos.deltaEtaVsEtaMap(matchCollPair=refJetColl+'MatchL2JetsNON_L15L2CONE',
                                           nTh=nThJet,
@@ -171,9 +189,11 @@ class example_trig(supy.analysis) :
 
             steps.histos.deltaEtFracVsEtaMap(matchCollPair=refJetColl+'MatchL2JetsNON_L15L2CONE',
                                              nTh=nThJet,
+                                             yLo=-2.0, yUp=+2.0,
                                              title=dEtTitle+' ('+refJetCollLabel+', NON_L15L2CONE);'+titleX%(nThJet+1)+titleYdEt),
             steps.histos.deltaEtFracVsEtaMap(matchCollPair=refJetColl+'MatchL2JetsA4TTA4CC_JES',
                                              nTh=nThJet,
+                                             yLo=-2.0, yUp=+2.0,
                                              title=dEtTitle+' ('+refJetCollLabel+', A4CC);'+titleX%(nThJet+1)+titleYdEt),
             steps.histos.deltaEtFracVsMinDrMap(matchCollPair=refJetColl+'MatchL2JetsNON_L15L2CONE',
                                                nTh=nThJet,
@@ -220,9 +240,11 @@ class example_trig(supy.analysis) :
                               calculables.TrigD3PD.TriggerBit("EF_6j55_a4tchad_L2FSPS"),
                               #calculables.TrigD3PD.TriggerBit("L2_4j15_a4TTem_4j50_a4cchad "),
                               calculables.TrigD3PD.TriggerBit("L1_4J15"),
+                              calculables.TrigD3PD.TriggerBit("EF_6j50_a4tchad_L2FS_5L2j15"),
+                              calculables.TrigD3PD.TriggerBit("EF_6j50_a4tchad_L2FSPS_5L2j15"),
                               ]
-        listOfCalculables += [#calculables.TrigD3PD.Grlt(pars['grlFile']),
-                              #calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
+        listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
+                              calculables.TrigD3PD.isGoodRun(runN='RunNumber',lbn='lbn'),
                               #calculables.TrigD3PD.PassedTriggers(),
                               calculables.TrigD3PD.PassedTriggers(r'.*PS.*'),
                               ]
@@ -259,6 +281,28 @@ class example_trig(supy.analysis) :
                       'EfJetsAntiKt4_topo_calib_EMJES'] :
             listOfCalculables += [calculables.jet.MatchedJets(coll1=pars['refJetColl'],
                                                               otherColls=[jColl])]
+        listOfCalculables += [calculables.jet.MatchedJets(coll1='L2JetsA4TTA4CC_JES', otherColls=['L2JetsNON_L15L2CONE'])]
+        listOfCalculables += [calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=45.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=50.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=55.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsNON_L15L2CONE',
+                                                                              label='L2',
+                                                                              multi=6, minEt=50.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsNONEA4TT',
+                                                                              label='L15',
+                                                                              multi=6, minEt=15.*GeV),
+                              ]
+        listOfCalculables += [
+            calculables.TrigD3PD.TriggerBitAnd(bit1='EmulatedL15_6j15', bit2='EmulatedL2_6j50', label='L15_6j15_L2_6j50'),
+            calculables.TrigD3PD.TriggerBitAnd(bit1='EmulatedL15_6j15', bit2='EmulatedL2FSPS_6j45', label='L15_6j15_L2FSPS_6j45'),
+            calculables.TrigD3PD.TriggerBitAnd(bit1='EmulatedL15_6j15', bit2='EmulatedL2FSPS_6j50', label='L15_6j15_L2FSPS_6j50'),
+            ]
 
         return listOfCalculables
 
@@ -356,7 +400,7 @@ class example_trig(supy.analysis) :
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=1000
+        nEventsMax=100
         return (
             #supy.samples.specify(names = "data12_8TeV.00200804", color = r.kBlack)
             #supy.samples.specify(names = "Zmumu_skimMu", color = r.kRed, effectiveLumi = 10.0e+3)
