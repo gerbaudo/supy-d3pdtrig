@@ -20,8 +20,11 @@ class display_L2FSPS(supy.analysis) :
             supy.steps.printer.progressPrinter(),
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FS"]),
             #steps.filters.triggers(["EF_5j55_a4tchad_L2FSPS"]).invert(),
-            steps.filters.triggers(["L2_5j15_a4TTem"]),
-            steps.filters.triggers(["L2_5j15_a4TTem_5j50_a4cchad"]).invert(),
+            #steps.filters.triggers(["L2_5j15_a4TTem"]),
+            #steps.filters.triggers(["L2_5j15_a4TTem_5j50_a4cchad"]).invert(),
+            #steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
+            steps.filters.triggers(['EmulatedL2FSPS_6j50']),
+            steps.filters.triggers(['L2_6j15_a4TTem_6j50_a4cchad']).invert(),
             
             steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
             ]
@@ -31,14 +34,16 @@ class display_L2FSPS(supy.analysis) :
         pars = self.parameters()
         minEt = pars['minJetEt']
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
-        listOfCalculables += [calculables.TrigD3PD.Tdt(),
+        listOfCalculables += [#calculables.TrigD3PD.Tdt(),
+                              calculables.TrigD3PD.Tdt(treeName = "TrigConfTree", dirName = "susyMeta"),
                               calculables.TrigD3PD.PassedTriggers(),
                               ]
         listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FSPS"),
                               calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FS"),
                               calculables.TrigD3PD.TriggerBit("L2_5j15_a4TTem"),
                               calculables.TrigD3PD.TriggerBit("L2_5j15_a4TTem_5j50_a4cchad"),
-
+                              calculables.TrigD3PD.TriggerBit("L2_6j15_a4TTem_6j50_a4cchad"),
+                              calculables.TrigD3PD.TriggerBit("EF_6j50_a4tchad_L2FS_5L2j15"),
                               ]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
@@ -60,6 +65,17 @@ class display_L2FSPS(supy.analysis) :
                               calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               ]
+        listOfCalculables += [calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=45.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=50.*GeV),
+                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
+                                                                              label='L2FSPS',
+                                                                              multi=6, minEt=55.*GeV),
+                              ]
+
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
@@ -72,30 +88,37 @@ class display_L2FSPS(supy.analysis) :
         #                lumi = 1.0e+3 ) #/pb
         # this file is from Bertrand's D3PD
         # dq2-ls -f user.chapleau.valid1.105204.TTbar_FullHad_McAtNlo_Jimmy.recon.AOD.e825_s1310_s1300_r3391.NTUP_TRIG.JetOnly.v1/
-        exampleDict.add("Pythia_ttbar_bWincbHminus",
-                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/user.chapleau.001130.EXT0._00082.NTUP.root", isDirectory = False)',
-                        lumi = 1.0e+3 ) #/pb
-        exampleDict.add("ttbar-00-01-28",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-28"),
-                        lumi = 1.0e3)
-        exampleDict.add("ttbar-00-01-29",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
-                        lumi = 1.0e3)
-        exampleDict.add("ttbar-00-01-31",
-                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-31"),
-                        lumi = 1.0e3)
-        exampleDict.add("data12_8TeV.00202609",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609_f.txt")',
-                        lumi = 0.313)
-        exampleDict.add("data12_8TeV.00202660",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202660.txt")',
-                        lumi = 2.178)
-        exampleDict.add("data12_8TeV.00202668",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202668.txt")',
-                        lumi = 26.11)
-        exampleDict.add("data12_8TeV.00202798",
-                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202798.txt")',
-                        lumi = 26.11)
+#        exampleDict.add("Pythia_ttbar_bWincbHminus",
+#                        'utils.fileListFromDisk(location = "/tmp/gerbaudo/dq2/user.chapleau.001130.EXT0._00082.NTUP.root", isDirectory = False)',
+#                        lumi = 1.0e+3 ) #/pb
+#        exampleDict.add("ttbar-00-01-28",
+#                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-28"),
+#                        lumi = 1.0e3)
+#        exampleDict.add("ttbar-00-01-29",
+#                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-29"),
+#                        lumi = 1.0e3)
+#        exampleDict.add("ttbar-00-01-31",
+#                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/bugfixCheck/TrigT2CaloJet-00-01-31"),
+#                        lumi = 1.0e3)
+#        exampleDict.add("data12_8TeV.00202609",
+#                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202609_f.txt")',
+#                        lumi = 0.313)
+#        exampleDict.add("data12_8TeV.00202660",
+#                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202660.txt")',
+#                        lumi = 2.178)
+#        exampleDict.add("data12_8TeV.00202668",
+#                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202668.txt")',
+#                        lumi = 26.11)
+#        exampleDict.add("data12_8TeV.00202798",
+#                        'utils.fileListFromTextFile(fileName="//afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/data12_8TeV.00202798.txt")',
+#                        lumi = 26.11)
+
+        exampleDict.add("PeriodB_L1_4J15",
+                        'utils.fileListFromTextFile('
+                        +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodB.txt"'
+                        +')',
+                        lumi=26.11+29.85+7.281+52.6)
+
         return [exampleDict]
 
     def listOfSamples(self,config) :
@@ -112,7 +135,8 @@ class display_L2FSPS(supy.analysis) :
 #                                     nEventsMax=1000,
 #                                     )
                 #supy.samples.specify(names = "data12_8TeV.00202609",   color = r.kBlack, nEventsMax=-1, nFilesMax=-1,)
-                supy.samples.specify(names = "data12_8TeV.00202660",   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
+                #supy.samples.specify(names = "data12_8TeV.00202660",   color = r.kBlack, nEventsMax=10000, nFilesMax=-1,)
+                supy.samples.specify(names = "PeriodB_L1_4J15",   color = r.kBlack, nEventsMax=1000, nFilesMax=-1,)
                 #supy.samples.specify(names = "data12_8TeV.00202668",   color = r.kBlack, nEventsMax=1000, nFilesMax=1,)
                 #supy.samples.specify(names = "data12_8TeV.00202798",   color = r.kBlack, nEventsMax=1000, nFilesMax=-1,)
 
