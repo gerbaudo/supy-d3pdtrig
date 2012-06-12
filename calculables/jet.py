@@ -1,6 +1,6 @@
 
 import supy
-from math import cosh
+from math import cosh, fabs
 from T2L1_RoIParser import inputOutputJetCounter
 import ROOT as r
 
@@ -194,12 +194,14 @@ class EfJets(supy.wrappedChain.calculable) :
 
 #___________________________________________________________
 class IndicesOffline(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV):
+    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV, maxEta=5.0):
         self.minEt = minEt
+        self.maxEta = maxEta
         self.fixes = collection
         self.stash(offlineJetAttributes()+['n'])
         self.moreName = ""
-        if minEt!=None: self.moreName += "et>%.1f"%minEt
+        if minEt!=None: self.moreName += "E_T>%.1f"%minEt
+        if maxEta!=None: self.moreName += "|eta|<%.1f"%maxEta
     @property
     def name(self):
         return 'IndicesOfflineJets'
@@ -209,6 +211,7 @@ class IndicesOffline(supy.wrappedChain.calculable) :
         self.value = []
         for i in range(self.source[self.n]):
             if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt: continue
+            if self.maxEta and fabs(etas.at(i))>self.maxEta : continue
             self.value.append(i)
 #___________________________________________________________
 class IndicesOfflineBad(supy.wrappedChain.calculable) :
