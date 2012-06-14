@@ -11,7 +11,7 @@ class jetTurnOnEmul(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetEt' : 30.0*GeV,
-                'maxJetEta' : 3.2,
+                'maxJetEta' : 2.8, #3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v45-pro13_CoolRunQuery-00-04-08_SMjets.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
@@ -34,11 +34,14 @@ class jetTurnOnEmul(supy.analysis) :
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.filters.goodRun().onlyData(),
-            steps.filters.triggers([pars['refTrigger']]),
+            #steps.filters.triggers([pars['refTrigger']]),
+            #steps.filters.triggers(['EF_5j55_a4tchad_L2FSPS']),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=minNofflineJets),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_5j15', emulated=True, nTh=4),
+            supy.steps.filters.multiplicity("IndicesOfflineJets",min=minNofflineJets+1),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j10', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j45', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j50', emulated=True, nTh=5),
@@ -98,6 +101,7 @@ class jetTurnOnEmul(supy.analysis) :
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
         listOfCalculables += [
             emjb(jetColl='L2JetsNONEA4TT', label='L15', multi=5, minEt=15.*GeV),
+            emjb(jetColl='L2JetsNONEA4TT', label='L15', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L15', multi=6, minEt=15.*GeV),
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FSPS', multi=6, minEt=45.*GeV),
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FSPS', multi=6, minEt=50.*GeV),
@@ -119,7 +123,7 @@ class jetTurnOnEmul(supy.analysis) :
         castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
 
         lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
-                      202987:14.02, 202991:40.15, 203027:89.29, #B2
+                      202987:14.02, 202991:40.15, 203027:89.29, 203258:119.4, #B2
                       }
         exampleDict = supy.samples.SampleHolder()
         exampleDict.add("PeriodB_L1_4J15",
