@@ -11,7 +11,7 @@ class jetTurnOnEmul(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetEt' : 30.0*GeV,
-                'maxJetEta' : 2.8, #3.2,
+                'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v45-pro13_CoolRunQuery-00-04-08_SMjets.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
@@ -43,13 +43,15 @@ class jetTurnOnEmul(supy.analysis) :
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=minNofflineJets+1),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j10', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15', emulated=True, nTh=5),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j45', emulated=True, nTh=5),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j45', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2FSPS_6j50', emulated=True, nTh=5),
             steps.filters.triggers(['EmulatedL15_5j15']),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j45', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j45', emulated=True, nTh=5),
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=100.0*GeV),
             steps.filters.triggers(['EmulatedL15_6j15']),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FSPS_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j50', emulated=True, nTh=5),
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=100.0*GeV),
 
             ]
@@ -81,12 +83,12 @@ class jetTurnOnEmul(supy.analysis) :
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
-                              calculables.jet.IndicesL2(minEt=minEt, input='NON_L15', output='L2CONE'),# regular L2
-                              calculables.jet.IndicesL2(minEt=minEt, input='A4TT', output='L2CONE'),   # L2 seeded by L1.5
-                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4TT'),     # L1.5 EM
-                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A10TT'),    # L1.5 EM
-                              calculables.jet.IndicesL2(minEt=minEt, input='NONE', output='A4TT_JES'), # L1.5 HAD JES
-                              calculables.jet.IndicesL2(minEt=minEt, input='A4TT', output='A4CC_JES'), # A4CC HAD JES
+                              calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='NON_L15', output='L2CONE'),# regular L2
+                              calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='A4TT', output='L2CONE'),   # L2 seeded by L1.5
+                              calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='NONE', output='A4TT'),     # L1.5 EM
+                              calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='NONE', output='A10TT'),    # L1.5 EM
+                              calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='NONE', output='A4TT_JES'), # L1.5 HAD JES
+                              calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='A4TT', output='A4CC_JES'), # A4CC HAD JES
                               calculables.jet.L2Jets(indices="IndicesL2JetsNON_L15L2CONE"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsA4TTL2CONE"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
@@ -106,15 +108,15 @@ class jetTurnOnEmul(supy.analysis) :
             emjb(jetColl='L2JetsNONEA4TT', label='L15', multi=5, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L15', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L15', multi=6, minEt=15.*GeV),
-            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FSPS', multi=6, minEt=45.*GeV),
-            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FSPS', multi=6, minEt=50.*GeV),
-            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FSPS', multi=6, minEt=55.*GeV),
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=45.*GeV),
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=50.*GeV),
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=55.*GeV),
             emjb(jetColl='L2JetsNON_L15L2CONE', label='L2', multi=6, minEt=50.*GeV),
             ]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
             tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2_6j50', label='L15_6j15_L2_6j50'),
-            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2FSPS_6j50', label='L15_6j15_L2FSPS_6j50'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j50'),
             ]
 
         return listOfCalculables
