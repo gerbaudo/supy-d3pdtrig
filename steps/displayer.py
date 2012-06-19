@@ -281,7 +281,7 @@ class displayer(supy.steps.displayer) :
         self.prepareText(params, coords)
         jets = eventVars[collection]
         #jets = [j for j in jets if j.InputType=='NONE' and j.OutputType=='A4CC_JES']
-        jets = sorted([j for j in jets], key = lambda j:j.et(), reverse = True)
+        jets = sorted([j for j in jets], key = lambda j:j.et, reverse = True)
 
         self.printText(self.renamedDesc(collection))
         self.printText("Et     eta  phi")
@@ -292,7 +292,7 @@ class displayer(supy.steps.displayer) :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
             self.printText("%5.1f %4.1f %4.1f"%\
-                           (jet.et()*MeV2GeV, jet.eta, jet.phi))
+                           (jet.et*MeV2GeV, jet.eta, jet.phi))
                             #jet.InputType, jet.OutputType))
 
     def printEfJets(self, eventVars, params, coords, nMax) :
@@ -302,7 +302,7 @@ class displayer(supy.steps.displayer) :
 
         # the EF jet is the first one in the tuple; the other elements are matched jets
         matchedEfJets = sorted([jTuple for jTuple in matchedEfJets],
-                               key = lambda jTuple: jTuple[0].et(),
+                               key = lambda jTuple: jTuple[0].et,
                                reverse = True)
 
         self.printText(self.renamedDesc(self.efJets))
@@ -315,13 +315,13 @@ class displayer(supy.steps.displayer) :
             if nMax<=iJet :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
-            flagA4cc = (' ' if not jetA4cc else '<' if jetEf.et()<jetA4cc.et() else '>').center(lenCmpLabel)
-            flagA4tt = (' ' if not jetA4tt else '<' if jetEf.et()<jetA4tt.et() else '>').center(lenCmpLabel)
-            self.printText("%5.1f %4.1f %4.1f %s  %s"%(jetEf.et()*MeV2GeV, jetEf.eta, jetEf.phi, flagA4cc, flagA4tt))
+            flagA4cc = (' ' if not jetA4cc else '<' if jetEf.et<jetA4cc.et else '>').center(lenCmpLabel)
+            flagA4tt = (' ' if not jetA4tt else '<' if jetEf.et<jetA4tt.et else '>').center(lenCmpLabel)
+            self.printText("%5.1f %4.1f %4.1f %s  %s"%(jetEf.et*MeV2GeV, jetEf.eta, jetEf.phi, flagA4cc, flagA4tt))
     def printOfflineJets(self, eventVars, params, coords, nMax) :
         self.prepareText(params, coords)
         jets = eventVars[self.offlineJets]
-        jets = sorted([j for j in jets], key = lambda j:j.et())
+        jets = sorted([j for j in jets], key = lambda j:j.et)
 
         self.printText(self.renamedDesc(self.offlineJets))
         self.printText("Et     eta phi  B|U")
@@ -332,7 +332,7 @@ class displayer(supy.steps.displayer) :
                 self.printText("[%d more not listed]"%(nJets-nMax))
                 break
             self.printText("%5.1f %4.1f %4.1f  %d"%\
-                           (jet.et()*MeV2GeV, jet.eta, jet.phi,
+                           (jet.et*MeV2GeV, jet.eta, jet.phi,
                             jet.isBadLoose or jet.isUgly))
 
     def printTriggers(self, eventVars, params, coords,
@@ -552,7 +552,7 @@ class displayer(supy.steps.displayer) :
     def drawEt(self, c, etObj, color, lineWidth, arrowSize) :
         x0 = c["x0"]
         y0 = c["y0"]
-        et = etObj.et()*MeV2GeV*c["radius"]/c["scale"]
+        et = etObj.et*MeV2GeV*c["radius"]/c["scale"]
         x1 = x0+et*cos(etObj.phi)
         y1 = y0+et*sin(etObj.phi)
 

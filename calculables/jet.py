@@ -110,6 +110,7 @@ class HltJet(object) :
     def __init__(self, **kargs) :
         for k,v in kargs.iteritems() :
             setattr(self,k,v)
+    @property
     def et(self) :
         return self.E/cosh(self.eta)
 
@@ -166,7 +167,7 @@ def computeMinDr(jetCollection, drMinEt=None) :
         # using here LorentzV(pt,eta,phi,m) as (0.,eta,phi,0.); we only care about eta,phi.
         j1lv = lv(0., jet.eta, jet.phi, 0.)
         otherJets = jetCollection[:i] + jetCollection[i+1:]
-        if drMinEt : otherJets = [j for j in otherJets if j.et()>drMinEt]
+        if drMinEt : otherJets = [j for j in otherJets if j.et>drMinEt]
         for j in otherJets :
             dr = DeltaR(j1lv, lv(0., j.eta, j.phi, 0.))
             if not minDr or minDr > dr : minDr = dr
@@ -253,7 +254,7 @@ class OfflineJets(supy.wrappedChain.calculable) :
 #___________________________________________________________
 
 class MatchedJets(supy.wrappedChain.calculable) :
-    "Loop over coll1 and find the matches otherColls; requires et(), eta, phi."
+    "Loop over coll1 and find the matches otherColls; requires et, eta, phi."
     def __init__(self, coll1 = None, otherColls = [], maxDr = 0.4) :
         self.coll1 = coll1
         self.otherColls = otherColls
@@ -263,17 +264,17 @@ class MatchedJets(supy.wrappedChain.calculable) :
         return "%sMatch%s"%(self.coll1, ''.join(self.otherColls))
     def update(self, _) :
         self.value = []
-        jets1 = sorted([j for j in self.source[self.coll1]], key = lambda j:j.et(), reverse = True)
-        otherJets = [sorted([j for j in self.source[coll]], key = lambda j:j.et(), reverse = True)
+        jets1 = sorted([j for j in self.source[self.coll1]], key = lambda j:j.et, reverse = True)
+        otherJets = [sorted([j for j in self.source[coll]], key = lambda j:j.et, reverse = True)
                      for coll in self.otherColls]
         # using here LorentzV(pt,eta,phi,m) as (et,eta,phi,0.), but we only care about eta,phi.
         for j1 in jets1:
-            j1lv = supy.utils.root.LorentzV(j1.et(), j1.eta, j1.phi, 0.)
+            j1lv = supy.utils.root.LorentzV(j1.et, j1.eta, j1.phi, 0.)
             jetWithMatches = [j1]
             for jets2 in otherJets:
                 matchedJet = None
                 for j2 in jets2:
-                    j2lv = supy.utils.root.LorentzV(j2.et(), j2.eta, j2.phi, 0.)
+                    j2lv = supy.utils.root.LorentzV(j2.et, j2.eta, j2.phi, 0.)
                     if r.Math.VectorUtil.DeltaR(j1lv, j2lv) < self.maxDr :
                         matchedJet = j2
                     #jets2.pop(jets2.index(jet2)) # avoid double match and speed up

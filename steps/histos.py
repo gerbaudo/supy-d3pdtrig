@@ -57,8 +57,8 @@ class deltaR(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            j1lv = supy.utils.root.LorentzV(elem1.et(), elem1.eta, elem1.phi, 0.)
-            j2lv = supy.utils.root.LorentzV(elem2.et(), elem2.eta, elem2.phi, 0.)
+            j1lv = supy.utils.root.LorentzV(elem1.et, elem1.eta, elem1.phi, 0.)
+            j2lv = supy.utils.root.LorentzV(elem2.et, elem2.eta, elem2.phi, 0.)
             self.book.fill(r.Math.VectorUtil.DeltaR(j1lv, j2lv), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEt(analysisStep) :
     def __init__(self, matchCollPair='', var='', nTh=None,N=100,low=-50.0,up=50.0,title="#Delta E_{T}") :
@@ -74,7 +74,7 @@ class deltaEt(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            self.book.fill(MeV2GeV*(elem2.et() - elem1.et()), self.hName, self.N, self.low, self.up, title=self.title)
+            self.book.fill(MeV2GeV*(elem2.et - elem1.et), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEtFrac(analysisStep) :
     # todo: merge it with deltaEt
     def __init__(self, matchCollPair='', var='',nTh=None,N=100,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
@@ -90,7 +90,7 @@ class deltaEtFrac(analysisStep) :
             elem1 = pair[0]
             elem2 = pair[1]
             if not elem1 or not elem2 : continue
-            et1, et2 = elem1.et(), elem2.et()
+            et1, et2 = elem1.et, elem2.et
             if et1 :
                 self.book.fill((et2-et1)/et1, self.hName, self.N, self.low, self.up, title=self.title)
 
@@ -141,9 +141,9 @@ class deltaEtFracVsEtaMap(analysisStep) :
             elem2 = pair[1]
             if not elem1 : continue
             if not elem2 : continue
-            etRef = elem1.et()
+            etRef = elem1.et
             if not etRef : continue
-            self.book.fill((elem1.eta, (elem2.et() - etRef)/etRef),
+            self.book.fill((elem1.eta, (elem2.et - etRef)/etRef),
                            self.hName,
                            (self.nX, self.nY),
                            (self.xLo, self.yLo),
@@ -164,8 +164,8 @@ class deltaEtFracVsMinDrMap(analysisStep) :
             elem2 = pair[1]
             if not elem1 : continue
             if not elem2 : continue
-            etRef = elem1.et()
-            self.book.fill((elem1.minDr, (elem2.et() - etRef)/etRef),
+            etRef = elem1.et
+            self.book.fill((elem1.minDr, (elem2.et - etRef)/etRef),
                            self.hName,
                            (self.nX, self.nY),
                            (self.xLo, self.yLo),
@@ -188,9 +188,9 @@ class matchingEffVsEt(analysisStep) :
             elem2 = pair[1]
             # the first collection is the one with higher eff (denominator)
             if not elem1 : continue
-            self.book.fill(MeV2GeV*elem1.et(), self.denTitle, self.N, self.low, self.up, title="denominator: %s;E_{T};jets"%self.denTitle)
+            self.book.fill(MeV2GeV*elem1.et, self.denTitle, self.N, self.low, self.up, title="denominator: %s;E_{T};jets"%self.denTitle)
             if not elem2 : continue
-            self.book.fill(MeV2GeV*elem1.et(), self.numTitle, self.N, self.low, self.up, title="numerator: %s;E_{T};jets"%self.numTitle)
+            self.book.fill(MeV2GeV*elem1.et, self.numTitle, self.N, self.low, self.up, title="numerator: %s;E_{T};jets"%self.numTitle)
     def mergeFunc(self, products) :
         num = r.gDirectory.Get(self.numTitle)
         den = r.gDirectory.Get(self.denTitle)
@@ -247,7 +247,7 @@ class turnOnJet(analysisStep) :
             if self.drMax and jet.minDr and jet.minDr > self.drMax : return
         if self.etaMin and fabs(jet.eta) < self.etaMin : return
         if self.etaMax and fabs(jet.eta) > self.etaMax : return
-        jetEt = jet.et()*MeV2GeV
+        jetEt = jet.et*MeV2GeV
         self.book.fill(jetEt, self.denName, self.N, self.low, self.up, title="denominator: %s;E_{T};jets"%self.denName)
         if self.trigger in eventVars[self.passedTriggers] \
                or \
