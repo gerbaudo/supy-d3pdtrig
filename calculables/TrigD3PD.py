@@ -46,7 +46,7 @@ class EmulatedMultijetTriggerBit(supy.wrappedChain.calculable) :
         self.bitName = "Emulated%s_%dj%0.f"%(self.label, self.multi, self.minEt*MeV2GeV)
     def update(self, _) :
         jets = self.source[self.jetColl]
-        self.value = len([1 for j in jets if j.et()>self.minEt]) >= self.multi
+        self.value = len([1 for j in jets if j.et>self.minEt]) >= self.multi
     @property
     def name(self):
         return self.bitName
