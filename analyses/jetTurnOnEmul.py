@@ -49,10 +49,10 @@ class jetTurnOnEmul(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2FSPS_6j50', emulated=True, nTh=5),
             steps.filters.triggers(['EmulatedL15_5j15']),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j45', emulated=True, nTh=5),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=100.0*GeV),
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
             steps.filters.triggers(['EmulatedL15_6j15']),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j50', emulated=True, nTh=5),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=100.0*GeV),
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
 
             ]
         return outList
@@ -140,7 +140,7 @@ class jetTurnOnEmul(supy.analysis) :
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=100
+        nEventsMax=-1 #1000
         return (
             supy.samples.specify(names="PeriodB_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
             )
