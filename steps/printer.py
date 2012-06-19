@@ -16,4 +16,5 @@ class l2JetPrinter(analysisStep) :
         print self.collection
         for i,j in enumerate(jets) :
             print "[%d] "%i \
-                  + " ".join(["%s : %s"%(a, getattr(j,a)) for a in self.leavesToPrint])
+                  + " ".join(["%s : %s"%(a, getattr(j,a)) for a in self.leavesToPrint]
+                             + ["et : %.1f"%j.et])
