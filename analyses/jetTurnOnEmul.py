@@ -34,7 +34,7 @@ class jetTurnOnEmul(supy.analysis) :
         outList=[
             supy.steps.printer.progressPrinter(),
             steps.filters.goodRun().onlyData(),
-            #steps.filters.triggers([pars['refTrigger']]),
+            steps.filters.triggers([pars['refTrigger']]),
             #steps.filters.triggers(['EF_5j55_a4tchad_L2FSPS']),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
@@ -48,6 +48,9 @@ class jetTurnOnEmul(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j45', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j50', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2FSPS_6j35', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2FSPS_6j40', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2FSPS_6j45', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j15_L2FSPS_6j50', emulated=True, nTh=5),
             steps.filters.triggers(['EmulatedL15_5j15']),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_6j45', emulated=True, nTh=5),
@@ -120,6 +123,9 @@ class jetTurnOnEmul(supy.analysis) :
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
             tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2_6j50', label='L15_6j15_L2_6j50'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j35'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j40'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j45'),
             tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j50'),
             ]
 
