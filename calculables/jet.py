@@ -65,14 +65,16 @@ class L1Jets(supy.wrappedChain.calculable) :
                       if et8x8>self.minimumEt]
 #___________________________________________________________
 class IndicesL2(supy.wrappedChain.calculable) :
-    def __init__(self, collection = l2jetCollection(), minEt = None, input = None, output = None):
+    def __init__(self, collection = l2jetCollection(), minEt = None, maxEta=5.0, input = None, output = None):
         self.minEt = minEt
+        self.maxEta = maxEta
         self.input = input
         self.output = output
         self.fixes = collection
         self.stash(l2jetAttributes()+["n"])
         self.moreName = ""
         if minEt!=None : self.moreName += "et>%.1f"%minEt
+        if maxEta!=None: self.moreName += "|eta|<%.1f"%maxEta
         if input!=None : self.moreName += "%s"%input
         if output!=None : self.moreName += "%s"%output
     @property
@@ -89,6 +91,7 @@ class IndicesL2(supy.wrappedChain.calculable) :
         indices = []
         for i in range(self.source[self.n]):
             if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt : continue
+            if self.maxEta and fabs(etas.at(i))>self.maxEta : continue
             if self.input and inputs.at(i) != self.input : continue
             if self.output and outputs.at(i) != self.output : continue
             indices.append(i)
@@ -138,13 +141,15 @@ class L2Jets(supy.wrappedChain.calculable) :
         #print len(lst),lst
 #___________________________________________________________
 class IndicesEf(supy.wrappedChain.calculable) :
-    def __init__(self, collection = efJetCollection(), minEt = None, calibTag = None) :
+    def __init__(self, collection = efJetCollection(), minEt = None, maxEta=5.0, calibTag = None) :
         self.minEt = minEt
+        self.maxEta = maxEta
         self.calibTag = calibTag
         self.fixes = collection
         self.stash(efJetAttributes()+['n'])
         self.moreName = ""
         if minEt!=None : self.moreName += "et>%.1f"%minEt
+        if maxEta!=None: self.moreName += "|eta|<%.1f"%maxEta
         if calibTag!=None : self.moreName += "%s"%calibTag
     @property
     def name(self):
@@ -156,6 +161,7 @@ class IndicesEf(supy.wrappedChain.calculable) :
         self.value = []
         for i in range(energies.size()):
             if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt : continue
+            if self.maxEta and fabs(etas.at(i))>self.maxEta : continue
             if self.calibTag and calibs.at(i) != self.calibTag : continue
             self.value.append(i)
 
@@ -231,6 +237,9 @@ class IndicesOfflineBad(supy.wrappedChain.calculable) :
 class OfflineJet(HltJet) :
     def __init__(self, **kargs) :
         super(OfflineJet, self).__init__(**kargs)
+    @property
+    def et(self) :
+        return self.E/cosh(self.eta)
 
 class OfflineJets(supy.wrappedChain.calculable) :
     def __init__(self, collection = offlineJetCollection(), indices = 'IndicesOfflineJets', drMinEt=40.0*GeV) :
