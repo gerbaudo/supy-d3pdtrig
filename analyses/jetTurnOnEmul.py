@@ -39,6 +39,7 @@ class jetTurnOnEmul(supy.analysis) :
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=minNofflineJets),
+            steps.filters.triggers(['EmulatedOffline_5j70']),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_5j15', emulated=True, nTh=4),
             supy.steps.filters.multiplicity("IndicesOfflineJets",min=minNofflineJets+1),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL15_6j10', emulated=True, nTh=5),
@@ -119,13 +120,14 @@ class jetTurnOnEmul(supy.analysis) :
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=50.*GeV),
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=55.*GeV),
             emjb(jetColl='L2JetsNON_L15L2CONE', label='L2', multi=6, minEt=50.*GeV),
+            emjb(jetColl='OfflineJets', label='Offline', multi=5, minEt=70.*GeV),            
             ]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
             tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2_6j50', label='L15_6j15_L2_6j50'),
-            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j35'),
-            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j40'),
-            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j45'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j35', label='L15_6j15_L2FSPS_6j35'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j40', label='L15_6j15_L2FSPS_6j40'),
+            tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j45', label='L15_6j15_L2FSPS_6j45'),
             tba(bit1='EmulatedL15_6j15', bit2='EmulatedL2PS_6j50', label='L15_6j15_L2FSPS_6j50'),
             ]
 
@@ -144,6 +146,7 @@ class jetTurnOnEmul(supy.analysis) :
         exampleDict.add("PeriodB_L1_4J15",
                         'utils.fileListFromTextFile('
                         +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodB.txt"'
+                        #+'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodB_test.txt"'
                         +')',
                         lumi= sum(lumiPerRun.keys())
                         )
