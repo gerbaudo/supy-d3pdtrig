@@ -34,6 +34,15 @@ class jetMichaelTests(supy.analysis) :
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
             steps.histos.turnOnJet(trigger='EF_5j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j50_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j60_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j65_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j70_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j75_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j80_L2PS_5j75', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j85_L2PS_5j75', emulated=True, nTh=4),
             ]
         return outList
 
@@ -55,11 +64,38 @@ class jetMichaelTests(supy.analysis) :
                               ]
         listOfCalculables += [calculables.vertex.Indices(collection=('vxp_',''),
                                                          zPosMax=100, nTracksMin=4),]
+        listOfCalculables += [calculables.jet.IndicesL2(minEt=minEt, maxEta=maxEta, input='A4TT', output='A4CC_JES'), # A4CC HAD JES
+                              calculables.jet.L2Jets(indices="IndicesL2JetsA4TTA4CC_JES"),
+                              calculables.jet.IndicesEf(minEt=minEt, maxEta=maxEta, calibTag='AntiKt4_topo_calib_EMJES'),
+                              calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
+                              ]
         listOfCalculables += [calculables.jet.IndicesOffline(minEt=minEt, maxEta=maxEta),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
                               ]
-
+        emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
+        listOfCalculables += [
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=5, minEt=75.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=50.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=55.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=60.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=65.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=70.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=75.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=80.*GeV),
+            emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=85.*GeV),
+            ]
+        tba = calculables.TrigD3PD.TriggerBitAnd
+        listOfCalculables += [
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j50', label='EF_5j50_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j55', label='EF_5j55_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j60', label='EF_5j60_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j65', label='EF_5j65_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j70', label='EF_5j70_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j75', label='EF_5j75_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j80', label='EF_5j80_L2PS_5j75'),
+            tba(bit1='EmulatedL2PS_5j75', bit2='EmulatedEF_5j85', label='EF_5j85_L2PS_5j75'),
+            ]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
