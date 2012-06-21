@@ -216,7 +216,7 @@ class turnOnJet(analysisStep) :
                  drMin=None, drMax=None,
                  drAnyJet=None,
                  etaMin=None, etaMax=None,
-                 N=50,low=0.0,up=100.0,title='') :
+                 N=60,low=0.0,up=120.0,title='') :
         requiredPars = ['jetColl', 'trigger', 'passedTriggers', 'nTh', 'emulated']
         filterPars = ['drMin', 'drMax', 'etaMin', 'etaMax']
         otherPars = ['drAnyJet']
