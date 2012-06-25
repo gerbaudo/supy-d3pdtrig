@@ -3,17 +3,24 @@ import supy
 import ROOT as r
 
 class triggerCounts(supy.analysisStep) :
-    "histogram the counts for each trigger; based on susycaf.steps.trigger.triggerScan"
-    def __init__(self, pattern = r'.*', passedTriggers = 'PassedTriggers') :
+    """histogram the counts for each trigger; based on susycaf.steps.trigger.triggerScan.
+    You can pass in either a pattern (that will be searched for in the PassedTriggers list,
+    or an explicit list of triggers (in which case it will just check the eventVar)"""
+    def __init__(self, pattern = r'.*', passedTriggers = 'PassedTriggers', triggers=[]) :
         self.pattern = pattern
         self.passedTriggers = passedTriggers
+        self.triggers = triggers
         self.moreName = self.pattern
         self.counts = collections.defaultdict(int)
     def varsToPickle(self) :
         return ['counts']
     def uponAcceptance(self, eventVars) :
-        for key in eventVars[self.passedTriggers]:
-            if not re.match(self.pattern,key): continue
+        for key in self.triggers :
+            if key in eventVars and eventVars[key]==True :
+                self.counts[key] += 1
+        if len(self.triggers) : return # if we've used a trigger list, we don't look at regexp
+        for key in eventVars[self.passedTriggers] :
+            if not re.match(self.pattern,key) : continue
             self.counts[key] += 1
     def mergeFunc(self, products) :
         self.counts = collections.defaultdict(int)
