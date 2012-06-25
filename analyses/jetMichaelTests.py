@@ -49,6 +49,8 @@ class jetMichaelTests(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j85_L2PS_5j75', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j90_L2PS_5j75', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j90_L2PS_5j75', emulated=True, nTh=5),
+            steps.trigger.triggerCounts(triggers=['EF_5j55_a4tchad_L2FSPS', 'EF_5j55_a4tchad_L2FS']
+                                        +['EmulatedEF_5j%d_L2PS_5j75' %th for th in [70,75,80,85,90]]),
             ]
         return outList
 
