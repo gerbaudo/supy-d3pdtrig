@@ -201,9 +201,10 @@ class EfJets(supy.wrappedChain.calculable) :
 
 #___________________________________________________________
 class IndicesOffline(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV, maxEta=5.0):
+    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV, maxEta=5.0, etSorted=True):
         self.minEt = minEt
         self.maxEta = maxEta
+        self.etSorted = etSorted
         self.fixes = collection
         self.stash(offlineJetAttributes()+['n'])
         self.moreName = ""
@@ -220,6 +221,7 @@ class IndicesOffline(supy.wrappedChain.calculable) :
             if self.minEt and energies.at(i)/cosh(etas.at(i)) < self.minEt: continue
             if self.maxEta and fabs(etas.at(i))>self.maxEta : continue
             self.value.append(i)
+        if self.etSorted : self.value = sorted([i for i in self.value], key = lambda i : energies.at(i)/cosh(etas.at(i)), reverse = True)
 #___________________________________________________________
 class IndicesOfflineBad(supy.wrappedChain.calculable) :
     def __init__(self, collection = offlineJetCollection()) :
