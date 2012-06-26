@@ -65,10 +65,12 @@ class jetMichaelTests(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_5j15_L2PS_5j45', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_4j15_L2PS_5j50', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_5j15_L2PS_5j50', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55', emulated=True, nTh=4),
             steps.trigger.triggerCounts(triggers=[]
                                         +['EmulatedL2FS_4j15_L2PS_5j%d'%t for t in [40,45,50]]
                                         +['EmulatedEF_5j55_L2FS_4j15_L2PS_5j%d'%t for t in [40,45,50]]
                                         +['EmulatedEF_5j55_L2FS_5j15_L2PS_5j%d'%t for t in [40,45,50]]
+                                        +['EmulatedEF_5j55']
                                         ),
 
             ]
