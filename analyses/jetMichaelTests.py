@@ -59,17 +59,21 @@ class jetMichaelTests(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_5j45', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_5j50', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_5j50', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_5j55', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_5j55', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_4j15_L2PS_5j40', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_5j15_L2PS_5j40', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_4j15_L2PS_5j45', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_5j15_L2PS_5j45', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_4j15_L2PS_5j50', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_5j15_L2PS_5j50', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_4j15_L2PS_5j55', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FS_5j15_L2PS_5j55', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55', emulated=True, nTh=4),
             steps.trigger.triggerCounts(triggers=[]
-                                        +['EmulatedL2FS_4j15_L2PS_5j%d'%t for t in [40,45,50]]
-                                        +['EmulatedEF_5j55_L2FS_4j15_L2PS_5j%d'%t for t in [40,45,50]]
-                                        +['EmulatedEF_5j55_L2FS_5j15_L2PS_5j%d'%t for t in [40,45,50]]
+                                        +['EmulatedL2FS_4j15_L2PS_5j%d'%t for t in [40,45,50,55]]
+                                        +['EmulatedEF_5j55_L2FS_4j15_L2PS_5j%d'%t for t in [40,45,50,55]]
+                                        +['EmulatedEF_5j55_L2FS_5j15_L2PS_5j%d'%t for t in [40,45,50,55]]
                                         +['EmulatedEF_5j55']
                                         ),
 
@@ -112,6 +116,7 @@ class jetMichaelTests(supy.analysis) :
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=5, minEt=40.*GeV),
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=5, minEt=45.*GeV),
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=5, minEt=50.*GeV),
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=5, minEt=55.*GeV),
 
             emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=5, minEt=55.*GeV),
 
@@ -135,15 +140,19 @@ class jetMichaelTests(supy.analysis) :
             tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_5j40', label='L2FS_4j15_L2PS_5j40'),
             tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_5j45', label='L2FS_4j15_L2PS_5j45'),
             tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_5j50', label='L2FS_4j15_L2PS_5j50'),
+            tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_5j55', label='L2FS_4j15_L2PS_5j55'),
             tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_5j40', label='L2FS_5j15_L2PS_5j40'),
             tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_5j45', label='L2FS_5j15_L2PS_5j45'),
             tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_5j50', label='L2FS_5j15_L2PS_5j50'),
+            tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_5j55', label='L2FS_5j15_L2PS_5j55'),
             tba(bit1='EmulatedL2FS_4j15_L2PS_5j40', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_4j15_L2PS_5j40'),
             tba(bit1='EmulatedL2FS_4j15_L2PS_5j45', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_4j15_L2PS_5j45'),
             tba(bit1='EmulatedL2FS_4j15_L2PS_5j50', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_4j15_L2PS_5j50'),
+            tba(bit1='EmulatedL2FS_4j15_L2PS_5j55', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_4j15_L2PS_5j55'),
             tba(bit1='EmulatedL2FS_5j15_L2PS_5j40', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_5j15_L2PS_5j40'),
             tba(bit1='EmulatedL2FS_5j15_L2PS_5j45', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_5j15_L2PS_5j45'),
             tba(bit1='EmulatedL2FS_5j15_L2PS_5j50', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_5j15_L2PS_5j50'),
+            tba(bit1='EmulatedL2FS_5j15_L2PS_5j55', bit2='EmulatedEF_5j55', label='EF_5j55_L2FS_5j15_L2PS_5j55'),
             ]
         return listOfCalculables
 
