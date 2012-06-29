@@ -2,6 +2,7 @@
 import supy
 from math import cosh, fabs
 from T2L1_RoIParser import inputOutputJetCounter
+from l15Calib import emResidualEtCorrFactor, emJesEnergyCorrFactor
 import ROOT as r
 
 GeV = 1000.
@@ -107,7 +108,7 @@ class IndicesL2(supy.wrappedChain.calculable) :
             usedWords.append(word)
             out.append(iJet)
         return out
-        
+
 # should I define a base class jet with eta,phi,et?
 class HltJet(object) :
     def __init__(self, **kargs) :
@@ -139,6 +140,25 @@ class L2Jets(supy.wrappedChain.calculable) :
             self.value.append(HltJet(**kargs))
         #lst = sorted([x.E for x in self.value])
         #print len(lst),lst
+class L2JetsCalibL15(supy.wrappedChain.calculable) :
+    def __init__(self, collection = ):
+        self.collection = collection
+    @property
+    def name(self):
+        return self.collection + "CalibL15"
+    def update(self, _) :
+        self.value = []
+        l2jetAttributeArrays = [self.source[getattr(self,x)] for x in l2jetAttributes()]
+
+        l15UncalibratedJets = self.source[self.collection]
+        keys = l2jetAttributes()
+        for jet in l15UncalibratedJets :
+            kargs = dict([(k,getattr(jet, k)) for k in keys])
+            kargs['E'] *= emResidualEtCorrFactor(jet)
+            emResidualCalibJet = HltJet(**kargs)
+            kargs = dict([(k,getattr(emResidualCalibJet, k)) for k in keys])
+            kargs['E'] *= emJesEnergyCorrFactor(emResidualCalibJet)
+            self.value.append(HltJet(**kargs))
 #___________________________________________________________
 class IndicesEf(supy.wrappedChain.calculable) :
     def __init__(self, collection = efJetCollection(), minEt = None, maxEta=5.0, calibTag = None) :
