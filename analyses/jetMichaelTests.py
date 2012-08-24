@@ -13,7 +13,7 @@ class jetMichaelTests(supy.analysis) :
         return {'minJetEt' : 30.0*GeV,
                 'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
-                'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v45-pro13_CoolRunQuery-00-04-08_SMjets.xml",
+                'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
                 'refTrigger' : "EF_5j55_a4tchad_L2FS",
