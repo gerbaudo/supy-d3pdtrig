@@ -213,7 +213,7 @@ class jetMichaelTests(supy.analysis) :
                         )
         exampleDict.add("PeriodD_L1_4J15",
                         'utils.fileListFromTextFile('
-                        +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD_test.txt"'
+                        +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD.txt"'
                         +')',
                         lumi= lumiPerRun[208184]+lumiPerRun[208258]
                         )
