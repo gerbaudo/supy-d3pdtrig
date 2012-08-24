@@ -1,0 +1,12 @@
+--2012-08-24 11:32:49--  http://atlasdqm.web.cern.ch/atlasdqm/grlgen/StandardGRL/All_Good_v4/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml
+Resolving atlasdqm.web.cern.ch... 128.142.133.76
+Connecting to atlasdqm.web.cern.ch|128.142.133.76|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 63807 (62K) [text/xml]
+Saving to: `data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml'
+
+     0K .......... .......... .......... .......... .......... 80% 23.2M 0s
+    50K .......... ..                                         100% 27.7M=0.003s
+
+2012-08-24 11:32:49 (23.9 MB/s) - `data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml' saved [63807/63807]
+
