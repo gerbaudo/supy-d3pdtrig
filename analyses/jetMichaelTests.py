@@ -201,6 +201,7 @@ class jetMichaelTests(supy.analysis) :
 
         lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
                       202987:14.02, 202991:40.15, 203027:89.29, 203258:119.4, #B2
+                      208184:105.2, 208258:92.55, # D4, D5
                       }
         exampleDict = supy.samples.SampleHolder()
         exampleDict.add("PeriodB_L1_4J15",
@@ -210,13 +211,19 @@ class jetMichaelTests(supy.analysis) :
                         +')',
                         lumi= sum(lumiPerRun.keys())
                         )
+        exampleDict.add("PeriodD_L1_4J15",
+                        'utils.fileListFromTextFile('
+                        +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD_test.txt"'
+                        +')',
+                        lumi= lumiPerRun[208184]+lumiPerRun[208258]
+                        )
 
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=-1 #1000
+        nEventsMax=1000
         return (
-            supy.samples.specify(names="PeriodB_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
+            supy.samples.specify(names="PeriodD_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
             )
 
     def conclude(self,pars) :
