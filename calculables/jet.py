@@ -141,15 +141,14 @@ class L2Jets(supy.wrappedChain.calculable) :
         #lst = sorted([x.E for x in self.value])
         #print len(lst),lst
 class L2JetsCalibL15(supy.wrappedChain.calculable) :
-    def __init__(self, collection = ):
+    "Take a L1.5 jet, and apply the L1.5 had calibration"
+    def __init__(self, collection):
         self.collection = collection
     @property
     def name(self):
-        return self.collection + "CalibL15"
+        return self.collection + "had"
     def update(self, _) :
         self.value = []
-        l2jetAttributeArrays = [self.source[getattr(self,x)] for x in l2jetAttributes()]
-
         l15UncalibratedJets = self.source[self.collection]
         keys = l2jetAttributes()
         for jet in l15UncalibratedJets :
