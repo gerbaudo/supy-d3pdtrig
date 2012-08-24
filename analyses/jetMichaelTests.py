@@ -73,6 +73,7 @@ class jetMichaelTests(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55', emulated=True, nTh=4),
 
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_4j80_L2FShad_4j35_L2PS_4j75', emulated=True, nTh=3),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FShad_4j30_L2PS_5j50', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_5j55_L2FShad_4j35_L2PS_5j50', emulated=True, nTh=4),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedEF_6j45_L2FShad_4j35_L2PS_6j40', emulated=True, nTh=5),
 
@@ -82,6 +83,13 @@ class jetMichaelTests(supy.analysis) :
                                         +['EmulatedEF_5j55_L2FS_5j15_L2PS_5j%d'%t for t in [40,45,50,55]]
                                         +['EmulatedEF_5j55']
                                         +['EmulatedEF_4j80_L2FShad_4j35_L2PS_4j75', 'EmulatedEF_5j55_L2FShad_4j35_L2PS_5j50', 'EmulatedEF_6j45_L2FShad_4j35_L2PS_6j40',]
+                                        +['L2FShad_4j30_L2PS_5j50', 'L2FShad_4j35_L2PS_5j50',]
+                                        +['EmulatedEF_4j80_L2FShad_4j35_L2PS_4j75'
+                                          ,'EmulatedEF_5j55_L2FShad_4j30_L2PS_5j50'
+                                          ,'EmulatedEF_5j55_L2FShad_4j35_L2PS_5j50'
+                                          ,'EmulatedEF_6j45_L2FShad_4j35_L2PS_6j40'
+                                          ]
+
                                         ),
 
             ]
@@ -121,6 +129,7 @@ class jetMichaelTests(supy.analysis) :
         listOfCalculables += [
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=4, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=5, minEt=15.*GeV),
+            emjb(jetColl='L2JetsNONEA4TThad', label='L2FShad', multi=4, minEt=30.*GeV),
             emjb(jetColl='L2JetsNONEA4TThad', label='L2FShad', multi=4, minEt=35.*GeV),
             emjb(jetColl='L2JetsNONEA4TThad', label='L2FShad', multi=4, minEt=40.*GeV),
 
@@ -173,10 +182,12 @@ class jetMichaelTests(supy.analysis) :
 
             tba(bit1='EmulatedL2FShad_4j40', bit2='EmulatedEF_4j80', label='EF_4j80_L2FShad_4j40'),
             tba(bit1='EmulatedL2FShad_4j35', bit2='EmulatedL2PS_4j75', label='L2FShad_4j35_L2PS_4j75'),
+            tba(bit1='EmulatedL2FShad_4j30', bit2='EmulatedL2PS_5j50', label='L2FShad_4j30_L2PS_5j50'),
             tba(bit1='EmulatedL2FShad_4j35', bit2='EmulatedL2PS_5j50', label='L2FShad_4j35_L2PS_5j50'),
             tba(bit1='EmulatedL2FShad_4j35', bit2='EmulatedL2PS_6j40', label='L2FShad_4j35_L2PS_6j40'),
 
             tba(bit1='EmulatedL2FShad_4j35_L2PS_4j75', bit2='EmulatedEF_4j80', label='EF_4j80_L2FShad_4j35_L2PS_4j75'),
+            tba(bit1='EmulatedL2FShad_4j30_L2PS_5j50', bit2='EmulatedEF_5j55', label='EF_5j55_L2FShad_4j30_L2PS_5j50'),
             tba(bit1='EmulatedL2FShad_4j35_L2PS_5j50', bit2='EmulatedEF_5j55', label='EF_5j55_L2FShad_4j35_L2PS_5j50'),
             tba(bit1='EmulatedL2FShad_4j35_L2PS_6j40', bit2='EmulatedEF_6j45', label='EF_6j45_L2FShad_4j35_L2PS_6j40'),
             ]
@@ -199,6 +210,7 @@ class jetMichaelTests(supy.analysis) :
                         +')',
                         lumi= sum(lumiPerRun.keys())
                         )
+
         return [exampleDict]
 
     def listOfSamples(self,config) :
