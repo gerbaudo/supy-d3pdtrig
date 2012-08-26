@@ -15,7 +15,7 @@ class l15TurnOn(supy.analysis) :
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
-                'refTrigger' : "EF_4j55_a4tchad_L2FS", # Matthew used a 4j ref trig (do not understand why not 5j)
+                'refTrigger' : "EF_4j55_a4tchad_L2FS", # Matthew used a 4j ref trig (prescaled?)(do not understand why not 5j)
                 'refJetColl' : 'OfflineJets',
                 }
 
@@ -29,24 +29,23 @@ class l15TurnOn(supy.analysis) :
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity(refJetColl, min=1),
             steps.filters.goodRun().onlyData(),
-            steps.filters.triggers([refTrigger]),
+            #steps.filters.triggers([refTrigger]),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             #supy.steps.printer.printstuff(['EmulatedL1_6j10','EmulatedL2FS_6j10']),
             steps.filters.triggers(['EmulatedOffline_4j90']), # make sure we are on the 4j55 plateau
+            supy.steps.filters.label('4j_plateau'),
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
-            # not available  steps.histos.turnOnJet(trigger='L2_6j10_a4TTem', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='EmulatedL1_6j10', jetColl=refJetColl, nTh=5, emulated=True),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_6j10', jetColl=refJetColl, nTh=5, emulated=True),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_6j15', jetColl=refJetColl, nTh=5, emulated=True),
             steps.filters.triggers(['EmulatedOffline_5j80']), # do we need to be on the 5j plateau (rather than 4j)?           
+            supy.steps.filters.label('5j_plateau'),
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
-            # not available steps.histos.turnOnJet(trigger='L2_6j10_a4TTem', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='EmulatedL1_6j10', jetColl=refJetColl, nTh=5, emulated=True),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_6j10', jetColl=refJetColl, nTh=5, emulated=True),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_6j15', jetColl=refJetColl, nTh=5, emulated=True),
             steps.trigger.triggerCounts(triggers=[]
                                         +['EmulatedL1_6j10','EmulatedL2FS_6j10', 'EmulatedL2FS_6j15']
-                                        +['L2_6j10_a4TTem']
                                         ),
 
             ]
