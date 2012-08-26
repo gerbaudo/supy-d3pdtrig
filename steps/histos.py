@@ -230,6 +230,7 @@ class turnOnJet(analysisStep) :
         self.numName = 'num_%s'%self.hName
         self.denName = 'den_%s'%self.hName
         self.effName = 'eff_%s'%self.hName
+        self.moreName = trigger
         if not self.title :
             reqLabel = ', '.join(['%s=%.1f'%(k,v) for k,v in zip(filterPars, [getattr(self,x) if hasattr(self,x) else None for x in filterPars]) if v])
             self.title = "%s efficiency %s; %sth jet E_{T} [GeV];eff"%(trigger, "" if not reqLabel else "(%s)"%reqLabel, nTh+1)
