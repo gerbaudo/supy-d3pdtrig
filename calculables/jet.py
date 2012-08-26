@@ -30,16 +30,21 @@ def offlineJetCollection() :
 #___________________________________________________________
 class IndicesL1(supy.wrappedChain.calculable) :
     "Build L1 jet indices; filter objects as needed"
-    def __init__(self, collection = l1jetCollection()):
+    def __init__(self, collection = l1jetCollection(), maxEta=None):
         self.fixes = collection
         self.stash(l1jetAttributes())
+        self.maxEta = maxEta
+        self.moreName = ""
+        if maxEta!=None: self.moreName += "|eta|<%.1f"%maxEta
     @property
     def name(self):
         return 'IndicesL1Jets'
     def update(self, _) :
-        self.value = range(self.source[self.n])
-        # example filter:
-        #self.value = [j for j in range(self.source[self.n]) if self.source[self.eta] > etamin]
+        maxEta = self.maxEta
+        etas = self.source[self.eta]
+        self.value = [j for j in range(self.source[self.n])
+                      if maxEta and fabs(etas.at(i)) <= maxEta]
+
 class L1Jet(object) :
     def __init__(self, eta=0., phi=0., et4x4=0., et6x6=0., et8x8=0.):
         self.eta = eta
@@ -47,6 +52,7 @@ class L1Jet(object) :
         self.et4x4 = et4x4
         self.et6x6 = et6x6
         self.et8x8 = et8x8
+    @property
     def et(self) :
         return self.et8x8
 
