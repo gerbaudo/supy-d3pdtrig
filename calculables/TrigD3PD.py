@@ -32,13 +32,12 @@ class TriggerBit(supy.wrappedChain.calculable) :
     def name(self):
         return self.trigName
 class PassedTriggers(supy.wrappedChain.calculable) :
-    def __init__(self, regexp=None) :
+    def __init__(self, regexp=[]) :
         self.regexp = regexp
     def update(self, _) :
-        regexp = None
-        if self.regexp : regexp = re.compile(self.regexp)
+        regs = [re.compile(r) for r in self.regexp]
         self.value = [x for x in self.source['Tdt'].GetPassedTriggers()
-                      if not regexp or regexp.match(x)]
+                      if not len(regs) or any([r.match(x) for r in regs])]
 class EmulatedMultijetTriggerBit(supy.wrappedChain.calculable) :
     # todo: add ref input?
     def __init__(self, jetColl='', multi=1, minEt=50., label='') :
