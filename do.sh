@@ -2,6 +2,7 @@
    cd MyRootCoreDir
    source ~/script/bash/setup_atlas.sh 
    asetup AtlasP1HLT,17.1.4.5,here
+   # (or simply source /afs/cern.ch/atlas/software/dist/AtlasSetup/scripts/asetup.sh 17.1.4.5)
 
    svn co svn+ssh://svn.cern.ch/reps/atlasoff/PhysicsAnalysis/D3PDTools/RootCore/tags/RootCore-00-01-17 RootCore
    svn co svn+ssh://svn.cern.ch/reps/atlasoff/DataQuality/GoodRunsLists/tags/GoodRunsLists-00-01-01 GoodRunsLists
