@@ -35,7 +35,7 @@ class IndicesL1(supy.wrappedChain.calculable) :
         self.stash(l1jetAttributes())
         self.maxEta = maxEta
         self.moreName = ""
-        if maxEta!=None: self.moreName += "|eta|<%.1f"%maxEta
+        if maxEta : self.moreName += "|eta|<%.1f"%maxEta
     @property
     def name(self):
         return 'IndicesL1Jets'
@@ -43,7 +43,7 @@ class IndicesL1(supy.wrappedChain.calculable) :
         maxEta = self.maxEta
         etas = self.source[self.eta]
         self.value = [j for j in range(self.source[self.n])
-                      if maxEta and fabs(etas.at(i)) <= maxEta]
+                      if not maxEta or fabs(etas.at(i)) <= maxEta]
 
 class L1Jet(object) :
     def __init__(self, eta=0., phi=0., et4x4=0., et6x6=0., et8x8=0.):
