@@ -108,7 +108,8 @@ class l15TurnOn(supy.analysis) :
 
         lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
                       202987:14.02, 202991:40.15, 203027:89.29, 203258:119.4, #B2
-                      208184:105.2, 208258:92.55, # D4, D5
+                      208184:105.2, 208258:92.55, 208261:103.1, 208354:133.2, # D4, D5
+                      208485:142.2, 208662:149.0, # D6, D7
                       }
         exampleDict = supy.samples.SampleHolder()
         exampleDict.add("PeriodB_L1_4J15",
@@ -122,7 +123,7 @@ class l15TurnOn(supy.analysis) :
                         'utils.fileListFromTextFile('
                         +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD.txt"'
                         +')',
-                        lumi= lumiPerRun[208184]+lumiPerRun[208258]
+                        lumi= sum(lumiPerRun[r] for r in [208184,208258,208261,208354,208485,208662])
                         )
         exampleDict.add("PeriodD_208354",
                         #'utils.fileListFromDisk('
@@ -137,10 +138,10 @@ class l15TurnOn(supy.analysis) :
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=10000
+        nEventsMax=-1 #10000
         return (
-            #supy.samples.specify(names="PeriodD_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
-            supy.samples.specify(names="PeriodD_208354", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
+            supy.samples.specify(names="PeriodD_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
+            #supy.samples.specify(names="PeriodD_208354", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
             )
 
     def conclude(self,pars) :
