@@ -226,18 +226,21 @@ class EfJets(supy.wrappedChain.calculable) :
 
 #___________________________________________________________
 class IndicesOffline(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV, maxEta=5.0, etSorted=True):
+    def __init__(self, collection = offlineJetCollection(), minEt=10.0*GeV, maxEta=5.0, etSorted=True, tag='', attributesToSkip=[]):
         self.minEt = minEt
         self.maxEta = maxEta
         self.etSorted = etSorted
+        self.tag = tag
         self.fixes = collection
-        self.stash(offlineJetAttributes()+['n'])
+        self.stash([a for a in offlineJetAttributes()+['n'] if a not in attributesToSkip])
         self.moreName = ""
-        if minEt!=None: self.moreName += "E_T>%.1f"%minEt
-        if maxEta!=None: self.moreName += "|eta|<%.1f"%maxEta
+        if minEt!=None : self.moreName += "E_T>%.1f"%minEt
+        if maxEta!=None : self.moreName += "|eta|<%.1f"%maxEta
+        if tag : self.moreName += tag
     @property
     def name(self):
-        return 'IndicesOfflineJets'
+        return 'IndicesOfflineJets'+self.tag
+
     def update(self, _) :
         energies = self.source[self.E]
         etas = self.source[self.eta]
@@ -269,20 +272,22 @@ class OfflineJet(HltJet) :
         return self.E/cosh(self.eta)
 
 class OfflineJets(supy.wrappedChain.calculable) :
-    def __init__(self, collection = offlineJetCollection(), indices = 'IndicesOfflineJets', drMinEt=40.0*GeV) :
+    def __init__(self, collection = offlineJetCollection(), indices = 'IndicesOfflineJets', drMinEt=40.0*GeV, attributesToSkip=[]) :
         self.indices = indices
+        self.attributesToSkip = attributesToSkip
         self.fixes = collection
-        self.stash(offlineJetAttributes())
+        self.stash([a for a in offlineJetAttributes() if a not in attributesToSkip])
         self.drMinEt = drMinEt
+        print self.name
     @property
     def name(self):
         return self.indices.replace("Indices","")
     def update(self, _) :
         self.value = []
-        ofJetAttributeArrays = [self.source[getattr(self,x)] for x in offlineJetAttributes()]
+        keys = [a for a in offlineJetAttributes() if a not in self.attributesToSkip]
+        ofJetAttributeArrays = [self.source[getattr(self,x)] for x in keys]
         jetIndices = self.source[self.indices]
         for iJet in jetIndices :
-            keys = offlineJetAttributes()
             values = [x[iJet] for x in ofJetAttributeArrays]
             kargs = dict(zip(keys, values))
             self.value.append(OfflineJet(**kargs))
@@ -303,10 +308,12 @@ class MatchedJets(supy.wrappedChain.calculable) :
         jets1 = sorted([j for j in self.source[self.coll1]], key = lambda j:j.et, reverse = True)
         otherJets = [sorted([j for j in self.source[coll]], key = lambda j:j.et, reverse = True)
                      for coll in self.otherColls]
+        print "trying to match [%d]"%len(jets1) + 'with ['+','.join([str(len(x)) for x in otherJets])+']'
         # using here LorentzV(pt,eta,phi,m) as (et,eta,phi,0.), but we only care about eta,phi.
         for j1 in jets1:
             j1lv = supy.utils.root.LorentzV(j1.et, j1.eta, j1.phi, 0.)
             jetWithMatches = [j1]
+            print 'jet %.1f@(%.2f, %.2f)'%(j1.et, j1.eta, j1.phi),
             for jets2 in otherJets:
                 matchedJet = None
                 for j2 in jets2:
@@ -315,8 +322,19 @@ class MatchedJets(supy.wrappedChain.calculable) :
                         matchedJet = j2
                     #jets2.pop(jets2.index(jet2)) # avoid double match and speed up
                         break
+                print '  jet %.1f@(%.2f, %.2f)'%(matchedJet.et, matchedJet.eta, matchedJet.phi) if matchedJet else '  --'
                 jetWithMatches.append(matchedJet)
             self.value.append(tuple(jetWithMatches))
+
+class UnmatchedJets(supy.wrappedChain.calculable) :
+    "Take MatchedJets, and give you a collection of the jets that don't have any match"
+    def __init__(self, coll = '') :
+        self.coll = coll
+    @property
+    def name(self) : return "UnmatchedJets"
+    #def name(self) : return "Unmatched%s"%self.coll
+    def update(self, _) :
+        self.value = [jets[0] for jets in self.source[self.coll] if len(jets)<2]
 
 class EnergyL2Jets(supy.wrappedChain.calculable) :
     def __init__(self, collection = l2jetCollection(), input = None, output = None):
