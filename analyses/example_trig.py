@@ -415,6 +415,9 @@ class example_trig(supy.analysis) :
                         +'location="%s"'%(castorBaseDir+'/00203336/data12_8TeV.00203336.express_express.merge.NTUP_TRIG.f446_m1146/')
                         +','+castorDefaultOpt+')',
                         lumi = 61.25)
+        exampleDict.add("test_eos",
+                        '%s%s")'%(supy.sites.eos(), "/eos/atlas/user/g/gerbaudo/trigger/skim/SUSYD3PD.202668.skim.L1_4J15"),
+                        lumi = 10.)
         return [exampleDict]
 
     def listOfSamples(self,config) :
