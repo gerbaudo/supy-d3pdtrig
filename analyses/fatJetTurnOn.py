@@ -10,13 +10,18 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        return {'minJetEt' : 30.0*GeV,
+        mode = 'j35' # 'j35' 'j460a10' 'j460a4'
+        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_j360_a4tclcw'}
+        refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j280_a4tchad',  'j360a4':'EF_j240_a10tcem', 'j460a4':'EF_j240_a10tcem'}
+        return {'mode':mode,
+                'minJetEt' : 30.0*GeV,
                 'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
-                'refTrigger' : "L1_RD0_FILLED",
+                'refTrigger' : refTrigs[mode],
+                'turnOnTrigger' : toTrigs[mode],
                 'refJetColl' : 'OfflineJets',
                 'offlineFatJetColl':'jet_AntiKt10LCTopo_'
                 }
@@ -24,6 +29,7 @@ class fatJetTurnOn(supy.analysis) :
     def listOfSteps(self,config) :
         pars = self.parameters()
         refTrigger = pars['refTrigger']
+        tonTrigger = pars['turnOnTrigger']
         refJetColl = pars['refJetColl']
         offlineFatJetColl = pars['offlineFatJetColl']
         outList=[
@@ -34,12 +40,29 @@ class fatJetTurnOn(supy.analysis) :
             steps.filters.goodRun().onlyData(),
             steps.filters.triggers([refTrigger]),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=0, title="E_{T} %dth jet "%(0+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
-            steps.histos.turnOnJet(trigger='EF_j35_a10tcem', jetColl=refJetColl, nTh=0,N=40,low=0.0,up=200.0,
-                                   title="EF_j35_a10tcem efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
-            steps.histos.turnOnJet(trigger='EF_j35_a10tcem', jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,
-                                   title="EF_j35_a10tcem efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=0, title="E_{T} %dth jet "%(0+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=400.0*GeV),
             ]
+        if mode=='j35' :
+            outList += [
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=40,low=0.0,up=200.0,
+                                       title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,
+                                       title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
+                ]
+        elif mode in ['j460a10', 'j360a4']:
+            outList += [
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=500.0,
+                                       title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,
+                                       title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
+                ]
+        elif mode=='j460a4' :
+            outList += [
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=500.0,emulated=True,
+                                       title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,emulated=True,
+                                       title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
+                ]
         return outList
 
     def listOfCalculables(self,config) :
@@ -75,6 +98,7 @@ class fatJetTurnOn(supy.analysis) :
         basedir="/pnfs-disk/pic.es/at3/projects/TOPD3PD/2011/Skimming/DPD_prod01_02_October11"
         castorBaseDir="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
         castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
+        eosBaseDir='/eos/atlas/user/g/gerbaudo/trigger/skim'
 
         lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
                       202987:14.02, 202991:40.15, 203027:89.29, 203258:119.4, #B2
@@ -88,14 +112,31 @@ class fatJetTurnOn(supy.analysis) :
                         +')',
                         lumi=lumiPerRun[208261]
                         )
-
+        for r in [208184,208258,208261,208354,208485,208662] :
+            for d in ['EF_A4_OR_A10','L1_RD0_FILLED'] :
+                exampleDict.add("%d.%s"%(r,d),
+                                '%s%s")'%(supy.sites.eos(),
+                                          "%s/SUSYD3PD.%d.skim.%s"%(eosBaseDir,r,d)),
+                                lumi=lumiPerRun[r])
         return [exampleDict]
+# SUSYD3PD.208184.skim.EF_A4_OR_A10
+# SUSYD3PD.208184.skim.L1_RD0_FILLED
+# SUSYD3PD.208258.skim.EF_A4_OR_A10
+# SUSYD3PD.208258.skim.L1_RD0_FILLED
+# SUSYD3PD.208261.skim.EF_A4_OR_A10
+# SUSYD3PD.208261.skim.L1_RD0_FILLED
+# SUSYD3PD.208354.skim.EF_A4_OR_A10
+# SUSYD3PD.208354.skim.L1_RD0_FILLED
+# SUSYD3PD.208485.skim.EF_A4_OR_A10
+# SUSYD3PD.208485.skim.L1_RD0_FILLED
+# SUSYD3PD.208662.skim.EF_A4_OR_A10
+# SUSYD3PD.208662.skim.L1_RD0_FILLED
 
     def listOfSamples(self,config) :
-        nEventsMax=-1 # 10000
-        return (
-            supy.samples.specify(names="test_L1_RD0_FILLED", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
-            )
+        nEventsMax=10000 # 10000
+        mode = self.parameters()['mode']
+        skim = 'L1_RD0_FILLED' if mode=='j35' else 'EF_A4_OR_A10'
+        return (supy.samples.specify(names='%d.%s'%(r,skim), weights=jw) for r,jw in [208184,208258,208261,208354,208485,208662],[])
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
