@@ -28,6 +28,7 @@ class fatJetTurnOn(supy.analysis) :
 
     def listOfSteps(self,config) :
         pars = self.parameters()
+        mode = pars['mode']
         refTrigger = pars['refTrigger']
         tonTrigger = pars['turnOnTrigger']
         refJetColl = pars['refJetColl']
@@ -118,29 +119,30 @@ class fatJetTurnOn(supy.analysis) :
                                 '%s%s")'%(supy.sites.eos(),
                                           "%s/SUSYD3PD.%d.skim.%s"%(eosBaseDir,r,d)),
                                 lumi=lumiPerRun[r])
+
         return [exampleDict]
-# SUSYD3PD.208184.skim.EF_A4_OR_A10
-# SUSYD3PD.208184.skim.L1_RD0_FILLED
-# SUSYD3PD.208258.skim.EF_A4_OR_A10
-# SUSYD3PD.208258.skim.L1_RD0_FILLED
-# SUSYD3PD.208261.skim.EF_A4_OR_A10
-# SUSYD3PD.208261.skim.L1_RD0_FILLED
-# SUSYD3PD.208354.skim.EF_A4_OR_A10
-# SUSYD3PD.208354.skim.L1_RD0_FILLED
-# SUSYD3PD.208485.skim.EF_A4_OR_A10
-# SUSYD3PD.208485.skim.L1_RD0_FILLED
-# SUSYD3PD.208662.skim.EF_A4_OR_A10
-# SUSYD3PD.208662.skim.L1_RD0_FILLED
 
     def listOfSamples(self,config) :
-        nEventsMax=10000 # 10000
+        nEventsMax=-1 # 10000
+        nFilesMax=-1 #10
         mode = self.parameters()['mode']
         skim = 'L1_RD0_FILLED' if mode=='j35' else 'EF_A4_OR_A10'
-        return (supy.samples.specify(names='%d.%s'%(r,skim), weights=jw) for r,jw in [208184,208258,208261,208354,208485,208662],[])
+        samples = []
+        for run in [208184,208258,208261,208354,208485,208662] : samples += supy.samples.specify(names='%d.%s'%(run,skim))
+        return samples
+#        return (
+#            #supy.samples.specify(names="PeriodD_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=nFilesMax)
+#            +sum([supy.samples.specify(names='%d.%s'%(run,skim))
+#                  for run in [208184,208258,208261,208354,208485,208662]])
+#            )
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
         org = self.organizer(pars)
+        mode = self.parameters()['mode']
+        skim = 'L1_RD0_FILLED' if mode=='j35' else 'EF_A4_OR_A10'
+        org.mergeSamples(targetSpec = {"name":"Data 2011", "color":r.kBlack, "markerStyle":20},
+                         sources=["%d.%s"%(run,skim) for run in [208184,208258,208261,208354,208485,208662]])
         supy.plotter( org,
                       pdfFileName = self.pdfFileName(org.tag),
                       doLog = False,
