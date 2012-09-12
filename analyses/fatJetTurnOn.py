@@ -10,9 +10,10 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        mode = 'j35' # 'j35' 'j460a10' 'j460a4'
-        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_j360_a4tclcw'}
+        mode = 'j460a10' # 'j35' 'j460a10' 'j460a4'
+        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_1j460'}
         refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j280_a4tchad',  'j360a4':'EF_j240_a10tcem', 'j460a4':'EF_j240_a10tcem'}
+        skims = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_A4_OR_A10',  'j360a4':'EF_A4_OR_A10', 'j460a4':'EF_A4_OR_A10'}
         return {'mode':mode,
                 'minJetEt' : 30.0*GeV,
                 'maxJetEta' : 3.2,
@@ -22,6 +23,7 @@ class fatJetTurnOn(supy.analysis) :
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
                 'refTrigger' : refTrigs[mode],
                 'turnOnTrigger' : toTrigs[mode],
+                'skim' : skims[mode],
                 'refJetColl' : 'OfflineJets',
                 'offlineFatJetColl':'jet_AntiKt10LCTopo_'
                 }
@@ -52,16 +54,16 @@ class fatJetTurnOn(supy.analysis) :
                 ]
         elif mode in ['j460a10', 'j360a4']:
             outList += [
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=500.0,
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=600.0,
                                        title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=600.0,
                                        title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
                 ]
         elif mode=='j460a4' :
             outList += [
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=500.0,emulated=True,
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=600.0,emulated=True,
                                        title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,emulated=True,
+                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=600.0,emulated=True,
                                        title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
                 ]
         return outList
@@ -91,7 +93,8 @@ class fatJetTurnOn(supy.analysis) :
                               calculables.jet.OfflineJets(collection=(offlineFatJetColl,''),indices='IndicesOfflineJetsA10',
                                                           attributesToSkip=['isUgly','isBadLoose']),
                               ]
-        emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
+        emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit # todo: fix this jet collection
+        listOfCalculables += [emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=1, minEt=460.*GeV),]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
@@ -107,42 +110,42 @@ class fatJetTurnOn(supy.analysis) :
                       208485:142.2, 208662:149.0, # D6, D7
                       }
         exampleDict = supy.samples.SampleHolder()
-        exampleDict.add("test_L1_RD0_FILLED",
+        exampleDict.add("periodD_test",
                         'utils.fileListFromTextFile('
-                        +'fileName="/afs/cern.ch/user/g/gerbaudo/work/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/test_L1_RD0_FILLED.txt"'
+                        +'fileName="/afs/cern.ch/user/g/gerbaudo/work/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD_test.txt"'
                         +')',
                         lumi=lumiPerRun[208261]
                         )
-        for r in [208184,208258,208261,208354,208485,208662] :
+        runs = [208184,208258,208261,208354,208485,208662]
+        for r in runs :
             for d in ['EF_A4_OR_A10','L1_RD0_FILLED'] :
                 exampleDict.add("%d.%s"%(r,d),
                                 '%s%s")'%(supy.sites.eos(),
                                           "%s/SUSYD3PD.%d.skim.%s"%(eosBaseDir,r,d)),
                                 lumi=lumiPerRun[r])
-
+        mode, skim = self.parameters()['mode'], self.parameters()['skim']
+        fileListCmd = '+'.join(['%s%s")'%(supy.sites.eos(),"%s/SUSYD3PD.%d.skim.%s"%(eosBaseDir,run,skim)) for run in runs])
+        exampleDict.add("PeriodD.%s"%skim, fileListCmd, lumi = sum([lumiPerRun[run] for run in runs]))
         return [exampleDict]
 
     def listOfSamples(self,config) :
-        nEventsMax=-1 # 10000
-        nFilesMax=-1 #10
-        mode = self.parameters()['mode']
-        skim = 'L1_RD0_FILLED' if mode=='j35' else 'EF_A4_OR_A10'
+        test = True
+        nEventsMax= 10000 if test else -1
+        nFilesMax=10 if test else -1
+        mode, skim = self.parameters()['mode'], self.parameters()['skim']
         samples = []
-        for run in [208184,208258,208261,208354,208485,208662] : samples += supy.samples.specify(names='%d.%s'%(run,skim))
+        #for run in [208184,208258,208261,208354,208485,208662] : samples += supy.samples.specify(names='%d.%s'%(run,skim))
+        if test : samples += supy.samples.specify(names="periodD_test", nEventsMax=nEventsMax, nFilesMax=nFilesMax)
+        else : samples += supy.samples.specify(names="PeriodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax)
         return samples
-#        return (
-#            #supy.samples.specify(names="PeriodD_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=nFilesMax)
-#            +sum([supy.samples.specify(names='%d.%s'%(run,skim))
-#                  for run in [208184,208258,208261,208354,208485,208662]])
-#            )
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
         org = self.organizer(pars)
         mode = self.parameters()['mode']
-        skim = 'L1_RD0_FILLED' if mode=='j35' else 'EF_A4_OR_A10'
-        org.mergeSamples(targetSpec = {"name":"Data 2011", "color":r.kBlack, "markerStyle":20},
-                         sources=["%d.%s"%(run,skim) for run in [208184,208258,208261,208354,208485,208662]])
+        mode, skim = self.parameters()['mode'], self.parameters()['skim']
+        #org.mergeSamples(targetSpec = {"name":"Data 2011", "color":r.kBlack, "markerStyle":20},
+        #                 sources=["%d.%s"%(run,skim) for run in [208184,208258,208261,208354,208485,208662]])
         supy.plotter( org,
                       pdfFileName = self.pdfFileName(org.tag),
                       doLog = False,
