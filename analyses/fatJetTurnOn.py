@@ -10,9 +10,9 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        mode = 'j460a4' # 'j35' 'j460a10' 'j460a4'
-        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_1j460'}
-        refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j280_a4tchad',  'j360a4':'EF_j240_a10tcem', 'j460a4':'EF_j240_a10tcem'}
+        mode = 'j460a10' # 'j35' 'j460a10' 'j460a4'
+        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_j460_a4tclcw'}
+        refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j240_a10tcem',  'j360a4':'EF_j280_a4tchad', 'j460a4':'EF_j280_a4tchad'}
         skims = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_A4_OR_A10',  'j360a4':'EF_A4_OR_A10', 'j460a4':'EF_A4_OR_A10'}
         return {'mode':mode,
                 'minJetEt' : 30.0*GeV,
@@ -37,7 +37,7 @@ class fatJetTurnOn(supy.analysis) :
         refJetColl = pars['refJetColl']
         offlineFatJetColl = pars['offlineFatJetColl']
         xMin, xMax = 0. , (200. if mode=='j35' else 600.)
-        binWidth = 5
+        binWidth = 5 if mode=='j35' else 10.
         nBins = int((xMax-xMin)/binWidth)
         emulated = True if mode=='j460a4' else False
 
@@ -90,50 +90,19 @@ class fatJetTurnOn(supy.analysis) :
                                                           attributesToSkip=['isUgly','isBadLoose']),
                               ]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit # todo: fix this jet collection
-        listOfCalculables += [emjb(jetColl='EfJets'+calibTag, label='EF', multi=1, minEt=460.*GeV),]
+        listOfCalculables += [emjb(jetColl='EfJets'+calibTag, label='EF', multi=1, minEt=460.*GeV,suffix='_a4tclcw'),]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
-        protocol="root://xrootd-disk.pic.es/"
-        basedir="/pnfs-disk/pic.es/at3/projects/TOPD3PD/2011/Skimming/DPD_prod01_02_October11"
-        castorBaseDir="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
-        castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
-        eosBaseDir='/eos/atlas/user/g/gerbaudo/trigger/skim'
-
-        lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
-                      202987:14.02, 202991:40.15, 203027:89.29, 203258:119.4, #B2
-                      208184:105.2, 208258:92.55, 208261:103.1, 208354:133.2, # D4, D5
-                      208485:142.2, 208662:149.0, # D6, D7
-                      }
-        exampleDict = supy.samples.SampleHolder()
-        exampleDict.add("periodD_test",
-                        'utils.fileListFromTextFile('
-                        +'fileName="/afs/cern.ch/user/g/gerbaudo/work/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD_test.txt"'
-                        +')',
-                        lumi=lumiPerRun[208261],
-                        )
-        runs = [208184,208258,208261,208354,208485,208662]
-        for r in runs :
-            for d in ['EF_A4_OR_A10','L1_RD0_FILLED'] :
-                exampleDict.add("%d.%s"%(r,d),
-                                '%s%s")'%(supy.sites.eos(),
-                                          "%s/SUSYD3PD.%d.skim.%s"%(eosBaseDir,r,d)),
-                                lumi=lumiPerRun[r])
-        mode, skim = self.parameters()['mode'], self.parameters()['skim']
-        fileListCmd = '+'.join(['%s%s")'%(supy.sites.eos(),"%s/SUSYD3PD.%d.skim.%s"%(eosBaseDir,run,skim)) for run in runs])
-        exampleDict.add("PeriodD.%s"%skim, fileListCmd, lumi = sum([lumiPerRun[run] for run in runs]))
-        return [exampleDict]
+        skim = self.parameters()['skim']
+        return [samples.skimmedPeriodD(skim=skim)]
 
     def listOfSamples(self,config) :
-        test = True
+        test = True #False
         nEventsMax= 10000 if test else -1
         nFilesMax=10 if test else -1
-        mode, skim = self.parameters()['mode'], self.parameters()['skim']
-        samples = []
-        #for run in [208184,208258,208261,208354,208485,208662] : samples += supy.samples.specify(names='%d.%s'%(run,skim))
-        if test : samples += supy.samples.specify(names="periodD_test", nEventsMax=nEventsMax, nFilesMax=nFilesMax)
-        else : samples += supy.samples.specify(names="PeriodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax)
-        return samples
+        skim = self.parameters()['skim']
+        return ([] + supy.samples.specify(names="periodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax))
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
