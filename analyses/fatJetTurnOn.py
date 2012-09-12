@@ -10,7 +10,7 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        mode = 'j460a10' # 'j35' 'j460a10' 'j460a4'
+        mode = 'j460a4' # 'j35' 'j460a10' 'j460a4'
         toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_1j460'}
         refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j280_a4tchad',  'j360a4':'EF_j240_a10tcem', 'j460a4':'EF_j240_a10tcem'}
         skims = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_A4_OR_A10',  'j360a4':'EF_A4_OR_A10', 'j460a4':'EF_A4_OR_A10'}
@@ -25,7 +25,8 @@ class fatJetTurnOn(supy.analysis) :
                 'turnOnTrigger' : toTrigs[mode],
                 'skim' : skims[mode],
                 'refJetColl' : 'OfflineJets',
-                'offlineFatJetColl':'jet_AntiKt10LCTopo_'
+                'offlineFatJetColl':'jet_AntiKt10LCTopo_',
+                'efCalibTag':'AntiKt4_lctopo',
                 }
 
     def listOfSteps(self,config) :
@@ -73,6 +74,7 @@ class fatJetTurnOn(supy.analysis) :
         minEt = pars['minJetEt']
         maxEta = pars['maxJetEta']
         offlineFatJetColl = pars['offlineFatJetColl']
+        calibTag = pars['efCalibTag']
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += supy.calculables.zeroArgs(calculables)
         listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
@@ -85,6 +87,10 @@ class fatJetTurnOn(supy.analysis) :
         listOfCalculables += [calculables.TrigD3PD.PassedTriggers(),]
         listOfCalculables += [calculables.vertex.Indices(collection=('vxp_',''),
                                                          zPosMax=100, nTracksMin=4),]
+        listOfCalculables += [calculables.jet.IndicesEf(minEt=minEt, maxEta=maxEta, calibTag=calibTag),
+                              calculables.jet.EfJets(indices='IndicesEfJets'+calibTag),
+                              ]
+
         listOfCalculables += [calculables.jet.IndicesOffline(minEt=minEt, maxEta=maxEta),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
@@ -94,7 +100,7 @@ class fatJetTurnOn(supy.analysis) :
                                                           attributesToSkip=['isUgly','isBadLoose']),
                               ]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit # todo: fix this jet collection
-        listOfCalculables += [emjb(jetColl='EfJetsAntiKt4_topo_calib_EMJES', label='EF', multi=1, minEt=460.*GeV),]
+        listOfCalculables += [emjb(jetColl='EfJets'+calibTag, label='EF', multi=1, minEt=460.*GeV),]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
