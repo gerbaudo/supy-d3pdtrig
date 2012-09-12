@@ -36,6 +36,11 @@ class fatJetTurnOn(supy.analysis) :
         tonTrigger = pars['turnOnTrigger']
         refJetColl = pars['refJetColl']
         offlineFatJetColl = pars['offlineFatJetColl']
+        xMin, xMax = 0. , (200. if mode=='j35' else 600.)
+        binWidth = 5
+        nBins = int((xMax-xMin)/binWidth)
+        emulated = True if mode=='j460a4' else False
+
         outList=[
             supy.steps.printer.progressPrinter(),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
@@ -44,29 +49,14 @@ class fatJetTurnOn(supy.analysis) :
             steps.filters.goodRun().onlyData(),
             steps.filters.triggers([refTrigger]),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=0, title="E_{T} %dth jet "%(0+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=400.0*GeV),
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=0, title="E_{T} %dth jet "%(0+1)+"("+refJetColl+"); E_{T}; events",xLo=xMin,xUp=xMax*GeV),
             ]
-        if mode=='j35' :
-            outList += [
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=40,low=0.0,up=200.0,
-                                       title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=200.0,
-                                       title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
-                ]
-        elif mode in ['j460a10', 'j360a4']:
-            outList += [
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=600.0,
-                                       title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=600.0,
-                                       title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
-                ]
-        elif mode=='j460a4' :
-            outList += [
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=50,low=0.0,up=600.0,emulated=True,
-                                       title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
-                steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=40,low=0.0,up=600.0,emulated=True,
-                                       title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
-                ]
+        outList += [
+            steps.histos.turnOnJet(trigger=tonTrigger, jetColl=refJetColl, nTh=0,N=nBins,low=xMin,up=xMax,emulated=emulated,
+                                   title=tonTrigger+" efficiency; 1st AntiKt4TopoNewEM jet E_{T} [GeV];eff"),
+            steps.histos.turnOnJet(trigger=tonTrigger, jetColl='OfflineJetsA10', nTh=0,N=nBins,low=xMin,up=xMax,emulated=emulated,
+                                   title=tonTrigger+" efficiency; 1st AntiKt10LCTopo jet E_{T} [GeV];eff"),
+            ]
         return outList
 
     def listOfCalculables(self,config) :
@@ -120,7 +110,7 @@ class fatJetTurnOn(supy.analysis) :
                         'utils.fileListFromTextFile('
                         +'fileName="/afs/cern.ch/user/g/gerbaudo/work/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD_test.txt"'
                         +')',
-                        lumi=lumiPerRun[208261]
+                        lumi=lumiPerRun[208261],
                         )
         runs = [208184,208258,208261,208354,208485,208662]
         for r in runs :
