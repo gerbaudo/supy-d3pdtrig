@@ -39,10 +39,10 @@ class PassedTriggers(supy.wrappedChain.calculable) :
         self.value = [x for x in self.source['Tdt'].GetPassedTriggers()
                       if not len(regs) or any([r.match(x) for r in regs])]
 class EmulatedMultijetTriggerBit(supy.wrappedChain.calculable) :
-    # todo: add ref input?
-    def __init__(self, jetColl='', multi=1, minEt=50., label='') :
-        for item in ['jetColl','multi','minEt','label'] : setattr(self, item, eval(item))
-        self.bitName = "Emulated%s_%dj%0.f"%(self.label, self.multi, self.minEt*MeV2GeV)
+    def __init__(self, jetColl='', multi=1, minEt=50., label='',suffix='') :
+        for item in ['jetColl','multi','minEt','label','suffix'] : setattr(self, item, eval(item))
+        multLabel = '%d' if multi>1 else ''
+        self.bitName = "Emulated%s_%sj%0.f%s"%(self.label, multLabel, self.minEt*MeV2GeV, self.suffix)
     def update(self, _) :
         jets = self.source[self.jetColl]
         self.value = len([1 for j in jets if j.et>self.minEt]) >= self.multi
