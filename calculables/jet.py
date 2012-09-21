@@ -355,3 +355,12 @@ class EnergyL2Jets(supy.wrappedChain.calculable) :
             energies.append(allEnergies[i])
 
         self.value = energies
+class SumEt(supy.wrappedChain.calculable) :
+    "Sum Et for a given collection; requires et"
+    def __init__(self, coll = None) :
+        self.coll = coll
+    @property
+    def name(self):
+        return "SumEt%s"%self.coll
+    def update(self, _) :
+        self.value = sum([j.et for j in self.source[self.coll]])
