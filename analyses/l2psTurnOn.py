@@ -15,7 +15,8 @@ class l2psTurnOn(supy.analysis) :
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
-                'refTrigger' : "EF_4j55_a4tchad_L2FS", # Matthew used a 4j ref trig (prescaled?)(do not understand why not 5j)
+                #'refTrigger' : "EF_4j55_a4tchad_L2FS", # Matthew used a 4j ref trig (prescaled?)(do not understand why not 5j)
+                'refTrigger' : 'EF_4j80_a4tchad_L2FS',
                 'refJetColl' : 'OfflineJets',
                 }
 
@@ -29,7 +30,7 @@ class l2psTurnOn(supy.analysis) :
             supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity(refJetColl, min=1),
             steps.filters.goodRun().onlyData(),
-            #steps.filters.triggers([refTrigger]),
+            steps.filters.triggers([refTrigger]),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             #supy.steps.printer.printstuff(['EmulatedL1_6j10','EmulatedL2FS_6j10']),
             steps.filters.triggers(['EmulatedOffline_4j90']), # make sure we are on the 4j55 plateau
@@ -42,6 +43,8 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_5j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
+            #steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
+            steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
             supy.steps.filters.label('6jets'),
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem', jetColl=refJetColl, nTh=5),
