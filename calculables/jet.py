@@ -6,6 +6,8 @@ from l15Calib import emResidualEtCorrFactor, emJesEnergyCorrFactor
 import ROOT as r
 
 GeV = 1000.
+GeV2MeV=1000.
+MeV2GeV=0.001
 
 def l1jetAttributes() :
     return ["n", "eta", "phi", "et4x4", "et6x6", "et8x8", ]
@@ -308,21 +310,18 @@ class MatchedJets(supy.wrappedChain.calculable) :
         jets1 = sorted([j for j in self.source[self.coll1]], key = lambda j:j.et, reverse = True)
         otherJets = [sorted([j for j in self.source[coll]], key = lambda j:j.et, reverse = True)
                      for coll in self.otherColls]
-        print "trying to match [%d]"%len(jets1) + 'with ['+','.join([str(len(x)) for x in otherJets])+']'
         # using here LorentzV(pt,eta,phi,m) as (et,eta,phi,0.), but we only care about eta,phi.
         for j1 in jets1:
             j1lv = supy.utils.root.LorentzV(j1.et, j1.eta, j1.phi, 0.)
             jetWithMatches = [j1]
-            print 'jet %.1f@(%.2f, %.2f)'%(j1.et, j1.eta, j1.phi),
             for jets2 in otherJets:
                 matchedJet = None
                 for j2 in jets2:
                     j2lv = supy.utils.root.LorentzV(j2.et, j2.eta, j2.phi, 0.)
                     if r.Math.VectorUtil.DeltaR(j1lv, j2lv) < self.maxDr :
                         matchedJet = j2
-                    #jets2.pop(jets2.index(jet2)) # avoid double match and speed up
+                        jets2.pop(jets2.index(j2)) # avoid double match and speed up
                         break
-                print '  jet %.1f@(%.2f, %.2f)'%(matchedJet.et, matchedJet.eta, matchedJet.phi) if matchedJet else '  --'
                 jetWithMatches.append(matchedJet)
             self.value.append(tuple(jetWithMatches))
 
@@ -334,7 +333,7 @@ class UnmatchedJets(supy.wrappedChain.calculable) :
     def name(self) : return "UnmatchedJets"
     #def name(self) : return "Unmatched%s"%self.coll
     def update(self, _) :
-        self.value = [jets[0] for jets in self.source[self.coll] if len(jets)<2]
+        self.value = [jets[0] for jets in self.source[self.coll] if not any(jets[1:])]
 
 class EnergyL2Jets(supy.wrappedChain.calculable) :
     def __init__(self, collection = l2jetCollection(), input = None, output = None):
