@@ -14,6 +14,7 @@ plateauThreshold = plateauThresholds[nJet]
 class debugL2PsInefficiency(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
+        efJetCalibTag='AntiKt4_topo_calib_EMJES'
         return {'minJetEt' : 30.0*GeV,
                 'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
@@ -21,15 +22,22 @@ class debugL2PsInefficiency(supy.analysis) :
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
                 'refTrigger' : "EF_4j55_a4tchad_L2FS", # Matthew used a 4j ref trig (prescaled?)(do not understand why not 5j)
-                'refJetColl' : 'OfflineJets',
                 'skim' : 'L1_4J15',
+                'offJetColl' : 'OfflineJets',
+                'efJetCalibTag' : efJetCalibTag,
+                'efJetColl' : "EfJets%s"%efJetCalibTag,
+                'l2psJetColl' : 'L2JetsA4TTA4CC_JES',
+                'l15JetColl' : 'L2JetsNONEA4TT',
                 }
 
     def listOfSteps(self,config) :
         pars = self.parameters()
         refTrigger = pars['refTrigger']
-        refJetColl = pars['refJetColl']
-        l2psJetColl = 'L2JetsA4TTA4CC_JES'
+        offJetColl = pars['offJetColl']
+        l2psJetColl = pars['l2psJetColl']
+        l15JetColl = pars['l15JetColl']
+        efJetColl = pars['efJetColl']
+        refJetColl = offJetColl
         outList=[
             supy.steps.printer.progressPrinter(),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
@@ -70,10 +78,10 @@ class debugL2PsInefficiency(supy.analysis) :
         outList+=[
             #supy.steps.printer.printstuff(['RunNumber','EventNumber']),
             #supy.steps.printer.printstuff(['EmulatedL2FS_%dj%d'%(m,t) for m,t in [(6,50),(7,75),(8,30)]]),
-            supy.steps.histos.multiplicity(var='L2JetsA4TTA4CC_JES'),
-            supy.steps.histos.multiplicity(var='EfJetsAntiKt4_topo_calib_EMJES'),
+            supy.steps.histos.multiplicity(var=l2psJetColl),
+            supy.steps.histos.multiplicity(var=efJetColl),
             supy.steps.histos.multiplicity(var='Unmatched'+refJetColl+'Match'+l2psJetColl, max=nJet),
-            steps.histos.etaPhiMap(coll='Unmatched'+refJetColl+'Match'+l2psJetColl, title="Offline jets without L2PS match (%dj)"%nJet),
+            steps.histos.etaPhiMap(coll='Unmatched'+offJetColl+'Match'+l2psJetColl, title="Offline jets without L2PS match (%dj)"%nJet),
             ]
         return outList
 
@@ -81,6 +89,12 @@ class debugL2PsInefficiency(supy.analysis) :
         pars = self.parameters()
         minEt = pars['minJetEt']
         maxEta = pars['maxJetEta']
+        offJetColl = pars['offJetColl']
+        l2psJetColl = pars['l2psJetColl']
+        l15JetColl = pars['l15JetColl']
+        efCalibTag = pars['efJetCalibTag']
+        efJetColl = pars['efJetColl']
+
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += supy.calculables.zeroArgs(calculables)
         listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
@@ -113,42 +127,41 @@ class debugL2PsInefficiency(supy.analysis) :
         listOfCalculables += [calculables.jet.IndicesL2(maxEta=maxEta, input='NONE', output='A4TT'), # A4TT EM
                               calculables.jet.IndicesL2(minEt=plateauThreshold, maxEta=maxEta, input='A4TT', output='A4CC_JES'), # A4CC HAD JES
                               calculables.jet.IndicesL2(minEt=minEt, input='A4TT', output='L2CONE'),   # L2 seeded by L1.5
-                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
-                              calculables.jet.L2Jets(indices="IndicesL2JetsA4TTA4CC_JES"),
-                              calculables.jet.L2Jets(indices="Indices%"%l2jetcoll),
-                              calculables.jet.IndicesEf(minEt=plateauThreshold, maxEta=maxEta, calibTag='AntiKt4_topo_calib_EMJES'),
-                              calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
+                              calculables.jet.L2Jets(indices="Indices%s"%l15JetColl),
+                              calculables.jet.L2Jets(indices="Indices%s"%l2psJetColl),
+                              calculables.jet.IndicesEf(minEt=plateauThreshold, maxEta=maxEta, calibTag=efCalibTag),
+                              calculables.jet.EfJets(indices="Indices%s"%efJetColl),
                               ]
         listOfCalculables += [calculables.jet.IndicesOffline(minEt=minEt, maxEta=maxEta),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
                               ]
         mj, umj = calculables.jet.MatchedJets, calculables.jet.UnmatchedJets
-        otherJets = ['EfJetsAntiKt4_topo_calib_EMJES', l2jetcoll]
-        listOfCalculables += [mj(coll1=oj, otherColls=['L2JetsA4TTA4CC_JES']) for oj in otherJets]
-        listOfCalculables += [umj(coll='EfJetsAntiKt4_topo_calib_EMJES'+'Match'+oj) for oj in otherJets]
+        otherJets = [efJetColl,]
+        listOfCalculables += [mj(coll1=oj, otherColls=[l2psJetColl]) for oj in otherJets]
+        listOfCalculables += [umj(coll=efJetColl+'Match'+oj) for oj in otherJets]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
         listOfCalculables += [
             emjb(jetColl='L1Jets', label='L1', multi=5, minEt=10.*GeV),
             emjb(jetColl='L1Jets', label='L1', multi=6, minEt=10.*GeV),
-            emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=4, minEt=15.*GeV),
-            emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=5, minEt=15.*GeV),
-            emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=15.*GeV),
-            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=50.*GeV),
-            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=55.*GeV),
-            emjb(jetColl='OfflineJets', label='Offline', multi=4, minEt=90.*GeV),
-            emjb(jetColl='OfflineJets', label='Offline', multi=5, minEt=80.*GeV),
+            emjb(jetColl=l15JetColl, label='L2FS', multi=4, minEt=15.*GeV),
+            emjb(jetColl=l15JetColl, label='L2FS', multi=5, minEt=15.*GeV),
+            emjb(jetColl=l15JetColl, label='L2FS', multi=6, minEt=15.*GeV),
+            emjb(jetColl=l2psJetColl, label='L2PS', multi=6, minEt=50.*GeV),
+            emjb(jetColl=l2psJetColl, label='L2PS', multi=6, minEt=55.*GeV),
+            emjb(jetColl=offJetColl, label='Offline', multi=4, minEt=90.*GeV),
+            emjb(jetColl=offJetColl, label='Offline', multi=5, minEt=80.*GeV),
             ]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
             tba(bit1='EmulatedL2PS_5j75', bit2='EF_5j55_a4tchad_L2FSPS', label='EF_5j55_L2FSPS_L2PS_5j75'),
             ]
-        listOfCalculables += [emjb(jetColl='OfflineJets', label='Offline', multi=m, minEt=t)
+        listOfCalculables += [emjb(jetColl=offJetColl, label='Offline', multi=m, minEt=t)
                               for m,t in plateauThresholds.iteritems()]
-        listOfCalculables += [emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FS', multi=m, minEt=t*GeV)
+        listOfCalculables += [emjb(jetColl=l2psJetColl, label='L2FS', multi=m, minEt=t*GeV)
                               for m,t in [(6,50),(7,75),(8,30)]]
         sumEt = calculables.jet.SumEt
-        listOfCalculables += [sumEt(coll=jc) for jc in ['OfflineJets', 'L2JetsA4TTA4CC_JES']]
+        listOfCalculables += [sumEt(coll=jc) for jc in [offJetColl, l2psJetColl]]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
