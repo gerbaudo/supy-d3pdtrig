@@ -29,6 +29,7 @@ class debugL2PsInefficiency(supy.analysis) :
         pars = self.parameters()
         refTrigger = pars['refTrigger']
         refJetColl = pars['refJetColl']
+        l2psJetColl = 'L2JetsA4TTA4CC_JES'
         outList=[
             supy.steps.printer.progressPrinter(),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
@@ -45,10 +46,16 @@ class debugL2PsInefficiency(supy.analysis) :
             outList+=[#steps.filters.triggers(['EF_6j55_a4tchad_L2FS_5L2j15']),
                       #steps.filters.triggers(['EF_6j55_a4tchad_L2FSPS']).invert(),
                       #supy.steps.printer.printstuff(['EF_6j55_a4tchad_L2FS_5L2j15','EF_6j55_a4tchad_L2FSPS','L2_5j15_a4TTem']),
+                      steps.histos.value2d(xvar='SumEt'+refJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
+                                           yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=1.0e3*GeV,yn=100,
+                                           ),
                       steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
                       steps.filters.triggers(['EF_6j50_a4tchad_L2FSPS_5L2j15']).invert(),
                       #supy.steps.printer.printstuff(['EF_6j50_a4tchad_L2FS_5L2j15','EF_6j50_a4tchad_L2FSPS_5L2j15','L2_5j15_a4TTem']),
                       #supy.steps.printer.printstuff(['EmulatedL2FS_5j15','EmulatedL2FS_6j15','EmulatedL2PS_6j50']),
+                      steps.histos.value2d(xvar='SumEt'+refJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
+                                           yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=1.0e3*GeV,yn=100,
+                                           ),
                       ]
         elif nThJet=='7th' :
             outList+=[steps.filters.triggers(['EF_7j40_a4tchad_L2FS_5L2j15']),
@@ -65,8 +72,8 @@ class debugL2PsInefficiency(supy.analysis) :
             #supy.steps.printer.printstuff(['EmulatedL2FS_%dj%d'%(m,t) for m,t in [(6,50),(7,75),(8,30)]]),
             supy.steps.histos.multiplicity(var='L2JetsA4TTA4CC_JES'),
             supy.steps.histos.multiplicity(var='EfJetsAntiKt4_topo_calib_EMJES'),
-            supy.steps.histos.multiplicity(var='UnmatchedJets', max=nJet),
-            steps.histos.etaPhiMap(coll='UnmatchedJets', title="EF jets without L2PS match (%dj)"%nJet),
+            supy.steps.histos.multiplicity(var='Unmatched'+refJetColl+'Match'+l2psJetColl, max=nJet),
+            steps.histos.etaPhiMap(coll='Unmatched'+refJetColl+'Match'+l2psJetColl, title="Offline jets without L2PS match (%dj)"%nJet),
             ]
         return outList
 
@@ -105,20 +112,21 @@ class debugL2PsInefficiency(supy.analysis) :
                                                          zPosMax=100, nTracksMin=4),]
         listOfCalculables += [calculables.jet.IndicesL2(maxEta=maxEta, input='NONE', output='A4TT'), # A4TT EM
                               calculables.jet.IndicesL2(minEt=plateauThreshold, maxEta=maxEta, input='A4TT', output='A4CC_JES'), # A4CC HAD JES
+                              calculables.jet.IndicesL2(minEt=minEt, input='A4TT', output='L2CONE'),   # L2 seeded by L1.5
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
                               calculables.jet.L2Jets(indices="IndicesL2JetsA4TTA4CC_JES"),
+                              calculables.jet.L2Jets(indices="Indices%"%l2jetcoll),
                               calculables.jet.IndicesEf(minEt=plateauThreshold, maxEta=maxEta, calibTag='AntiKt4_topo_calib_EMJES'),
                               calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
-                              calculables.jet.MatchedJets(coll1='EfJetsAntiKt4_topo_calib_EMJES',
-                                                          otherColls=['L2JetsA4TTA4CC_JES']),
-                              calculables.jet.UnmatchedJets(coll='EfJetsAntiKt4_topo_calib_EMJES'
-                                                            +'Match'
-                                                            +'L2JetsA4TTA4CC_JES'),
                               ]
         listOfCalculables += [calculables.jet.IndicesOffline(minEt=minEt, maxEta=maxEta),
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
                               ]
+        mj, umj = calculables.jet.MatchedJets, calculables.jet.UnmatchedJets
+        otherJets = ['EfJetsAntiKt4_topo_calib_EMJES', l2jetcoll]
+        listOfCalculables += [mj(coll1=oj, otherColls=['L2JetsA4TTA4CC_JES']) for oj in otherJets]
+        listOfCalculables += [umj(coll='EfJetsAntiKt4_topo_calib_EMJES'+'Match'+oj) for oj in otherJets]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
         listOfCalculables += [
             emjb(jetColl='L1Jets', label='L1', multi=5, minEt=10.*GeV),
@@ -139,6 +147,8 @@ class debugL2PsInefficiency(supy.analysis) :
                               for m,t in plateauThresholds.iteritems()]
         listOfCalculables += [emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2FS', multi=m, minEt=t*GeV)
                               for m,t in [(6,50),(7,75),(8,30)]]
+        sumEt = calculables.jet.SumEt
+        listOfCalculables += [sumEt(coll=jc) for jc in ['OfflineJets', 'L2JetsA4TTA4CC_JES']]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
@@ -146,8 +156,8 @@ class debugL2PsInefficiency(supy.analysis) :
         return [samples.skimmedPeriodD(skim=skim)]
 
     def listOfSamples(self,config) :
-        test = False
-        nEventsMax= 1000000 if test else -1
+        test = True
+        nEventsMax= 100000 if test else -1
         nFilesMax=100 if test else -1
         skim = self.parameters()['skim']
         return ([] + supy.samples.specify(names="periodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax))
