@@ -28,6 +28,7 @@ class debugL2PsInefficiency(supy.analysis) :
                 'efJetColl' : "EfJets%s"%efJetCalibTag,
                 'l2psJetColl' : 'L2JetsA4TTA4CC_JES',
                 'l15JetColl' : 'L2JetsNONEA4TT',
+                'l2coneJetColl': 'L2JetsNON_L15L2CONE',
                 }
 
     def listOfSteps(self,config) :
@@ -36,6 +37,7 @@ class debugL2PsInefficiency(supy.analysis) :
         offJetColl = pars['offJetColl']
         l2psJetColl = pars['l2psJetColl']
         l15JetColl = pars['l15JetColl']
+        l2coneJetColl = pars['l2coneJetColl']
         efJetColl = pars['efJetColl']
         refJetColl = offJetColl
         outList=[
@@ -54,14 +56,14 @@ class debugL2PsInefficiency(supy.analysis) :
             outList+=[#steps.filters.triggers(['EF_6j55_a4tchad_L2FS_5L2j15']),
                       #steps.filters.triggers(['EF_6j55_a4tchad_L2FSPS']).invert(),
                       #supy.steps.printer.printstuff(['EF_6j55_a4tchad_L2FS_5L2j15','EF_6j55_a4tchad_L2FSPS','L2_5j15_a4TTem']),
-                      steps.histos.value2d(xvar='SumEt'+refJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
+                      steps.histos.value2d(xvar='SumEt'+l2coneJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
                                            yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=1.0e3*GeV,yn=100,
                                            ),
                       steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
                       steps.filters.triggers(['EF_6j50_a4tchad_L2FSPS_5L2j15']).invert(),
                       #supy.steps.printer.printstuff(['EF_6j50_a4tchad_L2FS_5L2j15','EF_6j50_a4tchad_L2FSPS_5L2j15','L2_5j15_a4TTem']),
                       #supy.steps.printer.printstuff(['EmulatedL2FS_5j15','EmulatedL2FS_6j15','EmulatedL2PS_6j50']),
-                      steps.histos.value2d(xvar='SumEt'+refJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
+                      steps.histos.value2d(xvar='SumEt'+l2coneJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
                                            yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=1.0e3*GeV,yn=100,
                                            ),
                       ]
@@ -136,8 +138,10 @@ class debugL2PsInefficiency(supy.analysis) :
                               calculables.jet.OfflineJets(),
                               calculables.jet.IndicesOfflineBad(),
                               ]
+        sumEt = calculables.jet.SumEt
+        listOfCalculables += [sumEt(coll=jc) for jc in [offJetColl, l2psJetColl, l2coneJetColl]]
         mj, umj = calculables.jet.MatchedJets, calculables.jet.UnmatchedJets
-        otherJets = [efJetColl,]
+        otherJets = [efJetColl,l2coneJetColl]
         listOfCalculables += [mj(coll1=oj, otherColls=[l2psJetColl]) for oj in otherJets]
         listOfCalculables += [umj(coll=efJetColl+'Match'+oj) for oj in otherJets]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
@@ -160,8 +164,6 @@ class debugL2PsInefficiency(supy.analysis) :
                               for m,t in plateauThresholds.iteritems()]
         listOfCalculables += [emjb(jetColl=l2psJetColl, label='L2FS', multi=m, minEt=t*GeV)
                               for m,t in [(6,50),(7,75),(8,30)]]
-        sumEt = calculables.jet.SumEt
-        listOfCalculables += [sumEt(coll=jc) for jc in [offJetColl, l2psJetColl]]
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
