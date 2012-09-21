@@ -28,7 +28,7 @@ class debugL2PsInefficiency(supy.analysis) :
                 'efJetColl' : "EfJets%s"%efJetCalibTag,
                 'l2psJetColl' : 'L2JetsA4TTA4CC_JES',
                 'l15JetColl' : 'L2JetsNONEA4TT',
-                'l2coneJetColl': 'L2JetsNON_L15L2CONE',
+                'l2coneJetColl': 'L2JetsA4TTL2CONE',
                 }
 
     def listOfSteps(self,config) :
@@ -93,6 +93,7 @@ class debugL2PsInefficiency(supy.analysis) :
         maxEta = pars['maxJetEta']
         offJetColl = pars['offJetColl']
         l2psJetColl = pars['l2psJetColl']
+        l2coneJetColl = pars['l2coneJetColl']
         l15JetColl = pars['l15JetColl']
         efCalibTag = pars['efJetCalibTag']
         efJetColl = pars['efJetColl']
@@ -131,6 +132,7 @@ class debugL2PsInefficiency(supy.analysis) :
                               calculables.jet.IndicesL2(minEt=minEt, input='A4TT', output='L2CONE'),   # L2 seeded by L1.5
                               calculables.jet.L2Jets(indices="Indices%s"%l15JetColl),
                               calculables.jet.L2Jets(indices="Indices%s"%l2psJetColl),
+                              calculables.jet.L2Jets(indices="Indices%s"%l2coneJetColl),
                               calculables.jet.IndicesEf(minEt=plateauThreshold, maxEta=maxEta, calibTag=efCalibTag),
                               calculables.jet.EfJets(indices="Indices%s"%efJetColl),
                               ]
