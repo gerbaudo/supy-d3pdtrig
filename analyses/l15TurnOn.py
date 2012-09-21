@@ -38,16 +38,14 @@ class l15TurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EmulatedL1_6j10', jetColl=refJetColl, nTh=5, emulated=True),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_6j10', jetColl=refJetColl, nTh=5, emulated=True),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_6j15', jetColl=refJetColl, nTh=5, emulated=True),
-            steps.filters.triggers(['EmulatedOffline_5j80']), # do we need to be on the 5j plateau (rather than 4j)?           
-            supy.steps.filters.label('5j_plateau'),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
-            steps.histos.turnOnJet(trigger='EmulatedL1_6j10', jetColl=refJetColl, nTh=5, emulated=True),
-            steps.histos.turnOnJet(trigger='EmulatedL2FS_6j10', jetColl=refJetColl, nTh=5, emulated=True),
-            steps.histos.turnOnJet(trigger='EmulatedL2FS_6j15', jetColl=refJetColl, nTh=5, emulated=True),
-            steps.trigger.triggerCounts(triggers=[]
-                                        +['EmulatedL1_6j10','EmulatedL2FS_6j10', 'EmulatedL2FS_6j15']
-                                        ),
-
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j10', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j15', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j20', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j25', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j30', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j35', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.histos.turnOnJet(trigger='EmulatedL2FShad_6j40', jetColl=refJetColl, nTh=5, emulated=True),
+            steps.trigger.triggerCounts(pattern='.*Emulated.*'),
             ]
         return outList
 
@@ -82,6 +80,8 @@ class l15TurnOn(supy.analysis) :
                               calculables.jet.IndicesL2(input='NONE', output='A4TT'),     # L1.5 EM
                               calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT"),
                               calculables.jet.L2JetsCalibL15(collection='L2JetsNONEA4TT'),
+                              calculables.jet.IndicesL2(input='NONE', output='A4TT_JES'), # L1.5 HAD JES
+                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA4TT_JES"),
                               calculables.jet.IndicesEf(minEt=minEt, maxEta=maxEta, calibTag='AntiKt4_topo_calib_EMJES'),
                               calculables.jet.EfJets(indices='IndicesEfJetsAntiKt4_topo_calib_EMJES'),
                               ]
@@ -95,6 +95,10 @@ class l15TurnOn(supy.analysis) :
             emjb(jetColl='L1Jets', label='L1', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=15.*GeV),
+            ]
+        listOfCalculables += [emjb(jetColl='L2JetsNONEA4TT_JES', label='L2FShad', multi=6, minEt=t*GeV)
+                              for t in [10.,15.,20.,25.,30.,35.,40.]]
+        listOfCalculables += [
             emjb(jetColl='OfflineJets', label='Offline', multi=4, minEt=90.*GeV),
             emjb(jetColl='OfflineJets', label='Offline', multi=5, minEt=80.*GeV),
             ]
