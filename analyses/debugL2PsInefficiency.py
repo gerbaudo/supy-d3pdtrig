@@ -40,6 +40,7 @@ class debugL2PsInefficiency(supy.analysis) :
         l2coneJetColl = pars['l2coneJetColl']
         efJetColl = pars['efJetColl']
         refJetColl = offJetColl
+
         outList=[
             supy.steps.printer.progressPrinter(),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
@@ -53,18 +54,29 @@ class debugL2PsInefficiency(supy.analysis) :
             steps.filters.triggers(['EmulatedOffline_%dj%d'%(nJet,plateauThreshold/GeV)]), # make sure we are on the njXX plateau
             ]
         if nThJet=='6th' :
+            attrs = ['nLeadingCells', 'hecf', 'jetQuality', 'emf', 'jetTimeCells']
+            attrL = [0., -0.5, -0.5, -0.5, 0.]
+            attrH = [500., 1.5, 1.5, 1.5, 50.0]
+
+            outList+=[steps.histos.attribute(attrName=att, coll=jc, title="%s %s"%(att, jc),xLo=xL,xUp=xH)
+                      for att,xL,xH in zip(attrs, attrL, attrH) for jc in [l2psJetColl, l2coneJetColl]]
             outList+=[#steps.filters.triggers(['EF_6j55_a4tchad_L2FS_5L2j15']),
                       #steps.filters.triggers(['EF_6j55_a4tchad_L2FSPS']).invert(),
                       #supy.steps.printer.printstuff(['EF_6j55_a4tchad_L2FS_5L2j15','EF_6j55_a4tchad_L2FSPS','L2_5j15_a4TTem']),
-                      steps.histos.value2d(xvar='SumEt'+l2coneJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
-                                           yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=1.0e3*GeV,yn=100,
+                      steps.histos.value2d(xvar='SumEt'+l2coneJetColl, xmin=0.5*nJet*plateauThreshold,xmax=5.0e3*GeV,xn=100,
+                                           yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=5.0e3*GeV,yn=100,
                                            ),
-                      steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
+                      ]
+            outList+=[steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
                       steps.filters.triggers(['EF_6j50_a4tchad_L2FSPS_5L2j15']).invert(),
                       #supy.steps.printer.printstuff(['EF_6j50_a4tchad_L2FS_5L2j15','EF_6j50_a4tchad_L2FSPS_5L2j15','L2_5j15_a4TTem']),
                       #supy.steps.printer.printstuff(['EmulatedL2FS_5j15','EmulatedL2FS_6j15','EmulatedL2PS_6j50']),
-                      steps.histos.value2d(xvar='SumEt'+l2coneJetColl, xmin=0.5*nJet*plateauThreshold,xmax=1.0e3*GeV,xn=100,
-                                           yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=1.0e3*GeV,yn=100,
+                      ]
+            outList+=[steps.histos.attribute(attrName=att, coll=jc, title="%s %s"%(att, jc),xLo=xL,xUp=xH)
+                      for att,xL,xH in zip(attrs, attrL, attrH) for jc in [l2psJetColl,
+                                                                           l2coneJetColl,'Unmatched'+l2coneJetColl+'Match'+l2psJetColl]]
+            outList+=[steps.histos.value2d(xvar='SumEt'+l2coneJetColl, xmin=0.5*nJet*plateauThreshold,xmax=5.0e3*GeV,xn=100,
+                                           yvar='SumEt'+l2psJetColl,ymin=0.5*nJet*plateauThreshold,ymax=5.0e3*GeV,yn=100,
                                            ),
                       ]
         elif nThJet=='7th' :
@@ -83,8 +95,15 @@ class debugL2PsInefficiency(supy.analysis) :
             supy.steps.histos.multiplicity(var=l2psJetColl),
             supy.steps.histos.multiplicity(var=efJetColl),
             supy.steps.histos.multiplicity(var='Unmatched'+refJetColl+'Match'+l2psJetColl, max=nJet),
-            steps.histos.etaPhiMap(coll='Unmatched'+offJetColl+'Match'+l2psJetColl, title="Offline jets without L2PS match (%dj)"%nJet),
             ]
+        outList+=[
+            steps.histos.etaPhiMap(coll='Unmatched'+offJetColl+'Match'+l2psJetColl, title="Offline jets without L2PS match (%dj)"%nJet),
+            steps.histos.etaPhiMap(coll='Unmatched'+l2coneJetColl+'Match'+l2psJetColl, title="L2Cone jets without L2PS match (%dj)"%nJet),
+            ]
+        outList+=[steps.histos.attribute(attrName=att, coll=jc, title="%s %s"%(att, jc),xLo=xL,xUp=xH)
+                  for att,xL,xH in zip(['et'], [0.], [500.*GeV]) for jc in [l2psJetColl, l2coneJetColl,
+                                                                            'Unmatched'+l2coneJetColl+'Match'+l2psJetColl,
+                                                                            'Unmatched'+offJetColl+'Match'+l2psJetColl]]
         return outList
 
     def listOfCalculables(self,config) :
@@ -143,9 +162,9 @@ class debugL2PsInefficiency(supy.analysis) :
         sumEt = calculables.jet.SumEt
         listOfCalculables += [sumEt(coll=jc) for jc in [offJetColl, l2psJetColl, l2coneJetColl]]
         mj, umj = calculables.jet.MatchedJets, calculables.jet.UnmatchedJets
-        otherJets = [efJetColl,l2coneJetColl]
+        otherJets = [offJetColl,efJetColl,l2coneJetColl]
         listOfCalculables += [mj(coll1=oj, otherColls=[l2psJetColl]) for oj in otherJets]
-        listOfCalculables += [umj(coll=efJetColl+'Match'+oj) for oj in otherJets]
+        listOfCalculables += [umj(coll=oj+'Match'+l2psJetColl) for oj in otherJets]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
         listOfCalculables += [
             emjb(jetColl='L1Jets', label='L1', multi=5, minEt=10.*GeV),
@@ -173,9 +192,9 @@ class debugL2PsInefficiency(supy.analysis) :
         return [samples.skimmedPeriodD(skim=skim)]
 
     def listOfSamples(self,config) :
-        test = True
-        nEventsMax= 100000 if test else -1
-        nFilesMax=100 if test else -1
+        test = False #True
+        nEventsMax= 1000000 if test else None
+        nFilesMax=100 if test else None
         skim = self.parameters()['skim']
         return ([] + supy.samples.specify(names="periodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax))
 
