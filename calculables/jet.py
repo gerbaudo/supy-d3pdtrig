@@ -330,8 +330,7 @@ class UnmatchedJets(supy.wrappedChain.calculable) :
     def __init__(self, coll = '') :
         self.coll = coll
     @property
-    def name(self) : return "UnmatchedJets"
-    #def name(self) : return "Unmatched%s"%self.coll
+    def name(self) : return "Unmatched%s"%self.coll
     def update(self, _) :
         self.value = [jets[0] for jets in self.source[self.coll] if not any(jets[1:])]
 
