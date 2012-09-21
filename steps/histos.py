@@ -267,3 +267,19 @@ class turnOnJet(analysisStep) :
             eff.SetBinContent(bin,0)
             eff.SetBinError(bin,0)
         eff.Write()
+
+class value2d(analysisStep) :
+    def __init__(self, xvar, xn, xmin, xmax, yvar, yn, ymin, ymax, title="") :
+        for item in ['xvar', 'xn', 'xmin', 'xmax', 'yvar', 'yn', 'ymin', 'ymax', 'title'] : setattr(self, item, eval(item))
+        self.moreName = "%s:%s"%(xvar, yvar)
+        self.histoName = "%s_vs_%s"%(xvar, yvar)
+        if not self.title : self.title = "%s vs. %s; %s; %s"%(yvar, xvar, xvar, yvar)
+    def uponAcceptance(self,eventVars) :
+        vx, vy = eventVars[self.xvar], eventVars[self.yvar]
+        if not vx or not vy : return
+        self.book.fill((vx, vy),
+                       self.histoName,
+                       (self.xn, self.yn),
+                       (self.xmin, self.ymin),
+                       (self.xmax, self.ymax),
+                       title=self.title)
