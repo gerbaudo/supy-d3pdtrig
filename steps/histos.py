@@ -17,9 +17,9 @@ def phi_mpi_pi(value) :
     while value >  +pi: value = value-2.*pi
     return value
 class attribute(analysisStep) :
-    def __init__(self, attrName='', coll='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,title="") :
-        for item in ['attrName', 'coll', 'nTh', 'nX','xLo','xUp','title'] : setattr(self,item,eval(item))
-        self.hName = '%s_%s'%(coll,attrName)
+    def __init__(self, attrName='', coll='', nTh=None, nX=100,xLo=-5.0,xUp=5.0,title="",label='') :
+        for item in ['attrName', 'coll', 'nTh', 'nX','xLo','xUp','title','label'] : setattr(self,item,eval(item))
+        self.hName = '%s_%s%s'%(coll,attrName,label)
     def uponAcceptance(self, eventVars) :
         coll = eventVars[self.coll]
         for i, elem in enumerate(coll) :
@@ -269,10 +269,10 @@ class turnOnJet(analysisStep) :
         eff.Write()
 
 class value2d(analysisStep) :
-    def __init__(self, xvar, xn, xmin, xmax, yvar, yn, ymin, ymax, title="") :
-        for item in ['xvar', 'xn', 'xmin', 'xmax', 'yvar', 'yn', 'ymin', 'ymax', 'title'] : setattr(self, item, eval(item))
+    def __init__(self, xvar, xn, xmin, xmax, yvar, yn, ymin, ymax, title="",label='') :
+        for item in ['xvar', 'xn', 'xmin', 'xmax', 'yvar', 'yn', 'ymin', 'ymax', 'title', 'label'] : setattr(self, item, eval(item))
         self.moreName = "%s:%s"%(xvar, yvar)
-        self.histoName = "%s_vs_%s"%(xvar, yvar)
+        self.histoName = "%s_vs_%s%s"%(xvar, yvar,label)
         if not self.title : self.title = "%s vs. %s; %s; %s"%(yvar, xvar, xvar, yvar)
     def uponAcceptance(self,eventVars) :
         vx, vy = eventVars[self.xvar], eventVars[self.yvar]
