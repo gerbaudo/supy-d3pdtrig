@@ -9,21 +9,29 @@ TeV=1.0e+3*GeV
 class l2psTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
+        efJetCalibTag='AntiKt4_topo_calib_EMJES'
         return {'minJetEt' : 30.0*GeV,
                 'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
                 'L2multiJetChain' : 'L2_[4-9]+j.*(em|had)$',
-                #'refTrigger' : "EF_4j55_a4tchad_L2FS", # Matthew used a 4j ref trig (prescaled?)(do not understand why not 5j)
                 'refTrigger' : 'EF_4j80_a4tchad_L2FS',
-                'refJetColl' : 'OfflineJets',
+                'skim' : 'L1_4J15',
+                'offJetColl' : 'OfflineJets',
+                'efJetCalibTag' : efJetCalibTag,
+                'efJetColl' : "EfJets%s"%efJetCalibTag,
+                'l2psJetColl' : 'L2JetsA4TTA4CC_JES',
+                'l15JetColl' : 'L2JetsNONEA4TT',
+                'l2coneJetColl': 'L2JetsA4TTL2CONE',
                 }
+
 
     def listOfSteps(self,config) :
         pars = self.parameters()
         refTrigger = pars['refTrigger']
-        refJetColl = pars['refJetColl']
+        offJetColl = pars['offJetColl']
+        refJetColl = offJetColl
         outList=[
             supy.steps.printer.progressPrinter(),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
@@ -43,6 +51,7 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_5j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=4),
             #steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
             supy.steps.filters.label('6jets'),
@@ -131,56 +140,33 @@ class l2psTurnOn(supy.analysis) :
         listOfCalculables += [
             emjb(jetColl='L1Jets', label='L1', multi=5, minEt=10.*GeV),
             emjb(jetColl='L1Jets', label='L1', multi=6, minEt=10.*GeV),
+            emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=5, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=15.*GeV),
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=50.*GeV),
             emjb(jetColl='OfflineJets', label='Offline', multi=4, minEt=90.*GeV),
             emjb(jetColl='OfflineJets', label='Offline', multi=5, minEt=80.*GeV),
             ]
+        tb = calculables.TrigD3PD.TriggerBit
+        listOfCalculables += [tb('L2_4j15_a4TTem'), tb('L2_4j15_a4TTem'),
+                              ]
+        tba = calculables.TrigD3PD.TriggerBitAnd
+        listOfCalculables += [
+            tba(bit1='L2_5j15_a4TTem', bit2='EmulatedL2PS_6j50', label='L2FS_5j15_L2PS_6j50'),
+            ]
+
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
-        protocol="root://xrootd-disk.pic.es/"
-        basedir="/pnfs-disk/pic.es/at3/projects/TOPD3PD/2011/Skimming/DPD_prod01_02_October11"
-        castorBaseDir="/castor/cern.ch/grid/atlas/tzero/prod1/perm/data12_8TeV/express_express"
-        castorDefaultOpt ='fileExt="NTUP_TRIG",pruneList=False'
-
-        lumiPerRun = {202668:26.0, 202712:29.85, 202740:7.28, 202798:52.6, # B1
-                      202987:14.02, 202991:40.15, 203027:89.29, 203258:119.4, #B2
-                      208184:105.2, 208258:92.55, 208261:103.1, 208354:133.2, # D4, D5
-                      208485:142.2, 208662:149.0, # D6, D7
-                      }
-        exampleDict = supy.samples.SampleHolder()
-        exampleDict.add("PeriodB_L1_4J15",
-                        'utils.fileListFromTextFile('
-                        +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodB.txt"'
-                        #+'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodB_test.txt"'
-                        +')',
-                        lumi= sum(lumiPerRun.keys())
-                        )
-        exampleDict.add("PeriodD_L1_4J15",
-                        'utils.fileListFromTextFile('
-                        +'fileName="/afs/cern.ch/work/g/gerbaudo/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/periodD.txt"'
-                        +')',
-                        lumi= sum(lumiPerRun[r] for r in [208184,208258,208261,208354,208485,208662])
-                        )
-        exampleDict.add("PeriodD_208354",
-                        #'utils.fileListFromDisk('
-                        #+'location="/tmp/gerbaudo/dq2/user.tdoherty.SUSYD3PD.208354.skim.L1_4J15.2860.ANALY_RAL/*root*"'
-                        #+', isDirectory = False'
-                        'utils.fileListFromTextFile('
-                        +'fileName="/afs/cern.ch/user/g/gerbaudo/work/public/trigger/MyRootCoreDir/supy-d3pdtrig/data/test.txt"'
-                        +')',
-                        lumi=lumiPerRun[208184]
-                        )
-
-        return [exampleDict]
+        skim = self.parameters()['skim']
+        return [samples.skimmedPeriodD(skim=skim, run=208258)]
 
     def listOfSamples(self,config) :
-        nEventsMax=-1 #10000
-        return (
-            supy.samples.specify(names="PeriodD_L1_4J15", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
-            #supy.samples.specify(names="PeriodD_208354", color = r.kBlack, nEventsMax=nEventsMax, nFilesMax=-1)
-            )
+        test = True
+        nEventsMax= 100000 if test else None
+        nFilesMax=100 if test else None
+        skim = self.parameters()['skim']
+        return ([] + supy.samples.specify(names="periodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax))
 
     def conclude(self,pars) :
         #make a pdf file with plots from the histograms created above
