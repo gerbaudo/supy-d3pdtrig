@@ -54,8 +54,16 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=4),
             #steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
+            # - 5th jet : 5j15L2FS vs. 4j15L2FS + 5j50L2FSPS
+            # - 6th jet : 6j15L2FS vs. 4j15L2FS + 6j50L2FSPS
+            # - 6th jet : 6j15L2FS vs. 5j15L2FS + 6j50L2FSPS
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_5j50', emulated=True, nTh=4),
+            steps.histos.turnOnJet(trigger='EmulatedL2FS_6j15', jetColl=refJetColl, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
+
             supy.steps.filters.label('6jets'),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem_6j45_a4cchad', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='L2_6j15_a4TTem_6j50_a4cchad', jetColl=refJetColl, nTh=5),
@@ -65,7 +73,7 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_6j55_a4tchad_L2FS_5L2j15', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='EF_6j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=5),
             supy.steps.filters.label('7jets'),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=6, title="E_{T} %dth jet "%(6+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=6, title="E_{T} %dth jet "%(6+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem', jetColl=refJetColl, nTh=6),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem_7j35_a4cchad', jetColl=refJetColl, nTh=6),
             steps.histos.turnOnJet(trigger='L2_7j15_a4TTem_7j50_a4cchad', jetColl=refJetColl, nTh=6),
@@ -74,7 +82,7 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_7j45_a4tchad_L2FS_5L2j15', jetColl=refJetColl, nTh=6),
             steps.histos.turnOnJet(trigger='EF_7j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=6),
             supy.steps.filters.label('8jets'),
-            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=7, title="E_{T} %dth jet "%(7+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),            
+            steps.histos.attribute(attrName='et', coll=refJetColl, nTh=7, title="E_{T} %dth jet "%(7+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem', jetColl=refJetColl, nTh=7),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem_8j30_a4cchad', jetColl=refJetColl, nTh=7),
             steps.histos.turnOnJet(trigger='EF_8j35_a4tchad_L2FS_5L2j15', jetColl=refJetColl, nTh=7),
@@ -143,16 +151,19 @@ class l2psTurnOn(supy.analysis) :
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=5, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=15.*GeV),
+            emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=5, minEt=50.*GeV),
             emjb(jetColl='L2JetsA4TTA4CC_JES', label='L2PS', multi=6, minEt=50.*GeV),
             emjb(jetColl='OfflineJets', label='Offline', multi=4, minEt=90.*GeV),
             emjb(jetColl='OfflineJets', label='Offline', multi=5, minEt=80.*GeV),
             ]
         tb = calculables.TrigD3PD.TriggerBit
-        listOfCalculables += [tb('L2_4j15_a4TTem'), tb('L2_4j15_a4TTem'),
+        listOfCalculables += [tb('L2_4j15_a4TTem'), tb('L2_5j15_a4TTem'),
                               ]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
             tba(bit1='L2_5j15_a4TTem', bit2='EmulatedL2PS_6j50', label='L2FS_5j15_L2PS_6j50'),
+            tba(bit1='L2_4j15_a4TTem', bit2='EmulatedL2PS_5j50', label='L2FS_4j15_L2PS_5j50'),
+            tba(bit1='L2_4j15_a4TTem', bit2='EmulatedL2PS_6j50', label='L2FS_4j15_L2PS_6j50'),
             ]
 
         return listOfCalculables
@@ -162,7 +173,7 @@ class l2psTurnOn(supy.analysis) :
         return [samples.skimmedPeriodD(skim=skim, run=208258)]
 
     def listOfSamples(self,config) :
-        test = True
+        test = False #True
         nEventsMax= 100000 if test else None
         nFilesMax=100 if test else None
         skim = self.parameters()['skim']
