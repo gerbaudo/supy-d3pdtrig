@@ -51,7 +51,7 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_5j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=4),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
             #steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
             # - 5th jet : 5j15L2FS vs. 4j15L2FS + 5j50L2FSPS
@@ -148,6 +148,7 @@ class l2psTurnOn(supy.analysis) :
         listOfCalculables += [
             emjb(jetColl='L1Jets', label='L1', multi=5, minEt=10.*GeV),
             emjb(jetColl='L1Jets', label='L1', multi=6, minEt=10.*GeV),
+            emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=4, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=5, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=10.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=15.*GeV),
@@ -161,9 +162,9 @@ class l2psTurnOn(supy.analysis) :
                               ]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
-            tba(bit1='L2_5j15_a4TTem', bit2='EmulatedL2PS_6j50', label='L2FS_5j15_L2PS_6j50'),
-            tba(bit1='L2_4j15_a4TTem', bit2='EmulatedL2PS_5j50', label='L2FS_4j15_L2PS_5j50'),
-            tba(bit1='L2_4j15_a4TTem', bit2='EmulatedL2PS_6j50', label='L2FS_4j15_L2PS_6j50'),
+            tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_6j50', label='L2FS_5j15_L2PS_6j50'),
+            tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_5j50', label='L2FS_4j15_L2PS_5j50'),
+            tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_6j50', label='L2FS_4j15_L2PS_6j50'),
             ]
 
         return listOfCalculables
