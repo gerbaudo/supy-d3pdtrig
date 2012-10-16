@@ -67,8 +67,16 @@ class jetResolutions(supy.analysis) :
         outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
                       title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL})
                     for h,var in zip([hDetFrac,],
-                                     ['E_{T}/E_{T}'])
-                    for jC, jL in zip(ojC, ojL)]                    
+                                     ['E_{T}/E_{T}',])
+                    for jC, jL in zip(ojC, ojL)]
+        hDetFracEt = steps.histos.deltaEtFracVsEtMap
+        templateTitle="%(varY)s vs. %(varX)s matched (%(j1)s, %(j2)s); %(varX)s; %(varY)s"
+        outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
+                      title=templateTitle%{'varX':varX, 'varY':varY, 'j1':rjL, 'j2':jL})
+                    for h,varX,varY in zip([hDetFracEt,],
+                                           ['E_{T,off}',],
+                                           ['#Delta E_{T}/E_{T}',])
+                    for jC, jL in zip(ojC, ojL)]
 
         return outList
 
