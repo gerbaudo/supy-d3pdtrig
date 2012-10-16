@@ -149,6 +149,24 @@ class deltaEtFracVsEtaMap(analysisStep) :
                            (self.xLo, self.yLo),
                            (self.xUp, self.yUp),
                            title="%s;#eta; #Delta E_{T}/E_{T}"%self.hName if not self.title else self.title)
+class deltaEtFracVsEtMap(analysisStep) :
+    def __init__(self, matchCollPair='', nTh=None, nX=100,xLo=0.0,xUp=200.0,nY=100,yLo=-2.0,yUp=+2.0,title="") :
+        for item in ['matchCollPair', 'nTh', 'nX','xLo','xUp','nY','yLo','yUp','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEtFracVsEtFracMap%s%s'%(matchCollPair, "_%dthJet"%nTh if nTh else "")
+        if not self.title : self.title = "%s;#eta; #Delta E_{T}/E_{T}"%self.hName
+    def uponAcceptance(self, eventVars) :
+        matchCollPair = eventVars[self.matchCollPair]
+        for i, (elem1, elem2) in enumerate(matchCollPair) :
+            if self.nTh and not self.nTh==i : continue
+            if not elem1 or not elem2: continue
+            etRef = elem1.et
+            if not etRef : continue
+            self.book.fill((etRef*MeV2GeV, (elem2.et - etRef)/etRef),
+                           self.hName,
+                           (self.nX, self.nY),
+                           (self.xLo, self.yLo),
+                           (self.xUp, self.yUp),
+                           title="%s;E_{T, ref}; #Delta E_{T}/E_{T}"%self.hName if not self.title else self.title)
 
 class deltaEtFracVsMinDrMap(analysisStep) :
     def __init__(self, matchCollPair='', nTh=None, nX=100,xLo=0.,xUp=5.0,nY=100,yLo=-5.0,yUp=+5.0,title="") :
