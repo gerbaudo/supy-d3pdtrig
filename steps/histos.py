@@ -77,7 +77,7 @@ class deltaEt(analysisStep) :
             self.book.fill(MeV2GeV*(elem2.et - elem1.et), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEtFrac(analysisStep) :
     # todo: merge it with deltaEt
-    def __init__(self, matchCollPair='', var='',nTh=None,N=100,low=-5.0,up=5.0,title="#Delta E_{T}/E_{T}") :
+    def __init__(self, matchCollPair='', var='',nTh=None,N=100,low=-2.0,up=2.0,title="#Delta E_{T}/E_{T}") :
         for item in ['matchCollPair', 'var', 'nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
         self.hName = 'fracDelta%s%s'%(var,matchCollPair)
         if self.nTh :
