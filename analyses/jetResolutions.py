@@ -117,11 +117,12 @@ class jetResolutions(supy.analysis) :
         ofi, ofj = calculables.jet.IndicesOffline, calculables.jet.OfflineJets
         ofbi = calculables.jet.IndicesOfflineBad
         listOfCalculables += [l1i(collection=("trig_L1_jet_", "")), l1j()]
-        listOfCalculables += [l2i(minEt=minEt, input=i, output=o) for i,o in l2JetsIo.values()]
+        listOfCalculables += [l2i(input=i, output=o) for i,o in l2JetsIo.values()]
         listOfCalculables += [l2j(indices="IndicesL2Jets%s%s"%(i,o)) for i,o in l2JetsIo.values()]
         efCal = pars['efJetCalibTag']
-        listOfCalculables += [efi(minEt=minEt, calibTag=efCal), efj(indices="IndicesEfJets%s"%efCal)]
-        listOfCalculables += [ofi(minEt=minEt), ofj(), ofbi()]
+        listOfCalculables += [efi(calibTag=efCal), efj(indices="IndicesEfJets%s"%efCal)]
+        maxEta = pars['maxJetEta']
+        listOfCalculables += [ofi(minEt=minEt, maxEta=maxEta), ofj(), ofbi()]
         mj = calculables.jet.MatchedJets
         listOfCalculables += [mj(coll1=refJetColl, otherColls=[jColl])
                               for jColl in
