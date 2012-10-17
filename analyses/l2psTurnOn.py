@@ -57,8 +57,8 @@ class l2psTurnOn(supy.analysis) :
             # - 5th jet : 5j15L2FS vs. 4j15L2FS + 5j50L2FSPS
             # - 6th jet : 6j15L2FS vs. 4j15L2FS + 6j50L2FSPS
             # - 6th jet : 6j15L2FS vs. 5j15L2FS + 6j50L2FSPS
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_5j50', emulated=True, nTh=4),
-            steps.histos.turnOnJet(trigger='EmulatedL2FS_6j15', jetColl=refJetColl, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_5j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_6j15', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_6j50', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
 
