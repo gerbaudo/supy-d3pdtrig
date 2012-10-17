@@ -26,9 +26,9 @@ class attribute(analysisStep) :
             if self.nTh and self.nTh!=i : continue
             self.book.fill(getattr(elem,self.attrName), self.hName, self.nX, self.xLo, self.xUp, title=self.title)
 class deltaEta(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=-0.5,up=+0.5,title="#Delta #eta") :
-        for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
-        self.hName = 'delta%s%s'%(var,matchCollPair)
+    def __init__(self, matchCollPair='',N=100,low=-0.5,up=+0.5,title="#Delta #eta") :
+        for item in ['matchCollPair','N','low','up','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEta%s'%matchCollPair
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
         for pair in matchCollPair :
@@ -37,9 +37,9 @@ class deltaEta(analysisStep) :
             if not elem1 or not elem2 : continue
             self.book.fill(elem2.eta - elem1.eta, self.hName, self.N, self.low, self.up, title=self.title)
 class deltaPhi(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=-0.5,up=+0.5,title="#Delta #phi") :
-        for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
-        self.hName = 'delta%s%s'%(var,matchCollPair)
+    def __init__(self, matchCollPair='',N=100,low=-0.5,up=+0.5,title="#Delta #phi") :
+        for item in ['matchCollPair','N','low','up','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaPhi%s'%matchCollPair
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
         for pair in matchCollPair :
@@ -48,9 +48,9 @@ class deltaPhi(analysisStep) :
             if not elem1 or not elem2 : continue
             self.book.fill(elem2.phi - elem1.phi, self.hName, self.N, self.low, self.up, title=self.title)
 class deltaR(analysisStep) :
-    def __init__(self, matchCollPair='', var='',N=100,low=0.0,up=0.5,title="#Delta R") :
-        for item in ['matchCollPair', 'var','N','low','up','title'] : setattr(self,item,eval(item))
-        self.hName = 'delta%s%s'%(var,matchCollPair)
+    def __init__(self, matchCollPair='',N=100,low=0.0,up=0.5,title="#Delta R") :
+        for item in ['matchCollPair','N','low','up','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaR%s'%matchCollPair
     def uponAcceptance(self, eventVars) :
         matchCollPair = eventVars[self.matchCollPair]
         for pair in matchCollPair :
@@ -61,9 +61,9 @@ class deltaR(analysisStep) :
             j2lv = supy.utils.root.LorentzV(elem2.et, elem2.eta, elem2.phi, 0.)
             self.book.fill(r.Math.VectorUtil.DeltaR(j1lv, j2lv), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEt(analysisStep) :
-    def __init__(self, matchCollPair='', var='', nTh=None,N=100,low=-50.0,up=50.0,title="#Delta E_{T}") :
-        for item in ['matchCollPair', 'var','nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
-        self.hName = 'delta%s%s'%(var,matchCollPair)
+    def __init__(self, matchCollPair='', nTh=None,N=100,low=-50.0,up=50.0,title="#Delta E_{T}") :
+        for item in ['matchCollPair','nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEt%s%s'%(matchCollPair, "_%dthJet"%nTh if nTh else "")
         if self.nTh :
             self.hName += "_%dthJet"%self.nTh
             self.title += "(%dth jet)"%self.nTh
@@ -77,9 +77,9 @@ class deltaEt(analysisStep) :
             self.book.fill(MeV2GeV*(elem2.et - elem1.et), self.hName, self.N, self.low, self.up, title=self.title)
 class deltaEtFrac(analysisStep) :
     # todo: merge it with deltaEt
-    def __init__(self, matchCollPair='', var='',nTh=None,N=100,low=-2.0,up=2.0,title="#Delta E_{T}/E_{T}") :
-        for item in ['matchCollPair', 'var', 'nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
-        self.hName = 'fracDelta%s%s'%(var,matchCollPair)
+    def __init__(self, matchCollPair='',nTh=None,N=100,low=-2.0,up=2.0,title="#Delta E_{T}/E_{T}") :
+        for item in ['matchCollPair', 'nTh', 'N','low','up','title'] : setattr(self,item,eval(item))
+        self.hName = 'deltaEtFrac%s%s'%(matchCollPair, "_%dthJet"%nTh if nTh else "")
         if self.nTh :
             self.hName += "_%dthJet"%self.nTh
             self.title += "(%dth jet)"%self.nTh
