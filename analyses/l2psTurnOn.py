@@ -51,20 +51,19 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_5j55_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
             #steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
             # - 5th jet : 5j15L2FS vs. 4j15L2FS + 5j50L2FSPS
-            # - 6th jet : 6j15L2FS vs. 4j15L2FS + 6j50L2FSPS
-            # - 6th jet : 6j15L2FS vs. 5j15L2FS + 6j50L2FSPS
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_5j50', emulated=True, nTh=5),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_6j15', emulated=True, nTh=5),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_6j50', emulated=True, nTh=5),
-            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
-
+            steps.histos.turnOnJet(trigger='EmulatedL2FS_5j15', jetColl=refJetColl, emulated=True, nTh=4),
+            steps.histos.turnOnJet(trigger='EmulatedL2FS_4j15_L2PS_5j50', jetColl=refJetColl, emulated=True, nTh=4),
             supy.steps.filters.label('6jets'),
             steps.histos.attribute(attrName='et', coll=refJetColl, nTh=5, title="E_{T} %dth jet "%(5+1)+"("+refJetColl+"); E_{T}; events",xLo=0.0,xUp=200.0*GeV),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem', jetColl=refJetColl, nTh=5),
+            # - 6th jet : 6j15L2FS vs. 4j15L2FS + 6j50L2FSPS
+            # - 6th jet : 6j15L2FS vs. 5j15L2FS + 6j50L2FSPS
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_6j15', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_6j50', emulated=True, nTh=5),
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem_6j45_a4cchad', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='L2_6j15_a4TTem_6j50_a4cchad', jetColl=refJetColl, nTh=5),
             steps.histos.turnOnJet(trigger='EF_6j45_a4tchad_L2FS_5L2j15', jetColl=refJetColl, nTh=5),
@@ -162,9 +161,9 @@ class l2psTurnOn(supy.analysis) :
                               ]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
-            tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_6j50', label='L2FS_5j15_L2PS_6j50'),
             tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_5j50', label='L2FS_4j15_L2PS_5j50'),
             tba(bit1='EmulatedL2FS_4j15', bit2='EmulatedL2PS_6j50', label='L2FS_4j15_L2PS_6j50'),
+            tba(bit1='EmulatedL2FS_5j15', bit2='EmulatedL2PS_6j50', label='L2FS_5j15_L2PS_6j50'),
             ]
 
         return listOfCalculables
