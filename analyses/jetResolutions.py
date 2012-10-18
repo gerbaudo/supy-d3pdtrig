@@ -60,12 +60,14 @@ class jetResolutions(supy.analysis) :
         hDet, hDetFrac = steps.histos.deltaEt, steps.histos.deltaEtFrac
         templateTitle="#Delta %(var)s matched (%(j1)s, %(j2)s); #Delta %(var)s; jets"
         outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
-                      title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL})
+                      title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL},
+                      N=200)
                     for h,var in zip([hDeta, hDphi, hDr, hDet],
                                      ['#eta', '#phi', 'R', 'E_{T}'])
                     for jC, jL in zip(ojC, ojL)]
         outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
-                      title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL})
+                      title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL},
+                      N=200)
                     for h,var in zip([hDetFrac,],
                                      ['E_{T}/E_{T}',])
                     for jC, jL in zip(ojC, ojL)]
@@ -137,7 +139,7 @@ class jetResolutions(supy.analysis) :
         return [samples.skimmedPeriodD(skim=skim, run=208258)]
 
     def listOfSamples(self,config) :
-        test = True
+        test = False #True
         nEventsMax= 100000 if test else None
         nFilesMax=100 if test else None
         skim = self.parameters()['skim']
