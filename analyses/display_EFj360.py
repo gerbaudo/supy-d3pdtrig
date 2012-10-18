@@ -6,7 +6,7 @@ import calculables,steps,samples, ROOT as r
 GeV=1.0e+3
 TeV=1.0e+3*GeV
 
-class display_L2FSPS(supy.analysis) :
+class display_EFj360(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
         return {'minJetEt' : 10.0*GeV,
@@ -18,9 +18,8 @@ class display_L2FSPS(supy.analysis) :
         pars = self.parameters()
         outList=[
             supy.steps.printer.progressPrinter(),
-            steps.filters.triggers(['EmulatedOffline_6j70']),
-            steps.filters.triggers(['EF_6j50_a4tchad_L2FS_5L2j15']),
-            steps.filters.triggers(['EF_6j50_a4tchad_L2FSPS_5L2j15']).invert(),
+            steps.filters.triggers(['EF_j280_a4tchad']),
+            steps.filters.triggers(['EF_j360_a4tchad']).invert(),
 
             steps.displayer.displayer(doL1Jets=True, doL2Jets=True, doEfJets = True, doOfflineJets=True),
             ]
@@ -31,17 +30,11 @@ class display_L2FSPS(supy.analysis) :
         minEt = pars['minJetEt']
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += [#calculables.TrigD3PD.Tdt(),
-                              calculables.TrigD3PD.Tdt(treeName = "TrigConfTree", dirName = "susyMeta"),
+                              calculables.TrigD3PD.Tdt(treeName = "TrigConfTree", dirName = "qcdMeta"),
                               calculables.TrigD3PD.PassedTriggers(),
                               ]
-        listOfCalculables += [calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FSPS"),
-                              calculables.TrigD3PD.TriggerBit("EF_5j55_a4tchad_L2FS"),
-                              calculables.TrigD3PD.TriggerBit("L2_5j15_a4TTem"),
-                              calculables.TrigD3PD.TriggerBit("L2_5j15_a4TTem_5j50_a4cchad"),
-                              calculables.TrigD3PD.TriggerBit("L2_6j15_a4TTem_6j50_a4cchad"),
-                              #calculables.TrigD3PD.TriggerBit("EF_6j50_a4tchad_L2FS_5L2j15"),
-                              calculables.TrigD3PD.TriggerBit('EF_6j50_a4tchad_L2FS_5L2j15'),
-                              calculables.TrigD3PD.TriggerBit('EF_6j50_a4tchad_L2FSPS_5L2j15'),
+        listOfCalculables += [calculables.TrigD3PD.TriggerBit('EF_j280_a4tchad'),
+                              calculables.TrigD3PD.TriggerBit('EF_j360_a4tchad'),
                               ]
         listOfCalculables += [calculables.jet.IndicesL1(collection=("trig_L1_jet_", "")),
                               calculables.jet.L1Jets(),
@@ -63,23 +56,11 @@ class display_L2FSPS(supy.analysis) :
                               calculables.jet.IndicesOffline(minEt=minEt),
                               calculables.jet.OfflineJets(),
                               ]
-        listOfCalculables += [calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
-                                                                              label='L2FSPS',
-                                                                              multi=6, minEt=45.*GeV),
-                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
-                                                                              label='L2FSPS',
-                                                                              multi=6, minEt=50.*GeV),
-                              calculables.TrigD3PD.EmulatedMultijetTriggerBit(jetColl='L2JetsA4TTA4CC_JES',
-                                                                              label='L2FSPS',
-                                                                              multi=6, minEt=55.*GeV),
-                              ]
-        emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
-        listOfCalculables += [emjb(jetColl='OfflineJets', label='Offline', multi=6, minEt=70.*GeV)]
 
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
-        exampleDict = supy.samples.SampleHolder()3C
+        exampleDict = supy.samples.SampleHolder()
         exampleDict.add("JetMet", '["/tmp/gerbaudo/NTUP_JETMET.00941791._000053.root"]',  lumi=1 ) # /pb
         return [exampleDict]
 
