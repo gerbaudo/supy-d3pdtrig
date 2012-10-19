@@ -11,7 +11,7 @@ class l2psTurnOn(supy.analysis) :
     def parameters(self) :
         efJetCalibTag='AntiKt4_topo_calib_EMJES'
         return {'minJetEt' : 30.0*GeV,
-                'maxJetEta' : 3.2,
+                'maxJetEta' : 2.8, #3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
