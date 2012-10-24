@@ -23,7 +23,7 @@ class attribute(analysisStep) :
     def uponAcceptance(self, eventVars) :
         coll = eventVars[self.coll]
         for i, elem in enumerate(coll) :
-            if self.nTh and self.nTh!=i : continue
+            if self.nTh!=None and self.nTh!=i : continue
             self.book.fill(getattr(elem,self.attrName), self.hName, self.nX, self.xLo, self.xUp, title=self.title)
 class deltaEta(analysisStep) :
     def __init__(self, matchCollPair='',N=100,low=-0.5,up=+0.5,title="#Delta #eta") :
