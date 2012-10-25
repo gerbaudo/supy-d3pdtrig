@@ -10,10 +10,15 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        mode = 'j460a10' # 'j35' 'j460a10' 'j460a4'
-        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_j460_a4tclcw'}
-        refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j240_a10tcem',  'j360a4':'EF_j280_a4tchad', 'j460a4':'EF_j280_a4tchad'}
-        skims = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_A4_OR_A10',  'j360a4':'EF_A4_OR_A10', 'j460a4':'EF_A4_OR_A10'}
+        mode = 'j460a4_L2FS' # 'j35' 'j460a10' 'j460a4' 'j460a4_L2FS', 'j460a10_L2FS'
+        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_j460_a4tclcw',
+                    'j460a4_L2FS' : 'EmulatedEF_j460_a4tclcw_L2FS_j75',
+                    'j460a10_L2FS': 'EmulatedEF_j460_a10tclcw_L2FS_j75'}
+        refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j240_a10tcem',  'j360a4':'EF_j280_a4tchad', 'j460a4':'EF_j280_a4tchad',
+                    'j460a4_L2FS' : 'EF_j280_a4tchad',
+                    'j460a10_L2FS': 'EF_j240_a10tcem'}
+        skims = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_A4_OR_A10',  'j360a4':'EF_A4_OR_A10', 'j460a4':'EF_A4_OR_A10',
+                 'j460a10_L2FS':'EF_A4_OR_A10', 'j460a4_L2FS':'EF_A4_OR_A10'}
         return {'mode':mode,
                 'minJetEt' : 30.0*GeV,
                 'maxJetEta' : 3.2,
@@ -41,18 +46,20 @@ class fatJetTurnOn(supy.analysis) :
         xMin, xMax = 0. , (200. if mode=='j35' else 600.)
         binWidth = 5 if mode=='j35' else 10.
         nBins = int((xMax-xMin)/binWidth)
-        emulated = True if mode=='j460a4' else False
+        emulated = True if mode in ['j460a4','j460a4_L2FS','j460a10_L2FS'] else False
 
         outList=[
             supy.steps.printer.progressPrinter(),
             supy.steps.filters.multiplicity("IndicesOfflineBadJets",max=0),
-            supy.steps.filters.multiplicity("vxp_Indices",min=1),
             supy.steps.filters.multiplicity(refJetColl, min=1),
+            supy.steps.filters.multiplicity("vxp_Indices",min=1),
             steps.filters.goodRun().onlyData(),
             steps.filters.triggers([refTrigger]),
             #supy.steps.printer.printstuff(['PassedTriggers',]),
             ]
-
+        outList += [supy.steps.histos.multiplicity(jc, max=20)
+                    for jc in [refJetColl, refFatJetColl]]
+        #outList += [steps.printer.JetPrinter(jc) for jc in [refJetColl, refFatJetColl]]
         outList += [steps.histos.attribute(attrName='et', coll=jc, nTh=0,
                                            title="E_{T} %dth jet "%(0+1)+"("+jc+"); E_{T}; events",
                                            xLo=xMin,xUp=xMax*GeV)
@@ -85,6 +92,9 @@ class fatJetTurnOn(supy.analysis) :
         listOfCalculables += [calculables.TrigD3PD.PassedTriggers(),]
         listOfCalculables += [calculables.vertex.Indices(collection=('vxp_',''),
                                                          zPosMax=100, nTracksMin=4),]
+        listOfCalculables += [calculables.jet.IndicesL2(input='NONE', output='A10TT',maxEta=maxEta),
+                              calculables.jet.L2Jets(indices="IndicesL2JetsNONEA10TT"),
+                              ]
         listOfCalculables += [calculables.jet.IndicesEf(minEt=minEt, maxEta=maxEta, calibTag=calibTag),
                               calculables.jet.EfJets(indices='IndicesEfJets'+calibTag),
                               ]
@@ -97,7 +107,13 @@ class fatJetTurnOn(supy.analysis) :
                                                           attributesToSkip=['isUgly','isBadLoose']),
                               ]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit # todo: fix this jet collection
-        listOfCalculables += [emjb(jetColl='EfJets'+calibTag, label='EF', multi=1, minEt=460.*GeV,suffix='_a4tclcw'),]
+        listOfCalculables += [emjb(multi=1, minEt=75.*GeV, jetColl='L2JetsNONEA10TT', label='L2FS')]
+        listOfCalculables += [emjb(multi=1, minEt=460.*GeV, jetColl='EfJets'+calibTag, label='EF',suffix='_a4tclcw')]
+        tba = calculables.TrigD3PD.TriggerBitAnd
+        listOfCalculables += [
+            tba(bit1='EmulatedL2FS_j75', bit2='EmulatedEF_j460_a4tclcw', label='EF_j460_a4tclcw_L2FS_j75')
+            ]
+
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
