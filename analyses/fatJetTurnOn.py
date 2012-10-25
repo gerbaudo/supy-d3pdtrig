@@ -10,10 +10,13 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        mode = 'j460a4_L2FS' # 'j35' 'j460a10' 'j460a4' 'j460a4_L2FS', 'j460a10_L2FS'
-        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_a10tclcw', 'j360a4':'EF_j360_a4tclcw', 'j460a4':'EmulatedEF_j460_a4tclcw',
-                    'j460a4_L2FS' : 'EmulatedEF_j460_a4tclcw_L2FS_j75',
-                    'j460a10_L2FS': 'EmulatedEF_j460_a10tclcw_L2FS_j75'}
+        mode = 'j460a4' # 'j35' 'j460a10' 'j460a4' 'j460a4_L2FS', 'j460a10_L2FS'
+        efCalibTag = 'AntiKt10_lctopo' if 'a10' in mode else 'AntiKt4_lctopo' # tag in the d3pd jet coll
+        efCalibTagLabel = 'a10tclcw'  if 'a10' in mode else 'a4tclcw'         # label in the trigger name
+        ectl = efCalibTagLabel
+        toTrigs =  {'j35':'EF_j35_a10tcem', 'j460a10':'EF_j460_'+ectl, 'j360a4':'EF_j360_'+ectl, 'j460a4':'EmulatedEF_j460_'+ectl,
+                    'j460a4_L2FS' : 'EmulatedEF_j460_'+ectl+'_L2FS_j75',
+                    'j460a10_L2FS': 'EmulatedEF_j460_'+ectl+'_L2FS_j75'}
         refTrigs = {'j35':'L1_RD0_FILLED',  'j460a10':'EF_j240_a10tcem',  'j360a4':'EF_j280_a4tchad', 'j460a4':'EF_j280_a4tchad',
                     'j460a4_L2FS' : 'EF_j280_a4tchad',
                     'j460a10_L2FS': 'EF_j240_a10tcem'}
@@ -32,7 +35,8 @@ class fatJetTurnOn(supy.analysis) :
                 'refJetColl' : 'OfflineJets',
                 'refFatJetColl' : 'OfflineJetsA10',
                 'offlineFatJetColl':'jet_AntiKt10LCTopo_',
-                'efCalibTag':'AntiKt4_lctopo',
+                'efCalibTag' : efCalibTag,
+                'efCalibTagLabel' : efCalibTagLabel,
                 }
 
     def listOfSteps(self,config) :
@@ -43,7 +47,7 @@ class fatJetTurnOn(supy.analysis) :
         refJetColl = pars['refJetColl']
         offlineFatJetColl = pars['offlineFatJetColl']
         refFatJetColl = pars['refFatJetColl']
-        xMin, xMax = 0. , (200. if mode=='j35' else 600.)
+        xMin, xMax = 0. , (200. if mode=='j35' else 800.)
         binWidth = 5 if mode=='j35' else 10.
         nBins = int((xMax-xMin)/binWidth)
         emulated = True if mode in ['j460a4','j460a4_L2FS','j460a10_L2FS'] else False
@@ -80,6 +84,7 @@ class fatJetTurnOn(supy.analysis) :
         maxEta = pars['maxJetEta']
         offlineFatJetColl = pars['offlineFatJetColl']
         calibTag = pars['efCalibTag']
+        calibTagLabel = pars['efCalibTagLabel']
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += supy.calculables.zeroArgs(calculables)
         listOfCalculables += [calculables.TrigD3PD.Grlt(pars['grlFile']),
@@ -108,10 +113,10 @@ class fatJetTurnOn(supy.analysis) :
                               ]
         emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit # todo: fix this jet collection
         listOfCalculables += [emjb(multi=1, minEt=75.*GeV, jetColl='L2JetsNONEA10TT', label='L2FS')]
-        listOfCalculables += [emjb(multi=1, minEt=460.*GeV, jetColl='EfJets'+calibTag, label='EF',suffix='_a4tclcw')]
+        listOfCalculables += [emjb(multi=1, minEt=460.*GeV, jetColl='EfJets'+calibTag, label='EF',suffix='_'+calibTagLabel)]
         tba = calculables.TrigD3PD.TriggerBitAnd
         listOfCalculables += [
-            tba(bit1='EmulatedL2FS_j75', bit2='EmulatedEF_j460_a4tclcw', label='EF_j460_a4tclcw_L2FS_j75')
+            tba(bit1='EmulatedL2FS_j75', bit2='EmulatedEF_j460_'+calibTagLabel, label='EF_j460_'+calibTagLabel+'_L2FS_j75')
             ]
 
         return listOfCalculables
@@ -132,10 +137,8 @@ class fatJetTurnOn(supy.analysis) :
         org = self.organizer(pars)
         mode = self.parameters()['mode']
         mode, skim = self.parameters()['mode'], self.parameters()['skim']
-        #org.mergeSamples(targetSpec = {"name":"Data 2011", "color":r.kBlack, "markerStyle":20},
-        #                 sources=["%d.%s"%(run,skim) for run in [208184,208258,208261,208354,208485,208662]])
         supy.plotter( org,
-                      pdfFileName = self.pdfFileName(org.tag),
+                      pdfFileName = self.pdfFileName(org.tag+self.parameters()['mode']),
                       doLog = False,
                       blackList = ['num_.*', 'den_.*'],
                       ).plotAll()
