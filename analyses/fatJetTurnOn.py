@@ -122,8 +122,8 @@ class fatJetTurnOn(supy.analysis) :
 
     def listOfSamples(self,config) :
         test = True #False
-        nEventsMax= 10000 if test else -1
-        nFilesMax=10 if test else -1
+        nEventsMax= 10000 if test else None
+        nFilesMax=10 if test else None
         skim = self.parameters()['skim']
         return ([] + supy.samples.specify(names="periodD.%s"%skim, nEventsMax=nEventsMax, nFilesMax=nFilesMax))
 
