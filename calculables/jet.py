@@ -334,6 +334,22 @@ class UnmatchedJets(supy.wrappedChain.calculable) :
     def update(self, _) :
         self.value = [jets[0] for jets in self.source[self.coll] if not any(jets[1:])]
 
+class IsolatedJets(supy.wrappedChain.calculable) :
+    "Take a jet collection, and filter only the isolated ones"
+    def __init__(self, coll = '', minDr=1.0) :
+        self.coll = coll
+        self.minDr = minDr
+        self.moreName = "#Delta R > %.1f"%minDr
+    @property
+    def name(self) : return "Isolated%s"%self.coll
+    def update(self, _) :
+        jets = self.source[self.coll]
+        jetsLv = [supy.utils.root.LorentzV(j.et, j.eta, j.phi, 0.) for j in jets]
+        minDr = self.minDr
+        self.value = [j1 for j1,jlv1 in zip(jets, jetsLv)
+                      if not any([True for jlv2 in jetsLv
+                                  if jlv2!=jlv1 and r.Math.VectorUtil.DeltaR(jlv1,jlv2)<minDr])]
+
 class EnergyL2Jets(supy.wrappedChain.calculable) :
     def __init__(self, collection = l2jetCollection(), input = None, output = None):
         self.input = input
