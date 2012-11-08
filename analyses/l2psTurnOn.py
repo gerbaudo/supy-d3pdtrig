@@ -11,7 +11,7 @@ class l2psTurnOn(supy.analysis) :
     def parameters(self) :
         efJetCalibTag='AntiKt4_topo_calib_EMJES'
         return {'minJetEt' : 30.0*GeV,
-                'maxJetEta' : 2.8, #3.2,
+                'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
@@ -53,6 +53,8 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FSPS', jetColl=refJetColl, nTh=4),
             #steps.histos.turnOnJet(trigger='EF_5j60_a4tchad_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
+            steps.histos.turnOnJet(trigger='EmulatedL1_5j10', jetColl=refJetColl, emulated=True, nTh=4),
+            steps.histos.turnOnJet(trigger='EmulatedL1_6j10', jetColl=refJetColl, emulated=True, nTh=5),
             # - 5th jet : 5j15L2FS vs. 4j15L2FS + 5j50L2FSPS
             steps.histos.turnOnJet(trigger='EmulatedL2FS_5j15', jetColl=refJetColl, emulated=True, nTh=4),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_4j15_L2PS_5j50', jetColl=refJetColl, emulated=True, nTh=4),
