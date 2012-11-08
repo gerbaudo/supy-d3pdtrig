@@ -266,6 +266,18 @@ class IndicesOfflineBad(supy.wrappedChain.calculable) :
     def name(self):
         return "IndicesOfflineBadJets"
 
+class IndicesOfflineOutOfTime(supy.wrappedChain.calculable) :
+    def __init__(self, collection = offlineJetCollection()) :
+        self.fixes = collection
+        self.stash(["Timing"])
+        self.maxT = 10. # ns
+    def update(self, _) :
+        timing = self.source[self.Timing]
+        self.value = [i for i,t in enumerate(timing) if abs(t)>self.maxT]
+    @property
+    def name(self):
+        return "IndicesOfflineOutOfTimeJets"
+
 class OfflineJet(HltJet) :
     def __init__(self, **kargs) :
         super(OfflineJet, self).__init__(**kargs)
