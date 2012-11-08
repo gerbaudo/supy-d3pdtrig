@@ -52,22 +52,27 @@ class jetResolutions(supy.analysis) :
             filterMult("IndicesOfflineBadJets",max=0),
             steps.filters.triggers([pars['refTrigger']]),
             ]
-        rjC, rjL = refJetColl, refJetCollLabel
+        #rjC, rjL = refJetColl, refJetCollLabel
+        isoRefJetColl, isoRefJetCollLabel = 'Isolated'+refJetColl, 'Iso. '+refJetCollLabel
         ojC = ['L1Jets'] + ["L2Jets%s%s"%(i,o) for i,o in l2JetsIo.values()] + ["EfJets%s"%efJetCalibTag]
         ojL = ['L1'] + ["L2 %s%s"%(i,o) for i,o in l2JetsIo.values()] + ['EF']
-        outList += [histoMult(var=var, max=20) for var in ojC+[rjC]]
+        outList += [histoMult(var=var, max=20) for var in ojC+[refJetColl, isoRefJetColl]]
         hDeta, hDphi, hDr = steps.histos.deltaEta, steps.histos.deltaPhi, steps.histos.deltaR
         hDet, hDetFrac = steps.histos.deltaEt, steps.histos.deltaEtFrac
         templateTitle="#Delta %(var)s matched (%(j1)s, %(j2)s); #Delta %(var)s; jets"
         outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
                       title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL},
                       N=200)
+                    for rjC, rjL in zip([refJetColl, isoRefJetColl],
+                                        [refJetCollLabel, isoRefJetCollLabel])
                     for h,var in zip([hDeta, hDphi, hDr, hDet],
                                      ['#eta', '#phi', 'R', 'E_{T}'])
                     for jC, jL in zip(ojC, ojL)]
         outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
                       title=templateTitle%{'var':var, 'j1':rjL, 'j2':jL},
                       N=200)
+                    for rjC, rjL in zip([refJetColl, isoRefJetColl],
+                                        [refJetCollLabel, isoRefJetCollLabel])
                     for h,var in zip([hDetFrac,],
                                      ['E_{T}/E_{T}',])
                     for jC, jL in zip(ojC, ojL)]
@@ -75,6 +80,8 @@ class jetResolutions(supy.analysis) :
         templateTitle="%(varY)s vs. %(varX)s matched (%(j1)s, %(j2)s); %(varX)s; %(varY)s"
         outList += [h(matchCollPair="%sMatch%s"%(rjC,jC),
                       title=templateTitle%{'varX':varX, 'varY':varY, 'j1':rjL, 'j2':jL})
+                    for rjC, rjL in zip([refJetColl, isoRefJetColl],
+                                        [refJetCollLabel, isoRefJetCollLabel])
                     for h,varX,varY in zip([hDetFracEt,],
                                            ['E_{T,off}',],
                                            ['#Delta E_{T}/E_{T}',])
@@ -87,6 +94,7 @@ class jetResolutions(supy.analysis) :
         minEt = pars['minJetEt']
         offJetColl = pars['offJetColl']
         refJetColl = offJetColl
+        isoRefJetColl = "Isolated"+refJetColl
         l2JetsIo = self.l2JetsIo
         listOfCalculables = supy.calculables.zeroArgs(supy.calculables)
         listOfCalculables += supy.calculables.zeroArgs(calculables)
@@ -125,13 +133,15 @@ class jetResolutions(supy.analysis) :
         listOfCalculables += [efi(calibTag=efCal), efj(indices="IndicesEfJets%s"%efCal)]
         maxEta = pars['maxJetEta']
         listOfCalculables += [ofi(minEt=minEt, maxEta=maxEta), ofj(), ofbi()]
+        isoJ = calculables.jet.IsolatedJets
+        listOfCalculables += [isoJ(coll='OfflineJets')]
         mj = calculables.jet.MatchedJets
-        listOfCalculables += [mj(coll1=refJetColl, otherColls=[jColl])
+        listOfCalculables += [mj(coll1=rj, otherColls=[jColl])
+                              for rj in [refJetColl, isoRefJetColl]
                               for jColl in
                               ['L1Jets']
                               +["L2Jets%s%s"%(i,o) for i,o in l2JetsIo.values()]
                               +["EfJets%s"%efCal]]
-
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
