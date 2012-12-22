@@ -55,6 +55,7 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='EF_5j60_a4tclcw_L2FS', jetColl=refJetColl, nTh=4),
             steps.histos.turnOnJet(trigger='EmulatedL1_5j10', jetColl=refJetColl, emulated=True, nTh=4),
             steps.histos.turnOnJet(trigger='EmulatedL1_6j10', jetColl=refJetColl, emulated=True, nTh=5),
+            steps.histos.turnOnJet(trigger='EmulatedL1_6j15', jetColl=refJetColl, emulated=True, nTh=5),
             # - 5th jet : 5j15L2FS vs. 4j15L2FS + 5j50L2FSPS
             steps.histos.turnOnJet(trigger='EmulatedL2FS_5j15', jetColl=refJetColl, emulated=True, nTh=4),
             steps.histos.turnOnJet(trigger='EmulatedL2FS_4j15_L2PS_5j50', jetColl=refJetColl, emulated=True, nTh=4),
@@ -63,6 +64,7 @@ class l2psTurnOn(supy.analysis) :
             steps.histos.turnOnJet(trigger='L2_5j15_a4TTem', jetColl=refJetColl, nTh=5),
             # - 6th jet : 6j15L2FS vs. 4j15L2FS + 6j50L2FSPS
             # - 6th jet : 6j15L2FS vs. 5j15L2FS + 6j50L2FSPS
+            steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_6j10', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_6j15', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_4j15_L2PS_6j50', emulated=True, nTh=5),
             steps.histos.turnOnJet(jetColl=refJetColl, trigger='EmulatedL2FS_5j15_L2PS_6j50', emulated=True, nTh=5),
@@ -149,6 +151,7 @@ class l2psTurnOn(supy.analysis) :
         listOfCalculables += [
             emjb(jetColl='L1Jets', label='L1', multi=5, minEt=10.*GeV),
             emjb(jetColl='L1Jets', label='L1', multi=6, minEt=10.*GeV),
+            emjb(jetColl='L1Jets', label='L1', multi=6, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=4, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=5, minEt=15.*GeV),
             emjb(jetColl='L2JetsNONEA4TT', label='L2FS', multi=6, minEt=10.*GeV),
