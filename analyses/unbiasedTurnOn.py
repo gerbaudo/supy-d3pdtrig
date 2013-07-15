@@ -13,17 +13,23 @@ triggers = ['EF_j15_a4tchad','EF_j25_a4tchad','EF_j35_a4tchad',
 
 class unbiasedTurnOn(supy.analysis) :
     l2JetsIo = {
-        'l2ps'   : ('A4TT','A4CC_JES'),
         'l15'    : ('NONE','A4TT'),
         'l15had' : ('NONE','A4TThad'),
-        'l2cone' : ('A4TT','L2CONE'),
+        'l2cone' : ('NON_L15','L2CONE'),
+        'l2conel2fs' : ('A4TT','L2CONE'),
+        'l2ps'   : ('NON_L15','A4CC_JES'),
+        'l2psl2fs'   : ('A4TT','A4CC_JES'),
+        'l2ps'   : ('NON_L15','A4CC_JES'),
+        'l2psl2fs'   : ('A4TT','A4CC_JES'),
+        'l2psem'   : ('NON_L15','A4CC'),
+        'l2pseml2fs'   : ('A4TT','A4CC'),
         }
     def otherTreesToKeepWhenSkimming(self) : return []
 
     def parameters(self) :
         efJetCalibTag='AntiKt4_topo_calib_EMJES'
         return {'minJetEt' : 30.0*GeV,
-                'maxJetEta' : 2.8, #3.2,
+                'maxJetEta' : 3.2,
                 'minNofflineJets' : 5,
                 'grlFile' : "data/data12_8TeV.periodAllYear_DetStatus-v51-pro13-04_CoolRunQuery-00-04-08_All_Good.xml",
                 'L2jetChain' : 'L2_[0-9]*j.*',
@@ -53,10 +59,13 @@ class unbiasedTurnOn(supy.analysis) :
             filterMult("vxp_Indices",min=1),
             filterMult("IndicesOfflineJets",min=1),
             filterMult("IndicesOfflineBadJets",max=0),
+            filterMult("IndicesOfflineOutOfTimeJets",max=0),
+            steps.filters.triggers(['L1_RD0_FILLED']),
             ]
+        outList += [histoMult("L2Jets%s%s"%(io)) for io in l2JetsIo.values()]
         turnon = steps.histos.turnOnJet
         outList += [turnon(jetColl=refJetColl, trigger=t, nTh=0) for t in triggers]
-        
+
 
 #        #rjC, rjL = refJetColl, refJetCollLabel
 #        isoRefJetColl, isoRefJetCollLabel = 'Isolated'+refJetColl, 'Iso. '+refJetCollLabel
@@ -111,19 +120,21 @@ class unbiasedTurnOn(supy.analysis) :
                               calculables.TrigD3PD.PassedTriggers(),
                               ]
         tb = calculables.TrigD3PD.TriggerBit
+        listOfCalculables += [tb('L1_RD0_FILLED')]
         listOfCalculables += [tb(t) for t in triggers]
         l1i, l1j = calculables.jet.IndicesL1, calculables.jet.L1Jets
         l2i, l2j = calculables.jet.IndicesL2, calculables.jet.L2Jets
         efi, efj = calculables.jet.IndicesEf, calculables.jet.EfJets
         ofi, ofj = calculables.jet.IndicesOffline, calculables.jet.OfflineJets
         ofbi = calculables.jet.IndicesOfflineBad
+        ofoti = calculables.jet.IndicesOfflineOutOfTime
         listOfCalculables += [l1i(collection=("trig_L1_jet_", "")), l1j()]
         listOfCalculables += [l2i(input=i, output=o) for i,o in l2JetsIo.values()]
-        listOfCalculables += [l2j(indices="IndicesL2Jets%s%s"%(i,o)) for i,o in l2JetsIo.values()]
+        listOfCalculables += [l2j(indices="IndicesL2Jets%s%s"%io) for io in l2JetsIo.values()]
         efCal = pars['efJetCalibTag']
         listOfCalculables += [efi(calibTag=efCal), efj(indices="IndicesEfJets%s"%efCal)]
         maxEta = pars['maxJetEta']
-        listOfCalculables += [ofi(minEt=minEt, maxEta=maxEta), ofj(), ofbi()]
+        listOfCalculables += [ofi(minEt=minEt, maxEta=maxEta), ofj(), ofbi(), ofoti(),]
         isoJ = calculables.jet.IsolatedJets
         listOfCalculables += [isoJ(coll='OfflineJets')]
         mj = calculables.jet.MatchedJets
@@ -133,6 +144,10 @@ class unbiasedTurnOn(supy.analysis) :
                               ['L1Jets']
                               +["L2Jets%s%s"%(i,o) for i,o in l2JetsIo.values()]
                               +["EfJets%s"%efCal]]
+        emjb = calculables.TrigD3PD.EmulatedMultijetTriggerBit
+        listOfCalculables += [emjb(multi=1, minEt=50.*GeV,
+                                   jetColl='L2Jets%s%s'%l2JetsIo['l15'], label='L2FS')]
+
         return listOfCalculables
 
     def listOfSampleDictionaries(self) :
