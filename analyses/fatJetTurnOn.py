@@ -10,7 +10,7 @@ TeV=1.0e+3*GeV
 class fatJetTurnOn(supy.analysis) :
     def otherTreesToKeepWhenSkimming(self) : return []
     def parameters(self) :
-        mode = 'j460a4' # 'j35' 'j460a10' 'j460a4' 'j460a4_L2FS', 'j460a10_L2FS'
+        mode = 'j460a4_L2FS' # 'j35' 'j460a10' 'j460a4' 'j460a4_L2FS', 'j460a10_L2FS'
         efCalibTag = 'AntiKt10_lctopo' if 'a10' in mode else 'AntiKt4_lctopo' # tag in the d3pd jet coll
         efCalibTagLabel = 'a10tclcw'  if 'a10' in mode else 'a4tclcw'         # label in the trigger name
         ectl = efCalibTagLabel
@@ -126,7 +126,7 @@ class fatJetTurnOn(supy.analysis) :
         return [samples.skimmedPeriodD(skim=skim)]
 
     def listOfSamples(self,config) :
-        test = True #False
+        test = False #True
         nEventsMax= 10000 if test else None
         nFilesMax=10 if test else None
         skim = self.parameters()['skim']
