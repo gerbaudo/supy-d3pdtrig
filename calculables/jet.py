@@ -26,8 +26,8 @@ def efJetCollection() :
 def offlineJetAttributes() :
     return ["E", "pt", "m", "eta", "phi", "isUgly", "isBadLoose"]
 def offlineJetCollection() :
-    return ("jet_AntiKt4TopoNewEM_", "") # susy
-    #return ("jet_AntiKt4TopoEMJets_", "")
+    #return ("jet_AntiKt4TopoNewEM_", "") # susy
+    return ("jet_AntiKt4TopoEMJets_", "")
 
 #___________________________________________________________
 class IndicesL1(supy.wrappedChain.calculable) :
